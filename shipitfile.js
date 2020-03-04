@@ -13,7 +13,7 @@ module.exports = shipit => {
   shipit.initConfig({
     default: {
       deployTo: '/home/deploy/tracker',
-      repositoryUrl: 'XXXXXXXXXX', // TODO: Create "safe" repository and paste link here
+      repositoryUrl: 'https://github.com/lentmiien/GCSTracker.git',
       shared: {
         overwrite: true
       }
