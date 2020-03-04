@@ -1,0 +1,63 @@
+extends layout
+
+block content
+  .row
+    .col
+      h1 Tracker dashboard
+      p By: Lennart Granstrom
+  .row.mb-3
+    .col
+      h3 Overall status
+      div= `Total records: ${total}`
+      div= `Delivered: ${delivered}`
+      div= `Average shipping times`
+      div= `- DHL: ${dhl_time} days`
+      div= `- EMS: ${ems_time} days`
+      div= `- Other: ${other_time} days`
+    .col
+      h3 Progress
+      div Adding records: 
+        span#add_progress
+          i Waiting...
+      div Tracking records: 
+        span#track_progress
+          i Waiting...
+  .row
+    .col
+      p
+        button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#add_collapse", aria-expanded="false", aria-controls="add_collapse", title="Show add record input fields.") Add records
+        a.btn.btn-success.mr-3(href="/mypage/track", title="Start tracking process.\n*It is possible to close browser after started.") Start tracking
+        a.btn.btn-warning.mr-3(href="/mypage/csv", title="Download CSV file containing all records with tracking data.") Download CSV
+        a.btn.btn-danger(href="/mypage/clear", title="Delete records delivered over 2 weeks ago,\nand download CSV file containing deleted data.") Clear old (CSV)
+      #add_collapse.collapse
+        .card.card-body.bg-dark
+          form(action="/mypage/add", method="post")
+            label(for="shipping_date") FM Shipping date*
+            input#shipping_date.form-control(type="date", name="shipping_date", required)
+            label(for="tracking") Tracking numbers*
+            textarea#tracking.form-control(name="tracking", cols="30", rows="10", required)
+            button.btn.btn-success.mt-3(type="submit", title="Save the records to the database.") Save to database
+  .row
+    .col
+      h3 Delayed records
+      div
+        a(href="/mypage/delivered") Show delivered
+      table.table.table-dark.table-striped
+        thead
+          tr
+            th(scope="col") Tracking#
+            th(scope="col") Shipped date
+            th(scope="col") Last checked
+            th(scope="col") Status
+        tbody
+          each row in rows
+            tr
+              td
+                if(row.data && row.data.length > 0)
+                  a(href=`/mypage/details/${row.tracking}`)= row.tracking
+                else
+                  span= row.tracking
+              td= row.shippeddate
+              td= row.lastchecked
+              td= row.status
+  script(src="/javascripts/update.js")

@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= `Tracking for shipment: ${id}`
+  table.table.table-dark.table-striped
+    thead
+      tr
+        th(scope="col") Timestamp
+        th(scope="col") Status
+    tbody
+      each update in tracking
+        tr
+          td= update.timestamp.split('T').join(' ')
+          td= update.description

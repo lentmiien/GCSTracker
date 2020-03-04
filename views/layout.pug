@@ -1,0 +1,28 @@
+doctype html
+html
+  head
+    title Tracker
+    link(rel="stylesheet" href="/stylesheets/bootstrap.min.css")
+    link(rel="stylesheet", href="/stylesheets/style.css")
+  body
+    .container
+      nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+        a.navbar-brand(href="/") Tracker
+        button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation")
+          span.navbar-toggler-icon
+        
+        #navbarContent.collapse.navbar-collapse
+          ul.navbar-nav.mr-auto
+            if role != "guest"
+              li.nav-item
+                a.nav-link(href="/mypage") Dashboard
+          if role == "guest"
+            .form-inline.my-2.my-lg-0
+              a.btn.btn-outline-info.my-2.my-sm-0(href="/login") Login
+          else
+            form.form-inline.my-2.my-lg-0(action="/logout", method="post")
+              button.btn.btn-outline-info.my-2.my-sm-0(type="submit") Logout
+      block content
+    script(src="/javascripts/jquery-3.4.1.slim.min.js")
+    //- script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous")
+    script(src="/javascripts/bootstrap.bundle.min.js")
