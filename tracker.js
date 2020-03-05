@@ -31,7 +31,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
   } else {
     // DHL tracking
     // Try to acquire destination country
-    const ad = data.shipments[0].destination.address.addressLocality.split(' ');
+    const ad = data.shipments[0].destination.address.addressLocality.split(' - ');
     output['country'] = ad[ad.length - 1];
     // Acquire last tracking update
     output['status'] = data.shipments[0].status.statusCode;
