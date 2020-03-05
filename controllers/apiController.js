@@ -23,21 +23,17 @@ const creds = {
 
 // POST add new records
 exports.api_add = async (req, res) => {
+  const response = {};
   const api_key = req.header('api-key');
   if (api_key == undefined) {
-    return res.json({ status: 'Error: No API key' });
+    response['status'] = 'ERROR';
+    response['message'] = 'No API key';
+    return res.json(response);
   }
   if (api_key != process.env.THIS_API_KEY) {
-    return res.json({ status: 'Error: Invalid API key' });
-  }
-
-  // Do not start adding if currently adding records
-  if (add_progress >= 0 && add_progress < 1) {
-    return res.json({ status: 'Error: Busy' });
-  }
-  // Do not start adding if currently tracking
-  if (track_progress >= 0 && track_progress < 1) {
-    return res.json({ status: 'Error: Busy' });
+    response['status'] = 'ERROR';
+    response['message'] = 'Invalid API key';
+    return res.json(response);
   }
 
   // Load data from google-spredsheet
@@ -50,37 +46,65 @@ exports.api_add = async (req, res) => {
 
   // Get new data
   // req.body = { records: [ 'rec1', 'rec2', 'rec3' ] }
-  const tracking = req.body.records;
+  const tracking = req.body.records.sort();
   const records_to_add = [];
 
   let d = new Date();
   d = dateToString(d);
 
+  // Prepare OK response
+  response['status'] = 'OK';
+  response['num_records'] = tracking.length;
+  response['date'] = d;
+  response['added_records'] = 0;
+  response['sal_unreg_empty'] = 0;
+  response['domestic'] = 0;
+  response['duplicates'] = 0;
+  response['existing'] = 0;
+  response['need_check'] = [];
+
   // Prepare data to add
+  let lastadded = '';
   for (let i = 0; i < tracking.length; i++) {
     let new_entry = true;
     if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
       if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
         // Does not support domestic shipping
         new_entry = false;
+        response['domestic']++;
       } else {
-        for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
-          if (rows_raw[row_i].tracking == tracking[i]) {
-            new_entry = false;
+        if (tracking[i] == lastadded) {
+          new_entry = false;
+          response['duplicates']++;
+          response['status'] = 'WARNING';
+          response['message'] = 'Duplicate records exist';
+          response['need_check'].push(tracking[i]);
+        } else {
+          for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
+            if (rows_raw[row_i].tracking == tracking[i]) {
+              new_entry = false;
+              response['existing']++;
+              response['status'] = 'WARNING';
+              response['message'] = 'Existing records exist';
+              response['need_check'].push(tracking[i]);
+            }
           }
         }
       }
     } else {
       // Can not track SAL Unregistered
       new_entry = false;
+      response['sal_unreg_empty']++;
     }
     if (new_entry) {
+      lastadded = tracking[i];
       records_to_add.push({
         tracking: tracking[i],
         carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
         addeddate: d,
         delivered: '0'
       });
+      response['added_records']++;
     }
   }
 
@@ -90,17 +114,22 @@ exports.api_add = async (req, res) => {
   }
 
   // Done!
-  res.json({ status: 'OK' });
+  res.json(response);
 };
 
 // GET get "delivered" or "not delivered" status
 exports.api_get = async (req, res) => {
+  const response = {};
   const api_key = req.header('api-key');
   if (api_key == undefined) {
-    return res.json({ status: 'Error: No API key' });
+    response['status'] = 'ERROR';
+    response['message'] = 'No API key';
+    return res.json(response);
   }
   if (api_key != process.env.THIS_API_KEY) {
-    return res.json({ status: 'Error: Invalid API key' });
+    response['status'] = 'ERROR';
+    response['message'] = 'Invalid API key';
+    return res.json(response);
   }
 
   // Load data from google-spredsheet
@@ -111,17 +140,24 @@ exports.api_get = async (req, res) => {
 
   const rows_raw = await sheet.getRows();
 
+  let d = new Date();
+  d = dateToString(d);
+
+  // Prepare OK response
+  response['status'] = 'OK';
+  response['date'] = d;
+  response['records'] = [];
+
   // tracking	delivereddate	delivered
-  let outdata = { status: 'OK', records: [] };
   rows_raw.forEach(r => {
-    outdata.records.push({
+    response['records'].push({
       tracking: r.tracking,
       delivereddate: r.delivereddate,
       delivered: r.delivered
     });
   });
 
-  res.json(outdata);
+  res.json(response);
 };
 
 function dateToString(date) {

@@ -116,10 +116,11 @@ exports.add = async (req, res) => {
   const rows_raw = await sheet.getRows();
 
   // Get new data
-  const tracking = req.body.tracking.split('\r\n');
+  const tracking = req.body.tracking.split('\r\n').sort();
   const records_to_add = [];
 
   // Prepare data to add
+  let lastadded = '';
   for (let i = 0; i < tracking.length; i++) {
     let new_entry = true;
     if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
@@ -127,9 +128,13 @@ exports.add = async (req, res) => {
         // Does not support domestic shipping
         new_entry = false;
       } else {
-        for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
-          if (rows_raw[row_i].tracking == tracking[i]) {
-            new_entry = false;
+        if (tracking[i] == lastadded) {
+          new_entry = false;
+        } else {
+          for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
+            if (rows_raw[row_i].tracking == tracking[i]) {
+              new_entry = false;
+            }
           }
         }
       }
@@ -138,6 +143,7 @@ exports.add = async (req, res) => {
       new_entry = false;
     }
     if (new_entry) {
+      lastadded = tracking[i];
       records_to_add.push({
         tracking: tracking[i],
         carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
