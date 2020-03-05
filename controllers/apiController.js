@@ -24,16 +24,20 @@ const creds = {
 // POST add new records
 exports.api_add = async (req, res) => {
   const response = {};
-  const api_key = req.header('api-key');
-  if (api_key == undefined) {
-    response['status'] = 'ERROR';
-    response['message'] = 'No API key';
-    return res.json(response);
-  }
-  if (api_key != process.env.THIS_API_KEY) {
-    response['status'] = 'ERROR';
-    response['message'] = 'Invalid API key';
-    return res.json(response);
+
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
   }
 
   // Load data from google-spredsheet
@@ -120,16 +124,20 @@ exports.api_add = async (req, res) => {
 // GET get "delivered" or "not delivered" status
 exports.api_get = async (req, res) => {
   const response = {};
-  const api_key = req.header('api-key');
-  if (api_key == undefined) {
-    response['status'] = 'ERROR';
-    response['message'] = 'No API key';
-    return res.json(response);
-  }
-  if (api_key != process.env.THIS_API_KEY) {
-    response['status'] = 'ERROR';
-    response['message'] = 'Invalid API key';
-    return res.json(response);
+
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
   }
 
   // Load data from google-spredsheet
