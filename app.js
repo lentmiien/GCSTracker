@@ -11,6 +11,7 @@ const pp = require('./passport_init');
 
 var indexRouter = require('./routes/index');
 var mypageRouter = require('./routes/mypage');
+var apiRouter = require('./routes/api');
 
 var app = express();
 
@@ -30,6 +31,7 @@ app.use(pp.passport.session());
 app.use('/', indexRouter);
 app.use('/login', requireNotAuthenticated, pp.router);
 app.use('/mypage', requireAuthenticated, mypageRouter);
+app.use('/api', apiRouter);
 
 app.post('/logout', (req, res) => {
   req.logOut();

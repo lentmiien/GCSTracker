@@ -33,9 +33,5 @@ router.get('/csv', controller.csv);
 // Clear old records (delivered over 14 days ago) and return CSV of deleted records
 router.get('/clear', controller.clear);
 
-// API routes
-router.post('/api/add', controller.api_add);
-router.get('/api/get', controller.api_get);
-
 // Export router
 module.exports = router;
