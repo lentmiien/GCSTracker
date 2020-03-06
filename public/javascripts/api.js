@@ -17,9 +17,9 @@ async function api_post() {
   document.getElementById('tracking').value = JSON.stringify(data, null, 2);
 }
 
-async function get_test() {
+async function get_test(startdate, enddate) {
   // fetch post data to server endpoint
-  const response = await fetch('/api/get/2020-03-06/2020-03-06', {
+  const response = await fetch(`/api/get/${startdate}/${enddate}`, {
     method: 'get',
     cache: 'no-cache',
     headers: {
