@@ -122,6 +122,7 @@ exports.api_add = async (req, res) => {
 };
 
 // GET get "delivered" or "not delivered" status
+// /get/:startdate/:enddate
 exports.api_get = async (req, res) => {
   const response = {};
 
@@ -138,6 +139,15 @@ exports.api_get = async (req, res) => {
       response['message'] = 'Invalid API key';
       return res.json(response);
     }
+  }
+
+  // Verify dates
+  const start = req.params.startdate;
+  const end = req.params.enddate;
+  if (start.indexOf('-') != 4 || end.indexOf('-') != 4 || start.length != 10 || end.length != 10) {
+    response['status'] = 'ERROR';
+    response['message'] = 'Invalid date range';
+    return res.json(response);
   }
 
   // Load data from google-spredsheet
@@ -158,11 +168,13 @@ exports.api_get = async (req, res) => {
 
   // tracking	delivereddate	delivered
   rows_raw.forEach(r => {
-    response['records'].push({
-      tracking: r.tracking,
-      delivereddate: r.delivereddate,
-      delivered: r.delivered
-    });
+    if (r.lastchecked >= start && r.lastchecked <= end) {
+      response['records'].push({
+        tracking: r.tracking,
+        delivereddate: r.delivereddate,
+        delivered: r.delivered
+      });
+    }
   });
 
   res.json(response);
