@@ -16,7 +16,7 @@ router.get('/', controller.mypage);
 router.get('/delivered', controller.delivered);
 
 // Add records
-router.post('/add', controller.add);
+//router.post('/add', controller.add);// Use api instead
 
 // Start tracking
 router.get('/track', controller.track);

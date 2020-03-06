@@ -31,12 +31,9 @@ block content
         a.btn.btn-danger(href="/mypage/clear", title="Delete records delivered over 2 weeks ago,\nand download CSV file containing deleted data.") Clear old (CSV)
       #add_collapse.collapse
         .card.card-body.bg-dark
-          form(action="/mypage/add", method="post")
-            label(for="shipping_date") FM Shipping date*
-            input#shipping_date.form-control(type="date", name="shipping_date", required)
-            label(for="tracking") Tracking numbers*
-            textarea#tracking.form-control(name="tracking", cols="30", rows="10", required)
-            button.btn.btn-success.mt-3(type="submit", title="Save the records to the database.") Save to database
+          label(for="tracking") Tracking numbers*
+          textarea#tracking.form-control(name="tracking", cols="30", rows="10")
+          button.btn.btn-success.mt-3(onclick="api_post()", title="Save the records to the database.") Save to database
   .row
     .col
       h3 Delayed records
@@ -61,4 +58,4 @@ block content
               td= row.lastchecked
               td= row.status
   script(src="/javascripts/update.js")
-  script(src="/javascripts/api_test.js")
+  script(src="/javascripts/api.js")

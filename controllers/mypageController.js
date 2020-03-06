@@ -90,77 +90,70 @@ exports.delivered = async (req, res) => {
   res.render('delivered', { rows });
 };
 
-// Add records post route (redirect to dashboard)
-exports.add = async (req, res) => {
-  // Do not start adding if currently adding records
-  if (add_progress >= 0 && add_progress < 1) {
-    return res.redirect('/mypage');
-  }
-  // Do not start adding if currently tracking
-  if (track_progress >= 0 && track_progress < 1) {
-    return res.redirect('/mypage');
-  }
-
-  // Reset add progress
-  add_progress = 0;
-
-  // Redirect to dashboard
-  res.redirect('/mypage');
-
-  // Load data from google-spredsheet
-  const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
-
-  const rows_raw = await sheet.getRows();
-
-  // Get new data
-  const tracking = req.body.tracking.split('\r\n').sort();
-  const records_to_add = [];
-
-  // Prepare data to add
-  let lastadded = '';
-  for (let i = 0; i < tracking.length; i++) {
-    let new_entry = true;
-    if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
-      if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
-        // Does not support domestic shipping
-        new_entry = false;
-      } else {
-        if (tracking[i] == lastadded) {
-          new_entry = false;
-        } else {
-          for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
-            if (rows_raw[row_i].tracking == tracking[i]) {
-              new_entry = false;
-            }
-          }
-        }
-      }
-    } else {
-      // Can not track SAL Unregistered
-      new_entry = false;
-    }
-    if (new_entry) {
-      lastadded = tracking[i];
-      records_to_add.push({
-        tracking: tracking[i],
-        carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
-        addeddate: req.body.shipping_date,
-        delivered: '0'
-      });
-    }
-  }
-
-  // Start adding
-  if (records_to_add.length > 0) {
-    await sheet.addRows(records_to_add);
-  }
-
-  // Done!
-  add_progress = 1;
-};
+//****** MOVED TO API ******//
+// // Add records post route (redirect to dashboard)
+// exports.add = async (req, res) => {
+//   // Do not start adding if currently adding records
+//   if (add_progress >= 0 && add_progress < 1) {
+//     return res.redirect('/mypage');
+//   }
+//   // Do not start adding if currently tracking
+//   if (track_progress >= 0 && track_progress < 1) {
+//     return res.redirect('/mypage');
+//   }
+//   // Reset add progress
+//   add_progress = 0;
+//   // Redirect to dashboard
+//   res.redirect('/mypage');
+//   // Load data from google-spredsheet
+//   const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
+//   await doc.useServiceAccountAuth(creds);
+//   await doc.loadInfo();
+//   const sheet = doc.sheetsByIndex[0];
+//   const rows_raw = await sheet.getRows();
+//   // Get new data
+//   const tracking = req.body.tracking.split('\r\n').sort();
+//   const records_to_add = [];
+//   // Prepare data to add
+//   let lastadded = '';
+//   for (let i = 0; i < tracking.length; i++) {
+//     let new_entry = true;
+//     if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
+//       if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
+//         // Does not support domestic shipping
+//         new_entry = false;
+//       } else {
+//         if (tracking[i] == lastadded) {
+//           new_entry = false;
+//         } else {
+//           for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
+//             if (rows_raw[row_i].tracking == tracking[i]) {
+//               new_entry = false;
+//             }
+//           }
+//         }
+//       }
+//     } else {
+//       // Can not track SAL Unregistered
+//       new_entry = false;
+//     }
+//     if (new_entry) {
+//       lastadded = tracking[i];
+//       records_to_add.push({
+//         tracking: tracking[i],
+//         carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
+//         addeddate: req.body.shipping_date,
+//         delivered: '0'
+//       });
+//     }
+//   }
+//   // Start adding
+//   if (records_to_add.length > 0) {
+//     await sheet.addRows(records_to_add);
+//   }
+//   // Done!
+//   add_progress = 1;
+// };
 
 let JP_timer = 0;
 let DHL_timer = 0;
