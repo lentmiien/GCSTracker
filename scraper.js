@@ -1,14 +1,22 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
 
+let HTML_status;
+let HTML_statusText;
+
 const fetchData = async siteUrl => {
   const result = await axios.get(siteUrl);
+  HTML_status = result.status;
+  HTML_statusText = result.statusText;
   return cheerio.load(result.data);
 };
 
 const getResults = async (siteUrl, carrier) => {
   const $ = await fetchData(siteUrl);
-  const output = {};
+  const output = {
+    HTML_status: HTML_status,
+    HTML_statusText: HTML_statusText
+  };
 
   if (carrier == 'JP') {
     const tracking_data = [];

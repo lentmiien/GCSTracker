@@ -22,9 +22,15 @@ async function Updatedata() {
     track_progress.innerHTML = `<b>${Math.round(data.track_progress * 10000) / 100}%</b>`;
   }
   tracked_records.innerHTML = `<b>${data.last_tracked.count} (${data.last_tracked.date})</b>`;
-  jp_s_records.innerHTML = `<b>${data.JP_scraping_counter.count} (${data.JP_scraping_counter.current_date})</b>`;
-  dhl_s_records.innerHTML = `<b>${data.DHL_scraping_counter.count} (${data.DHL_scraping_counter.current_date})</b>`;
-  dhl_a_records.innerHTML = `<b>${data.DHL_API_counter.count}/250 (${data.DHL_API_counter.current_date})</b>`;
+  jp_s_records.innerHTML = `<b>${data.JP_scraping_counter.count} (${data.JP_scraping_counter.current_date})</b> <i style="color:${
+    data.JP_scraping_counter.html.status == 200 ? 'green' : 'red'
+  };">[${data.JP_scraping_counter.html.status}:${data.JP_scraping_counter.html.text}]</i>`;
+  dhl_s_records.innerHTML = `<b>${data.DHL_scraping_counter.count} (${data.DHL_scraping_counter.current_date})</b> <i style="color:${
+    data.DHL_scraping_counter.html.status == 200 ? 'green' : 'red'
+  };">[${data.DHL_scraping_counter.html.status}:${data.DHL_scraping_counter.html.text}]</i>`;
+  dhl_a_records.innerHTML = `<b>${data.DHL_API_counter.count}/250 (${data.DHL_API_counter.current_date})</b> <i style="color:${
+    data.DHL_API_counter.html.status == 200 ? 'green' : 'red'
+  };">[${data.DHL_API_counter.html.status}:${data.DHL_API_counter.html.text}]</i>`;
 
   // Re-run periodically every 5s
   setTimeout(Updatedata, 5000);

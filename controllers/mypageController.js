@@ -98,30 +98,31 @@ let JP_timer = 0;
 let DHL_timer = 0;
 const JP_scraping_counter = {
   current_date: '2020-01-01',
-  count: 0
+  count: 0,
+  html: {
+    status: 200,
+    text: 'OK'
+  }
 };
 const DHL_scraping_counter = {
   current_date: '2020-01-01',
-  count: 0
+  count: 0,
+  html: {
+    status: 500,
+    text: 'Disabled'
+  }
 };
 const DHL_API_counter = {
   current_date: '2020-01-01',
-  count: 0
+  count: 0,
+  html: {
+    status: 200,
+    text: 'OK'
+  }
 };
 let counter = 0;
 
-// Automate tracker
-async function Automation() {
-  counter++;
-
-  // Do not start tracking if currently tracking
-  if (track_progress >= 0 && track_progress < 1) {
-    console.log(`Skip#${counter}, due to currently tracking...`);
-    // Try again after an hour
-    setTimeout(Automation, 3600000);
-    return;
-  }
-
+async function TrackAll() {
   // Reset track progress
   track_progress = 0;
 
@@ -136,7 +137,6 @@ async function Automation() {
 
   // Today date
   const td = new Date();
-  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, 1, 0, 0);
   let d = dateToString(td);
 
   // Reset counters every day
@@ -167,6 +167,7 @@ async function Automation() {
 
   // Start tracking
   let updated_records = 0;
+  let current_status = 200;
   for (let i = 0; i < rows.length; i++) {
     if (
       (rows[i].carrier == 'DHL' && rows[i].addeddate <= dhlfc && rows[i].lastchecked <= dhlnc) ||
@@ -176,15 +177,20 @@ async function Automation() {
       // check tracking
       let result;
       if (rows[i].carrier == 'JP') {
-        // Delay if previous request to close
-        const timer_check = Date.now() - JP_timer;
-        if (timer_check < 1100) {
-          await sleep(1100 - timer_check);
-        }
+        if (JP_scraping_counter.html.status == 200) {
+          // Delay if previous request to close
+          const timer_check = Date.now() - JP_timer;
+          if (timer_check < 1100) {
+            await sleep(1100 - timer_check);
+          }
 
-        const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
-        result = await getResults(url, rows[i].carrier);
-        JP_scraping_counter.count++;
+          const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
+          result = await getResults(url, rows[i].carrier);
+          JP_scraping_counter.count++;
+          JP_scraping_counter.html.status = result.HTML_status;
+          JP_scraping_counter.html.text = result.HTML_statusText;
+        }
+        current_status = JP_scraping_counter.html.status;
 
         JP_timer = Date.now();
       } else {
@@ -194,43 +200,71 @@ async function Automation() {
           await sleep(1100 - timer_check);
         }
 
-        if (DHL_API_counter.count < 250) {
+        if (DHL_API_counter.count < 250 && DHL_API_counter.html.status == 200) {
           // Use DHL API
           const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
           result = await getResultsAPI(url, rows[i].carrier);
           DHL_API_counter.count++;
-        } else {
+          DHL_API_counter.html.status = result.HTML_status;
+          DHL_API_counter.html.text = result.HTML_statusText;
+          current_status = DHL_API_counter.html.status;
+        } else if (DHL_scraping_counter.html.status == 200) {
           // Use DHL scraping
           const url = `dummy_url?tracking=${rows[i].tracking}`;
           result = await getResults(url, rows[i].carrier);
           DHL_scraping_counter.count++;
+          DHL_scraping_counter.html.status = result.HTML_status;
+          DHL_scraping_counter.html.text = result.HTML_statusText;
+          current_status = DHL_scraping_counter.html.status;
+        } else {
+          current_status = 404;
         }
 
         DHL_timer = Date.now();
       }
 
-      // Update entry
-      rows[i].country = result.country;
-      rows[i].lastchecked = d;
-      rows[i].status = result.status;
-      rows[i].shippeddate = result.shippeddate;
-      rows[i].delivereddate = result.delivered;
-      rows[i].delivered = result.delivered.length > 0 ? '1' : '0';
-      rows[i].data = result.rawdata;
-      rows[i].save();
-      updated_records++;
+      // Update entry if successful
+      if (current_status == 200) {
+        rows[i].country = result.country;
+        rows[i].lastchecked = d;
+        rows[i].status = result.status;
+        rows[i].shippeddate = result.shippeddate;
+        rows[i].delivereddate = result.delivered;
+        rows[i].delivered = result.delivered.length > 0 ? '1' : '0';
+        rows[i].data = result.rawdata;
+        rows[i].save();
+        updated_records++;
+      }
     }
 
     // Update progress
     track_progress = (i + 1) / rows.length;
   }
 
-  console.log(`Auto#${counter}, tracking done! (${updated_records} updated records)`);
+  console.log(`#${counter} tracking done! (${updated_records} updated records)`);
   const time_now = new Date();
-  last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()} A`;
+  last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()}`;
   last_tracked.count = updated_records;
+}
+
+// Automate tracker
+async function Automation() {
+  counter++;
+
+  // Do not start tracking if currently tracking
+  if (track_progress >= 0 && track_progress < 1) {
+    console.log(`Skip#${counter}, due to currently tracking...`);
+    // Try again after an hour
+    setTimeout(Automation, 3600000);
+    return;
+  }
+
+  // Start tracking
+  await TrackAll();
 
   // Repeat once every day at 1:00 in the morning
+  const td = new Date();
+  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, 1, 0, 0);
   setTimeout(Automation, next_auto.getTime() - Date.now());
 }
 Automation();
@@ -246,114 +280,117 @@ exports.track = async (req, res) => {
   }
 
   // Reset track progress
-  track_progress = 0;
+  //track_progress = 0;
 
   // Redirect to dashboard
   res.redirect('/mypage');
 
-  // Load data from google-spredsheet
-  const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
-
-  const rows_raw = await sheet.getRows();
-  const rows = rows_raw.filter(row => row.delivered == '0');
-
-  // Today date
-  const td = new Date();
-  let d = dateToString(td);
-
-  // Reset counters every day
-  if (d != JP_scraping_counter.current_date) {
-    JP_scraping_counter.current_date = d;
-    JP_scraping_counter.count = 0;
-  }
-  if (d != DHL_scraping_counter.current_date) {
-    DHL_scraping_counter.current_date = d;
-    DHL_scraping_counter.count = 0;
-  }
-  if (d != DHL_API_counter.current_date) {
-    DHL_API_counter.current_date = d;
-    DHL_API_counter.count = 0;
-  }
-
-  // DHL checks, first check after 3 days, then check every day
-  let dhlfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 3));
-  let dhlnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 1));
-
-  // EMS checks, first check after 5 days, then check every 2nd day
-  let emsfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 5));
-  let emsnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 2));
-
-  // Other checks, first check after 21 days, then check every 4th day
-  let ofc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 21));
-  let onc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 4));
-
   // Start tracking
-  let updated_records = 0;
-  for (let i = 0; i < rows.length; i++) {
-    if (
-      (rows[i].carrier == 'DHL' && rows[i].addeddate <= dhlfc && rows[i].lastchecked <= dhlnc) ||
-      (rows[i].tracking.indexOf('EM') == 0 && rows[i].addeddate <= emsfc && rows[i].lastchecked <= emsnc) ||
-      (rows[i].addeddate <= ofc && rows[i].lastchecked <= onc)
-    ) {
-      // check tracking
-      let result;
-      if (rows[i].carrier == 'JP') {
-        // Delay if previous request to close
-        const timer_check = Date.now() - JP_timer;
-        if (timer_check < 1100) {
-          await sleep(1100 - timer_check);
-        }
+  await TrackAll();
 
-        const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
-        result = await getResults(url, rows[i].carrier);
-        JP_scraping_counter.count++;
+  // // Load data from google-spredsheet
+  // const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
+  // await doc.useServiceAccountAuth(creds);
+  // await doc.loadInfo();
+  // const sheet = doc.sheetsByIndex[0];
 
-        JP_timer = Date.now();
-      } else {
-        // Delay if previous request to close
-        const timer_check = Date.now() - DHL_timer;
-        if (timer_check < 1100) {
-          await sleep(1100 - timer_check);
-        }
+  // const rows_raw = await sheet.getRows();
+  // const rows = rows_raw.filter(row => row.delivered == '0');
 
-        if (DHL_API_counter.count < 250) {
-          // Use DHL API
-          const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
-          result = await getResultsAPI(url, rows[i].carrier);
-          DHL_API_counter.count++;
-        } else {
-          // Use DHL scraping
-          const url = `dummy_url?tracking=${rows[i].tracking}`;
-          result = await getResults(url, rows[i].carrier);
-          DHL_scraping_counter.count++;
-        }
+  // // Today date
+  // const td = new Date();
+  // let d = dateToString(td);
 
-        DHL_timer = Date.now();
-      }
+  // // Reset counters every day
+  // if (d != JP_scraping_counter.current_date) {
+  //   JP_scraping_counter.current_date = d;
+  //   JP_scraping_counter.count = 0;
+  // }
+  // if (d != DHL_scraping_counter.current_date) {
+  //   DHL_scraping_counter.current_date = d;
+  //   DHL_scraping_counter.count = 0;
+  // }
+  // if (d != DHL_API_counter.current_date) {
+  //   DHL_API_counter.current_date = d;
+  //   DHL_API_counter.count = 0;
+  // }
 
-      // Update entry
-      rows[i].country = result.country;
-      rows[i].lastchecked = d;
-      rows[i].status = result.status;
-      rows[i].shippeddate = result.shippeddate;
-      rows[i].delivereddate = result.delivered;
-      rows[i].delivered = result.delivered.length > 0 ? '1' : '0';
-      rows[i].data = result.rawdata;
-      rows[i].save();
-      updated_records++;
-    }
+  // // DHL checks, first check after 3 days, then check every day
+  // let dhlfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 3));
+  // let dhlnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 1));
 
-    // Update progress
-    track_progress = (i + 1) / rows.length;
-  }
+  // // EMS checks, first check after 5 days, then check every 2nd day
+  // let emsfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 5));
+  // let emsnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 2));
 
-  console.log(`Manual#${counter}, tracking done! (${updated_records} updated records)`);
-  const time_now = new Date();
-  last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()} M`;
-  last_tracked.count = updated_records;
+  // // Other checks, first check after 21 days, then check every 4th day
+  // let ofc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 21));
+  // let onc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 4));
+
+  // // Start tracking
+  // let updated_records = 0;
+  // for (let i = 0; i < rows.length; i++) {
+  //   if (
+  //     (rows[i].carrier == 'DHL' && rows[i].addeddate <= dhlfc && rows[i].lastchecked <= dhlnc) ||
+  //     (rows[i].tracking.indexOf('EM') == 0 && rows[i].addeddate <= emsfc && rows[i].lastchecked <= emsnc) ||
+  //     (rows[i].addeddate <= ofc && rows[i].lastchecked <= onc)
+  //   ) {
+  //     // check tracking
+  //     let result;
+  //     if (rows[i].carrier == 'JP') {
+  //       // Delay if previous request to close
+  //       const timer_check = Date.now() - JP_timer;
+  //       if (timer_check < 1100) {
+  //         await sleep(1100 - timer_check);
+  //       }
+
+  //       const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
+  //       result = await getResults(url, rows[i].carrier);
+  //       JP_scraping_counter.count++;
+
+  //       JP_timer = Date.now();
+  //     } else {
+  //       // Delay if previous request to close
+  //       const timer_check = Date.now() - DHL_timer;
+  //       if (timer_check < 1100) {
+  //         await sleep(1100 - timer_check);
+  //       }
+
+  //       if (DHL_API_counter.count < 250) {
+  //         // Use DHL API
+  //         const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
+  //         result = await getResultsAPI(url, rows[i].carrier);
+  //         DHL_API_counter.count++;
+  //       } else {
+  //         // Use DHL scraping
+  //         const url = `dummy_url?tracking=${rows[i].tracking}`;
+  //         result = await getResults(url, rows[i].carrier);
+  //         DHL_scraping_counter.count++;
+  //       }
+
+  //       DHL_timer = Date.now();
+  //     }
+
+  //     // Update entry
+  //     rows[i].country = result.country;
+  //     rows[i].lastchecked = d;
+  //     rows[i].status = result.status;
+  //     rows[i].shippeddate = result.shippeddate;
+  //     rows[i].delivereddate = result.delivered;
+  //     rows[i].delivered = result.delivered.length > 0 ? '1' : '0';
+  //     rows[i].data = result.rawdata;
+  //     rows[i].save();
+  //     updated_records++;
+  //   }
+
+  //   // Update progress
+  //   track_progress = (i + 1) / rows.length;
+  // }
+
+  // console.log(`Manual#${counter}, tracking done! (${updated_records} updated records)`);
+  // const time_now = new Date();
+  // last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()} M`;
+  // last_tracked.count = updated_records;
 };
 
 // Tracking details page

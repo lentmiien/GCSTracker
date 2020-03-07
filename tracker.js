@@ -7,12 +7,17 @@ const fetchData = async siteUrl => {
       'DHL-API-Key': process.env.DHL_API_KEY
     }
   });
+  result.data['HTML_status'] = result.status;
+  result.data['HTML_statusText'] = result.statusText;
   return result.data;
 };
 
 const getResultsAPI = async (siteUrl, carrier) => {
   const data = await fetchData(siteUrl);
-  const output = {};
+  const output = {
+    HTML_status: data.HTML_status,
+    HTML_statusText: data.HTML_statusText
+  };
 
   if (carrier == 'JP') {
     // Japan Post tracking
