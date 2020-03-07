@@ -22,8 +22,11 @@ const creds = {
 //---------------------------------------------//
 
 // Progress variables
-let add_progress = -1;
 let track_progress = -1;
+let last_tracked = {
+  date: '2020-01-01',
+  count: 0
+};
 
 // Open a dashboard page
 exports.mypage = async (req, res) => {
@@ -90,81 +93,155 @@ exports.delivered = async (req, res) => {
   res.render('delivered', { rows });
 };
 
-//****** MOVED TO API ******//
-// // Add records post route (redirect to dashboard)
-// exports.add = async (req, res) => {
-//   // Do not start adding if currently adding records
-//   if (add_progress >= 0 && add_progress < 1) {
-//     return res.redirect('/mypage');
-//   }
-//   // Do not start adding if currently tracking
-//   if (track_progress >= 0 && track_progress < 1) {
-//     return res.redirect('/mypage');
-//   }
-//   // Reset add progress
-//   add_progress = 0;
-//   // Redirect to dashboard
-//   res.redirect('/mypage');
-//   // Load data from google-spredsheet
-//   const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
-//   await doc.useServiceAccountAuth(creds);
-//   await doc.loadInfo();
-//   const sheet = doc.sheetsByIndex[0];
-//   const rows_raw = await sheet.getRows();
-//   // Get new data
-//   const tracking = req.body.tracking.split('\r\n').sort();
-//   const records_to_add = [];
-//   // Prepare data to add
-//   let lastadded = '';
-//   for (let i = 0; i < tracking.length; i++) {
-//     let new_entry = true;
-//     if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
-//       if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
-//         // Does not support domestic shipping
-//         new_entry = false;
-//       } else {
-//         if (tracking[i] == lastadded) {
-//           new_entry = false;
-//         } else {
-//           for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
-//             if (rows_raw[row_i].tracking == tracking[i]) {
-//               new_entry = false;
-//             }
-//           }
-//         }
-//       }
-//     } else {
-//       // Can not track SAL Unregistered
-//       new_entry = false;
-//     }
-//     if (new_entry) {
-//       lastadded = tracking[i];
-//       records_to_add.push({
-//         tracking: tracking[i],
-//         carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
-//         addeddate: req.body.shipping_date,
-//         delivered: '0'
-//       });
-//     }
-//   }
-//   // Start adding
-//   if (records_to_add.length > 0) {
-//     await sheet.addRows(records_to_add);
-//   }
-//   // Done!
-//   add_progress = 1;
-// };
-
+// Tracker variables
 let JP_timer = 0;
 let DHL_timer = 0;
-// Track (Scrap/API) start route (redirect to dashboard)
-exports.track = async (req, res) => {
-  // Do not start tracking if currently adding records
-  if (add_progress >= 0 && add_progress < 1) {
-    return res.redirect('/mypage');
-  }
+const JP_scraping_counter = {
+  current_date: '2020-01-01',
+  count: 0
+};
+const DHL_scraping_counter = {
+  current_date: '2020-01-01',
+  count: 0
+};
+const DHL_API_counter = {
+  current_date: '2020-01-01',
+  count: 0
+};
+let counter = 0;
+
+// Automate tracker
+async function Automation() {
+  counter++;
+
   // Do not start tracking if currently tracking
   if (track_progress >= 0 && track_progress < 1) {
+    console.log(`Skip#${counter}, due to currently tracking...`);
+    // Try again after an hour
+    setTimeout(Automation, 3600000);
+    return;
+  }
+
+  // Reset track progress
+  track_progress = 0;
+
+  // Load data from google-spredsheet
+  const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo();
+  const sheet = doc.sheetsByIndex[0];
+
+  const rows_raw = await sheet.getRows();
+  const rows = rows_raw.filter(row => row.delivered == '0');
+
+  // Today date
+  const td = new Date();
+  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, 1, 0, 0);
+  let d = dateToString(td);
+
+  // Reset counters every day
+  if (d != JP_scraping_counter.current_date) {
+    JP_scraping_counter.current_date = d;
+    JP_scraping_counter.count = 0;
+  }
+  if (d != DHL_scraping_counter.current_date) {
+    DHL_scraping_counter.current_date = d;
+    DHL_scraping_counter.count = 0;
+  }
+  if (d != DHL_API_counter.current_date) {
+    DHL_API_counter.current_date = d;
+    DHL_API_counter.count = 0;
+  }
+
+  // DHL checks, first check after 3 days, then check every day
+  let dhlfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 3));
+  let dhlnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 1));
+
+  // EMS checks, first check after 5 days, then check every 2nd day
+  let emsfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 5));
+  let emsnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 2));
+
+  // Other checks, first check after 21 days, then check every 4th day
+  let ofc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 21));
+  let onc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 4));
+
+  // Start tracking
+  let updated_records = 0;
+  for (let i = 0; i < rows.length; i++) {
+    if (
+      (rows[i].carrier == 'DHL' && rows[i].addeddate <= dhlfc && rows[i].lastchecked <= dhlnc) ||
+      (rows[i].tracking.indexOf('EM') == 0 && rows[i].addeddate <= emsfc && rows[i].lastchecked <= emsnc) ||
+      (rows[i].addeddate <= ofc && rows[i].lastchecked <= onc)
+    ) {
+      // check tracking
+      let result;
+      if (rows[i].carrier == 'JP') {
+        // Delay if previous request to close
+        const timer_check = Date.now() - JP_timer;
+        if (timer_check < 1100) {
+          await sleep(1100 - timer_check);
+        }
+
+        const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
+        result = await getResults(url, rows[i].carrier);
+        JP_scraping_counter.count++;
+
+        JP_timer = Date.now();
+      } else {
+        // Delay if previous request to close
+        const timer_check = Date.now() - DHL_timer;
+        if (timer_check < 1100) {
+          await sleep(1100 - timer_check);
+        }
+
+        if (DHL_API_counter.count < 250) {
+          // Use DHL API
+          const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
+          result = await getResultsAPI(url, rows[i].carrier);
+          DHL_API_counter.count++;
+        } else {
+          // Use DHL scraping
+          const url = `dummy_url?tracking=${rows[i].tracking}`;
+          result = await getResults(url, rows[i].carrier);
+          DHL_scraping_counter.count++;
+        }
+
+        DHL_timer = Date.now();
+      }
+
+      // Update entry
+      rows[i].country = result.country;
+      rows[i].lastchecked = d;
+      rows[i].status = result.status;
+      rows[i].shippeddate = result.shippeddate;
+      rows[i].delivereddate = result.delivered;
+      rows[i].delivered = result.delivered.length > 0 ? '1' : '0';
+      rows[i].data = result.rawdata;
+      rows[i].save();
+      updated_records++;
+    }
+
+    // Update progress
+    track_progress = (i + 1) / rows.length;
+  }
+
+  console.log(`Auto#${counter}, tracking done! (${updated_records} updated records)`);
+  const time_now = new Date();
+  last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()} A`;
+  last_tracked.count = updated_records;
+
+  // Repeat once every day at 1:00 in the morning
+  setTimeout(Automation, next_auto.getTime() - Date.now());
+}
+Automation();
+
+// Track (Scrap/API) start route (redirect to dashboard)
+exports.track = async (req, res) => {
+  counter++;
+
+  // Do not start tracking if currently tracking
+  if (track_progress >= 0 && track_progress < 1) {
+    console.log(`Skip#${counter}, due to currently tracking...`);
     return res.redirect('/mypage');
   }
 
@@ -187,6 +264,20 @@ exports.track = async (req, res) => {
   const td = new Date();
   let d = dateToString(td);
 
+  // Reset counters every day
+  if (d != JP_scraping_counter.current_date) {
+    JP_scraping_counter.current_date = d;
+    JP_scraping_counter.count = 0;
+  }
+  if (d != DHL_scraping_counter.current_date) {
+    DHL_scraping_counter.current_date = d;
+    DHL_scraping_counter.count = 0;
+  }
+  if (d != DHL_API_counter.current_date) {
+    DHL_API_counter.current_date = d;
+    DHL_API_counter.count = 0;
+  }
+
   // DHL checks, first check after 3 days, then check every day
   let dhlfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 3));
   let dhlnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 1));
@@ -200,6 +291,7 @@ exports.track = async (req, res) => {
   let onc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 4));
 
   // Start tracking
+  let updated_records = 0;
   for (let i = 0; i < rows.length; i++) {
     if (
       (rows[i].carrier == 'DHL' && rows[i].addeddate <= dhlfc && rows[i].lastchecked <= dhlnc) ||
@@ -217,6 +309,8 @@ exports.track = async (req, res) => {
 
         const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
         result = await getResults(url, rows[i].carrier);
+        JP_scraping_counter.count++;
+
         JP_timer = Date.now();
       } else {
         // Delay if previous request to close
@@ -225,8 +319,18 @@ exports.track = async (req, res) => {
           await sleep(1100 - timer_check);
         }
 
-        const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
-        result = await getResultsAPI(url, rows[i].carrier);
+        if (DHL_API_counter.count < 250) {
+          // Use DHL API
+          const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
+          result = await getResultsAPI(url, rows[i].carrier);
+          DHL_API_counter.count++;
+        } else {
+          // Use DHL scraping
+          const url = `dummy_url?tracking=${rows[i].tracking}`;
+          result = await getResults(url, rows[i].carrier);
+          DHL_scraping_counter.count++;
+        }
+
         DHL_timer = Date.now();
       }
 
@@ -239,11 +343,17 @@ exports.track = async (req, res) => {
       rows[i].delivered = result.delivered.length > 0 ? '1' : '0';
       rows[i].data = result.rawdata;
       rows[i].save();
+      updated_records++;
     }
 
     // Update progress
     track_progress = (i + 1) / rows.length;
   }
+
+  console.log(`Manual#${counter}, tracking done! (${updated_records} updated records)`);
+  const time_now = new Date();
+  last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()} M`;
+  last_tracked.count = updated_records;
 };
 
 // Tracking details page
@@ -266,7 +376,7 @@ exports.details = async (req, res) => {
 
 // Get progress route (return JSON)
 exports.progress = (req, res) => {
-  res.json({ add_progress, track_progress });
+  res.json({ track_progress, last_tracked, JP_scraping_counter, DHL_scraping_counter, DHL_API_counter });
 };
 
 // Download CSV file
@@ -294,10 +404,6 @@ exports.csv = async (req, res) => {
 
 // Remove records delivered more than 14 days ago
 exports.clear = async (req, res) => {
-  // Do not start clearing if currently adding records
-  if (add_progress >= 0 && add_progress < 1) {
-    return res.redirect('/mypage');
-  }
   // Do not start clearing if currently tracking
   if (track_progress >= 0 && track_progress < 1) {
     return res.redirect('/mypage');
