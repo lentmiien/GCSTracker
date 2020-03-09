@@ -16,7 +16,7 @@ module.exports = shipit => {
       repositoryUrl: 'https://github.com/lentmiien/GCSTracker.git',
       shared: {
         overwrite: true,
-        dirs: ['../shared']
+        files: ['.env']
       }
     },
     staging: {
