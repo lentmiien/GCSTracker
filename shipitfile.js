@@ -16,7 +16,7 @@ module.exports = shipit => {
       repositoryUrl: 'https://github.com/lentmiien/GCSTracker.git',
       shared: {
         overwrite: true,
-        dirs: ['']
+        dirs: ['/']
       }
     },
     staging: {
@@ -31,8 +31,8 @@ module.exports = shipit => {
     let cmd = '';
     cmd += `cd ${shipit.releasePath} && `;
     cmd += 'npm install --production && ';
-    //cmd += `(NODE_ENV=${env} pm2 start ./bin/www --name ${processName})`; // Use first time instead of line below!!
-    cmd += `(pm2 delete ${processName} && NODE_ENV=${env} pm2 start ./bin/www --name ${processName})`;
+    cmd += `(NODE_ENV=${env} pm2 start ./bin/www --name ${processName})`; // Use first time instead of line below!!
+    //cmd += `(pm2 delete ${processName} && NODE_ENV=${env} pm2 start ./bin/www --name ${processName})`;
 
     shipit.remote(cmd);
     // shipit.remote(`cd ${shipit.releasePath} && npm start`);
