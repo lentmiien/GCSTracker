@@ -153,6 +153,11 @@ async function TrackAll() {
     DHL_API_counter.count = 0;
   }
 
+  // Reset status codes every run
+  JP_scraping_counter.html.status = 200;
+  //DHL_scraping_counter.html.status = 200;
+  DHL_API_counter.html.status = 200;
+
   // DHL checks, first check after 3 days, then check every day
   let dhlfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 3));
   let dhlnc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 1));
