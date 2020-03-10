@@ -262,9 +262,9 @@ async function Automation() {
   // Start tracking
   await TrackAll();
 
-  // Repeat once every day at 1:00 in the morning
+  // Repeat once every day at 6:00 in the morning (21:00 in server time)
   const td = new Date();
-  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, 1, 0, 0);
+  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, 21, 0, 0);
   setTimeout(Automation, next_auto.getTime() - Date.now());
 }
 Automation();
