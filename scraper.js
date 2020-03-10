@@ -60,6 +60,7 @@ const getResults = async (siteUrl, carrier) => {
     // Save raw data
     output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
   } else {
+    // sample: https://www.dhl.com/cgi-bin/tracking.pl?AWB=1222865884
     // DHL scrapping
     // Try to acquire destination country
     // Acquire last tracking update

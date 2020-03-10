@@ -210,7 +210,7 @@ async function TrackAll() {
           current_status = DHL_API_counter.html.status;
         } else if (DHL_scraping_counter.html.status == 200) {
           // Use DHL scraping
-          const url = `dummy_url?tracking=${rows[i].tracking}`;
+          const url = `https://www.dhl.com/cgi-bin/tracking.pl?AWB=${rows[i].tracking}`;
           result = await getResults(url, rows[i].carrier);
           DHL_scraping_counter.count++;
           DHL_scraping_counter.html.status = result.HTML_status;
