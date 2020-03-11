@@ -81,12 +81,31 @@ const getResults = async (siteUrl, carrier) => {
       output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
     } else {
       // sample: https://www.dhl.com/cgi-bin/tracking.pl?AWB=1222865884
+      const tracking = $('table')[1].find('tr');
+      const tracking_data = [];
+      for (let i = 6; i < tracking.length; i++) {
+        const row_td = tracking[i].find('td');
+        tracking_data.push({
+          timestamp: row_td[0].text() + 'T' + row_td[2].text(),
+          description: row_td[6].text(),
+          location: row_td[4].text().split(' - ')[1]
+        });
+      }
       // DHL scrapping
       // Try to acquire destination country
+      output['country'] = tracking_data[tracking_data.length - 1].location;
       // Acquire last tracking update
+      output['status'] = tracking_data[tracking_data.length - 1].description;
       // Acquire shipped date
+      output['shippeddate'] = tracking_data[0].timestamp.split('T')[0];
       // Try to acquire delivered date
+      if (output['status'] == 'Shipment delivered') {
+        output['delivered'] = tracking_data[tracking_data.length - 1].timestamp.split('T')[0];
+      } else {
+        output['delivered'] = '';
+      }
       // Save raw data
+      output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
     }
   }
 
