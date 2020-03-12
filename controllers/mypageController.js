@@ -3,6 +3,20 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
 const getResults = require('../scraper');
 const getResultsAPI = require('../tracker');
 
+/*******************
+ *
+ *  MAGIC NUMBERS
+ *
+ *******************/
+const DHL_API_MAX_REQUESTS = 250;
+const HTTP_OK_CODE = 200;
+const HTTP_DEFAULT_DISABLE_CODE = 555;
+const AUTO_RETRY = 3600000;
+const AUTO_SCHEDULE = 16;
+const DEFAULT_DATE = '2020-01-01';
+const JP_MIN_DELAY_TIME = 1100;
+const DHL_MIN_DELAY_TIME = 1100;
+
 // Google sheet credentials
 const creds = {
   type: process.env.GSHEET_TYPE,
@@ -24,7 +38,7 @@ const creds = {
 // Progress variables
 let track_progress = -1;
 let last_tracked = {
-  date: '2020-01-01',
+  date: DEFAULT_DATE,
   count: 0
 };
 
@@ -57,7 +71,7 @@ exports.mypage = async (req, res) => {
       const sdate = new Date(parseInt(s_data[0]), parseInt(s_data[1]), parseInt(s_data[2]));
       const d_data = data.delivereddate.split('-');
       const ddate = new Date(parseInt(d_data[0]), parseInt(d_data[1]), parseInt(d_data[2]));
-      const days = Math.round((ddate.getTime() - sdate.getTime()) / 86400000);
+      const days = Math.round((ddate.getTime() - sdate.getTime()) / 86400000); // Divide by 86400000 to get result in days
 
       if (data.carrier == 'DHL') {
         dhl_time += days;
@@ -97,26 +111,26 @@ exports.delivered = async (req, res) => {
 let JP_timer = 0;
 let DHL_timer = 0;
 const JP_scraping_counter = {
-  current_date: '2020-01-01',
+  current_date: DEFAULT_DATE,
   count: 0,
   html: {
-    status: 200,
+    status: HTTP_OK_CODE,
     text: 'OK'
   }
 };
 const DHL_scraping_counter = {
-  current_date: '2020-01-01',
+  current_date: DEFAULT_DATE,
   count: 0,
   html: {
-    status: 500,
-    text: 'Disabled'
+    status: HTTP_OK_CODE,
+    text: 'OK'
   }
 };
 const DHL_API_counter = {
-  current_date: '2020-01-01',
+  current_date: DEFAULT_DATE,
   count: 0,
   html: {
-    status: 200,
+    status: HTTP_OK_CODE,
     text: 'OK'
   }
 };
@@ -154,9 +168,9 @@ async function TrackAll() {
   }
 
   // Reset status codes every run
-  JP_scraping_counter.html.status = 200;
-  //DHL_scraping_counter.html.status = 200;
-  DHL_API_counter.html.status = 200;
+  JP_scraping_counter.html.status = HTTP_OK_CODE;
+  DHL_scraping_counter.html.status = HTTP_OK_CODE;
+  DHL_API_counter.html.status = HTTP_OK_CODE;
 
   // DHL checks, first check after 3 days, then check every day
   let dhlfc = dateToString(new Date(td.getFullYear(), td.getMonth(), td.getDate() - 3));
@@ -172,7 +186,7 @@ async function TrackAll() {
 
   // Start tracking
   let updated_records = 0;
-  let current_status = 200;
+  let current_status = HTTP_OK_CODE;
   for (let i = 0; i < rows.length; i++) {
     if (
       (rows[i].carrier == 'DHL' && rows[i].addeddate <= dhlfc && rows[i].lastchecked <= dhlnc) ||
@@ -182,11 +196,11 @@ async function TrackAll() {
       // check tracking
       let result;
       if (rows[i].carrier == 'JP') {
-        if (JP_scraping_counter.html.status == 200) {
+        if (JP_scraping_counter.html.status == HTTP_OK_CODE) {
           // Delay if previous request to close
           const timer_check = Date.now() - JP_timer;
-          if (timer_check < 1100) {
-            await sleep(1100 - timer_check);
+          if (timer_check < JP_MIN_DELAY_TIME) {
+            await sleep(JP_MIN_DELAY_TIME - timer_check);
           }
 
           const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${rows[i].tracking}&searchKind=S002&locale=ja`;
@@ -201,11 +215,11 @@ async function TrackAll() {
       } else {
         // Delay if previous request to close
         const timer_check = Date.now() - DHL_timer;
-        if (timer_check < 1100) {
-          await sleep(1100 - timer_check);
+        if (timer_check < DHL_MIN_DELAY_TIME) {
+          await sleep(DHL_MIN_DELAY_TIME - timer_check);
         }
 
-        if (DHL_API_counter.count < 250 && DHL_API_counter.html.status == 200) {
+        if (DHL_API_counter.count < DHL_API_MAX_REQUESTS && DHL_API_counter.html.status == HTTP_OK_CODE) {
           // Use DHL API
           const url = `https://api-eu.dhl.com/track/shipments?trackingNumber=${rows[i].tracking}&service=express&requesterCountryCode=JP&originCountryCode=JP&language=en`;
           result = await getResultsAPI(url, rows[i].carrier);
@@ -213,7 +227,7 @@ async function TrackAll() {
           DHL_API_counter.html.status = result.HTML_status;
           DHL_API_counter.html.text = result.HTML_statusText;
           current_status = DHL_API_counter.html.status;
-        } else if (DHL_scraping_counter.html.status == 200) {
+        } else if (DHL_scraping_counter.html.status == HTTP_OK_CODE) {
           // Use DHL scraping
           const url = `https://www.dhl.com/cgi-bin/tracking.pl?AWB=${rows[i].tracking}`;
           result = await getResults(url, rows[i].carrier);
@@ -222,14 +236,14 @@ async function TrackAll() {
           DHL_scraping_counter.html.text = result.HTML_statusText;
           current_status = DHL_scraping_counter.html.status;
         } else {
-          current_status = 404;
+          current_status = HTTP_DEFAULT_DISABLE_CODE;
         }
 
         DHL_timer = Date.now();
       }
 
       // Update entry if successful
-      if (current_status == 200) {
+      if (current_status == HTTP_OK_CODE) {
         rows[i].country = result.country;
         rows[i].lastchecked = d;
         rows[i].status = result.status;
@@ -260,16 +274,16 @@ async function Automation() {
   if (track_progress >= 0 && track_progress < 1) {
     console.log(`Skip#${counter}, due to currently tracking...`);
     // Try again after an hour
-    setTimeout(Automation, 3600000);
+    setTimeout(Automation, AUTO_RETRY);
     return;
   }
 
   // Start tracking
   await TrackAll();
 
-  // Repeat once every day at 1:00 in the morning (16:00 in server time)
+  // Repeat once every day at scheduled time
   const td = new Date();
-  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, 16, 0, 0);
+  const next_auto = new Date(td.getFullYear(), td.getMonth(), td.getDate() + 1, AUTO_SCHEDULE, 0, 0);
   setTimeout(Automation, next_auto.getTime() - Date.now());
 }
 Automation();

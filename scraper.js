@@ -81,14 +81,17 @@ const getResults = async (siteUrl, carrier) => {
       output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
     } else {
       // sample: https://www.dhl.com/cgi-bin/tracking.pl?AWB=1222865884
-      const tracking = $('table')[1].find('tr');
+      const tracking = $('table')['1']['children'][1]['children'];
       const tracking_data = [];
-      for (let i = 6; i < tracking.length; i++) {
-        const row_td = tracking[i].find('td');
+      for (let i = 10; i < tracking.length - 1; i++) {
+        const date = tracking[i]['children'][1]['children'][0]['children'][0].data;
+        const time = tracking[i]['children'][5]['children'][0]['children'][0]['children'][0].data;
+        const place = tracking[i]['children'][9]['children'][0]['children'][0].data;
+        const status = tracking[i]['children'][13]['children'][0]['children'][0].data;
         tracking_data.push({
-          timestamp: row_td[0].text() + 'T' + row_td[2].text(),
-          description: row_td[6].text(),
-          location: row_td[4].text().split(' - ')[1]
+          timestamp: DateFormatter(date) + 'T' + time,
+          description: status,
+          location: place.split(' - ')[1]
         });
       }
       // DHL scrapping
@@ -111,5 +114,27 @@ const getResults = async (siteUrl, carrier) => {
 
   return output;
 };
+
+function DateFormatter(in_date) {
+  //March 10, 2020
+  let temp = in_date.split(', ');
+  let temp2 = temp[0].split(' ');
+  const months = {
+    January: '01',
+    February: '02',
+    March: '03',
+    April: '04',
+    May: '05',
+    June: '06',
+    July: '07',
+    August: '08',
+    September: '09',
+    October: '10',
+    November: '11',
+    December: '12'
+  };
+
+  return `${temp[1]}-${months[temp2[0]]}-${temp2[1]}`;
+}
 
 module.exports = getResults;
