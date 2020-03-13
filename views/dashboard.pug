@@ -7,7 +7,7 @@ block content
       p By: Lennart Granstrom
   .row.mb-3
     .col
-      h3 Overall status
+      h3 Shipping status
       div= `Total records: ${total}`
       div= `Delivered: ${delivered}`
       div= `Average shipping times`
@@ -15,8 +15,8 @@ block content
       div= `- EMS: ${ems_time} days`
       div= `- Other: ${other_time} days`
     .col
-      h3 Progress
-      div Tracking records: 
+      h3 Tracking status
+      div Tracking progress: 
         span#track_progress
           i Waiting...
       div Last tracked records: 
