@@ -1,4 +1,5 @@
 const axios = require('axios');
+var parseString = require('xml2js').parseString;
 
 const fetchData = async siteUrl => {
   let data = {};
@@ -16,7 +17,7 @@ const fetchData = async siteUrl => {
       data = response.data;
     })
     .catch(error => {
-      const data = { error: true, HTML_status: '', HTML_statusText: '' };
+      data = { error: true, HTML_status: '', HTML_statusText: '' };
       if (error.response == undefined) {
         data.HTML_status = error.errno;
         data.HTML_statusText = error.errno;
@@ -26,19 +27,45 @@ const fetchData = async siteUrl => {
       }
     });
   return data;
-  // const result = await axios.get(siteUrl, {
-  //   headers: {
-  //     accept: 'application/json',
-  //     'DHL-API-Key': process.env.DHL_API_KEY
-  //   }
-  // });
-  // result.data['HTML_status'] = result.status;
-  // result.data['HTML_statusText'] = result.statusText;
-  // return result.data;
+};
+
+const fetchDataUSPS = async siteUrl => {
+  let data = {};
+  await axios
+    .get(siteUrl)
+    .then(response => {
+      response.data['error'] = false;
+      response.data['HTML_status'] = response.status;
+      response.data['HTML_statusText'] = response.statusText;
+      parseString(response.data, (err, result) => {
+        if (err || result.TrackResponse.TrackInfo[0].Error) {
+          data = { error: true, HTML_status: 'XMLERROR', HTML_statusText: 'Failed parsing XML' };
+        } else {
+          response.data['xml_json'] = result;
+          data = response.data;
+        }
+      });
+    })
+    .catch(error => {
+      data = { error: true, HTML_status: '', HTML_statusText: '' };
+      if (error.response == undefined) {
+        data.HTML_status = error.errno;
+        data.HTML_statusText = error.errno;
+      } else {
+        data.HTML_status = error.response.status;
+        data.HTML_statusText = error.response.statusText;
+      }
+    });
+  return data;
 };
 
 const getResultsAPI = async (siteUrl, carrier) => {
-  const data = await fetchData(siteUrl);
+  let data;
+  if (carrier == 'DHL') {
+    data = await fetchData(siteUrl);
+  } else {
+    data = await fetchDataUSPS(siteUrl);
+  }
   const output = {
     HTML_status: data.HTML_status,
     HTML_statusText: data.HTML_statusText
@@ -55,10 +82,41 @@ const getResultsAPI = async (siteUrl, carrier) => {
     } else if (carrier == 'USPS') {
       // USPS tracking
       // Try to acquire destination country
+      output['country'] = 'USA';
       // Acquire last tracking update
+      output['status'] = data.xml_json.TrackResponse.TrackInfo[0].TrackSummary[0];
       // Acquire shipped date
+      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
+        if (event.indexOf('Acceptance,') == 0) {
+          const data_parts = event.split(', ');
+          output['shippeddate'] = DateFormatter(`${data_parts[1]}, ${data_parts[2]}`);
+        }
+      });
       // Try to acquire delivered date
+      output['delivered'] = '';
+      if (output['status'].indexOf('Your item was delivered') == 0) {
+        const data_parts = output['status'].split(', ');
+        const first_parts = data_parts[0].split(' ');
+        const f_p_len = first_parts.length;
+        const second_parts = data_parts[1].split(' ');
+        output['delivered'] = DateFormatter(`${first_parts[f_p_len - 2]} ${first_parts[f_p_len - 1]}, ${second_parts[0]}`);
+      }
       // Save raw data
+      const tracking_data = [
+        {
+          timestamp: output['delivered'],
+          description: output['status'],
+          location: 'USA'
+        }
+      ];
+      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
+        tracking_data.push({
+          timestamp: '00-00-0000T00:00',
+          description: event,
+          location: '---'
+        });
+      });
+      output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
     } else {
       // DHL tracking
       // Try to acquire destination country
@@ -84,5 +142,27 @@ const getResultsAPI = async (siteUrl, carrier) => {
 
   return output;
 };
+
+function DateFormatter(in_date) {
+  //March 10, 2020
+  let temp = in_date.split(', ');
+  let temp2 = temp[0].split(' ');
+  const months = {
+    January: '01',
+    February: '02',
+    March: '03',
+    April: '04',
+    May: '05',
+    June: '06',
+    July: '07',
+    August: '08',
+    September: '09',
+    October: '10',
+    November: '11',
+    December: '12'
+  };
+
+  return `${temp[1]}-${months[temp2[0]]}-${temp2[1]}`;
+}
 
 module.exports = getResultsAPI;

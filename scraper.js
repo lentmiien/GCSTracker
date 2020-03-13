@@ -67,6 +67,10 @@ const getResults = async (siteUrl, carrier) => {
       });
       // Try to acquire destination country
       output['country'] = tracking_data[tracking_data.length - 1].location;
+      if (false && output['country'].indexOf('USA') == 0) {
+        // TODO: remove false to enable switching to USPS tracking
+        output['carrier'] = 'USPS';
+      }
       // Acquire last tracking update
       output['status'] = tracking_data[tracking_data.length - 1].description;
       // Acquire shipped date
