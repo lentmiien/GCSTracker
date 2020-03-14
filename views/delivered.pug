@@ -12,15 +12,13 @@ block content
         th(scope="col") Delivery time
     tbody
       each row in rows
-        - const start = row.shippeddate.split('-')
-        - const end = row.delivereddate.split('-')
-        - const sdate = new Date(parseInt(start[0]), parseInt(start[1]), parseInt(start[2]))
-        - const edate = new Date(parseInt(end[0]), parseInt(end[1]), parseInt(end[2]))
-        - const timediff = Math.round((edate.getTime() - sdate.getTime()) / 86400000)
+        - const sdate = new Date(row.shippeddate)
+        - const edate = new Date(row.delivereddate)
+        - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
         tr
           td
             a(href=`/mypage/details/${row.tracking}`)= row.tracking
           td= row.country
-          td= row.shippeddate
-          td= row.delivereddate
+          td= `${sdate.getFullYear()}-${sdate.getMonth()+1}-${sdate.getDate()}`
+          td= `${edate.getFullYear()}-${edate.getMonth()+1}-${edate.getDate()}`
           td= `${timediff} days`

@@ -1,6 +1,10 @@
 // Require used packages
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 
+// Require necessary database models
+const async = require('async');
+const { Tracking } = require('../sequelize');
+
 // Google sheet credentials
 const creds = {
   type: process.env.GSHEET_TYPE,
@@ -22,6 +26,9 @@ const creds = {
 // API routes
 
 // POST add new records
+/*****************************************
+ * DB化
+ *****************************************/
 exports.api_add = async (req, res) => {
   const response = {};
 
@@ -123,6 +130,9 @@ exports.api_add = async (req, res) => {
 
 // GET get "delivered" or "not delivered" status
 // /get/:startdate/:enddate
+/*****************************************
+ * DB化
+ *****************************************/
 exports.api_get = async (req, res) => {
   const response = {};
 
@@ -180,6 +190,7 @@ exports.api_get = async (req, res) => {
   res.json(response);
 };
 
+// Helper functions
 function dateToString(date) {
   return `${date.getFullYear()}-${date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() + 1)}-${
     date.getDate() > 9 ? date.getDate() : '0' + date.getDate()

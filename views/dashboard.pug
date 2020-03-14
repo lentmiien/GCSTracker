@@ -39,8 +39,8 @@ block content
       p
         button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#add_collapse", aria-expanded="false", aria-controls="add_collapse", title="Show add record input fields.") Add records
         a.btn.btn-success.mr-3(href="/mypage/track", title="Start tracking process.\n*It is possible to close browser after started.") Start tracking
-        a.btn.btn-warning.mr-3(href="/mypage/csv", title="Download CSV file containing all records with tracking data.") Download CSV
-        a.btn.btn-danger(href="/mypage/clear", title="Delete records delivered over 2 weeks ago,\nand download CSV file containing deleted data.") Clear old (CSV)
+        a.btn.btn-warning.mr-3(href="/mypage/csv", title="Download CSV file containing all records with tracking data.") Save (CSV)
+        a.btn.btn-danger(href="/mypage/clear", title="Delete records delivered over 2 weeks ago,\nand download CSV file containing deleted data.") Clear and save old (CSV)
       #add_collapse.collapse
         .card.card-body.bg-dark
           label(for="tracking") Tracking numbers*
@@ -61,13 +61,15 @@ block content
         tbody
           each row in rows
             tr
+              - const sd = new Date(row.shippeddate)
+              - const lc = new Date(row.lastchecked)
               td
                 if(row.data && row.data.length > 0)
                   a(href=`/mypage/details/${row.tracking}`)= row.tracking
                 else
                   span= row.tracking
-              td= row.shippeddate
-              td= row.lastchecked
+              td= `${sd.getFullYear()}-${sd.getMonth()+1}-${sd.getDate()}`
+              td= `${lc.getFullYear()}-${lc.getMonth()+1}-${lc.getDate()}`
               td= row.status
   script(src="/javascripts/update.js")
   script(src="/javascripts/api.js")
