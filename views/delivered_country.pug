@@ -1,0 +1,66 @@
+extends layout
+
+block content
+  h1 Country delivery times
+  - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
+  each row in rows
+    - const sdate = new Date(row.shippeddate)
+    - const edate = new Date(row.delivereddate)
+    - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
+    - let added = false
+    each c in country_data
+      if c.country == row.country
+        if row.carrier == 'DHL'
+          if c.dhl.min > timediff
+            - c.dhl.min = timediff
+          if c.dhl.max < timediff
+            - c.dhl.max = timediff
+          - c.dhl.total += timediff
+          - c.dhl.count++
+        else if row.tracking.indexOf('EM') == 0
+          if c.ems.min > timediff
+            - c.ems.min = timediff
+          if c.ems.max < timediff
+            - c.ems.max = timediff
+          - c.ems.total += timediff
+          - c.ems.count++
+        else
+          if c.other.min > timediff
+            - c.other.min = timediff
+          if c.other.max < timediff
+            - c.other.max = timediff
+          - c.other.total += timediff
+          - c.other.count++
+        - added = true
+    if added == false
+      - country_data.push({ country: row.country, dhl: { total: 0, max: 1000, min: 0, count: 0 }, ems: { total: 0, max: 1000, min: 0, count: 0 }, other: { total: 0, max: 1000, min: 0, count: 0 }})
+      - const index = country_data.length - 1
+      if row.carrier == 'DHL'
+        - country_data[index].dhl.total = timediff
+        - country_data[index].dhl.max = timediff
+        - country_data[index].dhl.min = timediff
+        - country_data[index].dhl.count = 1
+      else if row.tracking.indexOf('EM') == 0
+        - country_data[index].ems.total = timediff
+        - country_data[index].ems.max = timediff
+        - country_data[index].ems.min = timediff
+        - country_data[index].ems.count = 1
+      else
+        - country_data[index].other.total = timediff
+        - country_data[index].other.max = timediff
+        - country_data[index].other.min = timediff
+        - country_data[index].other.count = 1
+  table.table.table-dark.table-striped
+    thead
+      tr
+        th(scope="col") Country
+        th(scope="col") DHL shipping time
+        th(scope="col") EMS shipping time
+        th(scope="col") Other shipping time
+    tbody
+      each country in country_data
+        tr
+          td= country.country
+          td= country.dhl.count > 0 ? `${Math.round(100 * country.dhl.total / country.dhl.count) / 100} days (${country.dhl.min}-${country.dhl.max} days)` : ''
+          td= country.ems.count > 0 ? `${Math.round(100 * country.ems.total / country.ems.count) / 100} days (${country.ems.min}-${country.ems.max} days)` : ''
+          td= country.other.count > 0 ? `${Math.round(100 * country.other.total / country.other.count) / 100} days (${country.other.min}-${country.other.max} days)` : ''

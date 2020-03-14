@@ -102,6 +102,27 @@ exports.delivered = async (req, res, next) => {
   );
 };
 
+// Show country delivery times
+exports.delivered_country = async (req, res, next) => {
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll({
+          order: [['shippeddate', 'DESC']]
+        }).then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const rows = results.tracking.filter(row => row.dataValues.delivered == true);
+
+      res.render('delivered_country', { rows });
+    }
+  );
+};
+
 // Tracker variables
 let JP_timer = 0;
 let DHL_timer = 0;

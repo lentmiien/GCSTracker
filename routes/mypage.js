@@ -14,6 +14,7 @@ router.get('/', controller.mypage);
 
 // Show delivered data
 router.get('/delivered', controller.delivered);
+router.get('/delivered_country', controller.delivered_country);
 
 // Add records
 //router.post('/add', controller.add);// Use api instead
