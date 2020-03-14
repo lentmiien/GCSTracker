@@ -1,5 +1,4 @@
 // Require used packages
-const { GoogleSpreadsheet } = require('google-spreadsheet');
 const getResults = require('../scraper');
 const getResultsAPI = require('../tracker');
 
@@ -22,20 +21,6 @@ const JP_MIN_DELAY_TIME = 1100;
 const DHL_MIN_DELAY_TIME = 1100;
 const USPS_MIN_DELAY_TIME = 110;
 const limit_date = new Date(2020, 0, 2, 12, 0, 0); // Just after 2020-01-01 12:00
-
-// Google sheet credentials
-const creds = {
-  type: process.env.GSHEET_TYPE,
-  project_id: process.env.GSHEET_PROJECT_ID,
-  private_key_id: process.env.GSHEET_PRIVATE_KEY_ID,
-  private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  client_email: process.env.GSHEET_CLIENT_EMAIL,
-  client_id: process.env.GSHEET_CLIENT_ID,
-  auth_uri: process.env.GSHEET_AUTH_URI,
-  token_uri: process.env.GSHEET_TOKEN_URI,
-  auth_provider_x509_cert_url: process.env.GSHEET_AUTH_PROVIDER_X509_CERT_URL,
-  client_x509_cert_url: process.env.GSHEET_CLIENT_X509_CERT_URL
-};
 
 //---------------------------------------------//
 // exports.endpoints = (req, res, next) => {}; //
@@ -558,70 +543,6 @@ exports.clear = async (req, res, next) => {
       }
     }
   });
-};
-
-/*************
- *
- * Migration to DB
- *
- */
-exports.migrate = async (req, res) => {
-  // Load data from google-spredsheet
-  const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
-
-  const rows_raw = await sheet.getRows();
-
-  const data = [];
-  rows_raw.forEach(row => {
-    const addeddate_split = row.addeddate.split('-');
-    const addeddate_date = new Date(parseInt(addeddate_split[0]), parseInt(addeddate_split[1]) - 1, parseInt(addeddate_split[2]), 12, 0, 0);
-    const lastchecked_split = row.lastchecked.length > 0 ? row.lastchecked.split('-') : ['2020', '01', '01'];
-    const lastchecked_date = new Date(
-      parseInt(lastchecked_split[0]),
-      parseInt(lastchecked_split[1]) - 1,
-      parseInt(lastchecked_split[2]),
-      12,
-      0,
-      0
-    );
-    const shippeddate_split = row.shippeddate.length > 0 ? row.shippeddate.split('-') : ['2020', '01', '01'];
-    const shippeddate_date = new Date(
-      parseInt(shippeddate_split[0]),
-      parseInt(shippeddate_split[1]) - 1,
-      parseInt(shippeddate_split[2]),
-      12,
-      0,
-      0
-    );
-    const delivereddate_split = row.delivereddate.length > 0 ? row.delivereddate.split('-') : ['2020', '01', '01'];
-    const delivereddate_date = new Date(
-      parseInt(delivereddate_split[0]),
-      parseInt(delivereddate_split[1]) - 1,
-      parseInt(delivereddate_split[2]),
-      12,
-      0,
-      0
-    );
-    data.push({
-      tracking: row.tracking,
-      carrier: row.carrier,
-      country: row.country,
-      addeddate: addeddate_date.getTime(),
-      lastchecked: lastchecked_date.getTime(),
-      status: row.status,
-      shippeddate: shippeddate_date.getTime(),
-      delivereddate: delivereddate_date.getTime(),
-      delivered: row.delivered == '1' ? true : false,
-      data: row.data
-    });
-  });
-
-  Tracking.bulkCreate(data);
-
-  res.redirect('/mypage');
 };
 
 // Helper function

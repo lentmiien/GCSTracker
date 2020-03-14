@@ -109,11 +109,11 @@ exports.api_add = async (req, res) => {
       if (records_to_add.length > 0) {
         Tracking.bulkCreate(records_to_add);
       }
+
+      // Done!
+      res.json(response);
     }
   );
-
-  // Done!
-  res.json(response);
 };
 
 // GET get "delivered" or "not delivered" status

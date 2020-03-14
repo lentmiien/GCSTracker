@@ -33,8 +33,5 @@ router.get('/csv', controller.csv);
 // Clear old records (delivered over 14 days ago) and return CSV of deleted records
 router.get('/clear', controller.clear);
 
-// Move data to database **** TODO : Remove when done! ****
-router.get('/migrate', controller.migrate);
-
 // Export router
 module.exports = router;
