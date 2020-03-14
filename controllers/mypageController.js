@@ -65,7 +65,7 @@ exports.mypage = async (req, res, next) => {
       const rows = results.tracking.filter(row => row.dataValues.delivered == false && row.dataValues.lastchecked > limit_date.getTime());
       const delivered_rows = results.tracking.filter(row => row.dataValues.delivered == true);
 
-      let total = results.length;
+      let total = results.tracking.length;
       let delivered = delivered_rows.length;
       let dhl_time = 0;
       let dhl_time_count = 0;
@@ -544,7 +544,7 @@ exports.clear = async (req, res, next) => {
       });
 
       res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="' + 'tracking-data-' + Date.now() + '.csv"');
+      res.setHeader('Content-Disposition', 'attachment; filename="' + 'backup-data-' + Date.now() + '.csv"');
       res.send(outdata);
     }
   );

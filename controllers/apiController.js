@@ -1,23 +1,6 @@
-// Require used packages
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-
 // Require necessary database models
 const async = require('async');
-const { Tracking } = require('../sequelize');
-
-// Google sheet credentials
-const creds = {
-  type: process.env.GSHEET_TYPE,
-  project_id: process.env.GSHEET_PROJECT_ID,
-  private_key_id: process.env.GSHEET_PRIVATE_KEY_ID,
-  private_key: process.env.GSHEET_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  client_email: process.env.GSHEET_CLIENT_EMAIL,
-  client_id: process.env.GSHEET_CLIENT_ID,
-  auth_uri: process.env.GSHEET_AUTH_URI,
-  token_uri: process.env.GSHEET_TOKEN_URI,
-  auth_provider_x509_cert_url: process.env.GSHEET_AUTH_PROVIDER_X509_CERT_URL,
-  client_x509_cert_url: process.env.GSHEET_CLIENT_X509_CERT_URL
-};
+const { Tracking, Op } = require('../sequelize');
 
 //---------------------------------------------//
 // exports.endpoints = (req, res, next) => {}; //
@@ -26,9 +9,6 @@ const creds = {
 // API routes
 
 // POST add new records
-/*****************************************
- * DB化
- *****************************************/
 exports.api_add = async (req, res) => {
   const response = {};
 
@@ -46,14 +26,6 @@ exports.api_add = async (req, res) => {
       return res.json(response);
     }
   }
-
-  // Load data from google-spredsheet
-  const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
-
-  const rows_raw = await sheet.getRows();
 
   // Get new data
   // req.body = { records: [ 'rec1', 'rec2', 'rec3' ] }
@@ -74,55 +46,71 @@ exports.api_add = async (req, res) => {
   response['existing'] = 0;
   response['need_check'] = [];
 
-  // Prepare data to add
-  let lastadded = '';
-  for (let i = 0; i < tracking.length; i++) {
-    let new_entry = true;
-    if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
-      if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
-        // Does not support domestic shipping
-        new_entry = false;
-        response['domestic']++;
-      } else {
-        if (tracking[i] == lastadded) {
-          new_entry = false;
-          response['duplicates']++;
-          response['status'] = 'WARNING';
-          response['message'] = 'Duplicate records exist';
-          response['need_check'].push(tracking[i]);
-        } else {
-          for (let row_i = 0; row_i < rows_raw.length && new_entry; row_i++) {
-            if (rows_raw[row_i].tracking == tracking[i]) {
+  async.parallel(
+    {
+      tracking: function(callback) {
+        Tracking.findAll().then(entry => callback(null, entry));
+      }
+    },
+    function(err, results) {
+      if (err) {
+        return next(err);
+      }
+      if (!results.tracking) {
+        // No results.
+        res.redirect('/mypage');
+      }
+
+      let lastadded = '';
+      for (let i = 0; i < tracking.length; i++) {
+        let new_entry = true;
+        if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
+          if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
+            // Does not support domestic shipping
+            new_entry = false;
+            response['domestic']++;
+          } else {
+            if (tracking[i] == lastadded) {
               new_entry = false;
-              response['existing']++;
+              response['duplicates']++;
               response['status'] = 'WARNING';
-              response['message'] = 'Existing records exist';
+              response['message'] = 'Duplicate records exist';
               response['need_check'].push(tracking[i]);
+            } else {
+              for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
+                if (results.tracking[row_i].tracking == tracking[i]) {
+                  new_entry = false;
+                  response['existing']++;
+                  response['status'] = 'WARNING';
+                  response['message'] = 'Existing records exist';
+                  response['need_check'].push(tracking[i]);
+                }
+              }
             }
           }
+        } else {
+          // Can not track SAL Unregistered
+          new_entry = false;
+          response['sal_unreg_empty']++;
+        }
+        if (new_entry) {
+          lastadded = tracking[i];
+          records_to_add.push({
+            tracking: tracking[i],
+            carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
+            addeddate: Date.now(),
+            delivered: '0'
+          });
+          response['added_records']++;
         }
       }
-    } else {
-      // Can not track SAL Unregistered
-      new_entry = false;
-      response['sal_unreg_empty']++;
-    }
-    if (new_entry) {
-      lastadded = tracking[i];
-      records_to_add.push({
-        tracking: tracking[i],
-        carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
-        addeddate: d,
-        delivered: '0'
-      });
-      response['added_records']++;
-    }
-  }
 
-  // Start adding
-  if (records_to_add.length > 0) {
-    await sheet.addRows(records_to_add);
-  }
+      // Start adding
+      if (records_to_add.length > 0) {
+        Tracking.bulkCreate(records_to_add);
+      }
+    }
+  );
 
   // Done!
   res.json(response);
@@ -130,9 +118,6 @@ exports.api_add = async (req, res) => {
 
 // GET get "delivered" or "not delivered" status
 // /get/:startdate/:enddate
-/*****************************************
- * DB化
- *****************************************/
 exports.api_get = async (req, res) => {
   const response = {};
 
@@ -159,35 +144,51 @@ exports.api_get = async (req, res) => {
     response['message'] = 'Invalid date range';
     return res.json(response);
   }
+  const start_split = start.split('-');
+  const end_split = end.split('-');
+  const start_date = new Date(parseInt(start_split[0]), parseInt(start_split[1], parseInt(start_split[2])), 0, 0, 0, 0).getTime();
+  const end_date = new Date(parseInt(end_split[0]), parseInt(end_split[1], parseInt(end_split[2])), 23, 59, 59, 999).getTime();
 
-  // Load data from google-spredsheet
-  const doc = new GoogleSpreadsheet(process.env.GSHEET_DOC_ID);
-  await doc.useServiceAccountAuth(creds);
-  await doc.loadInfo();
-  const sheet = doc.sheetsByIndex[0];
+  async.parallel(
+    {
+      tracking: function(callback) {
+        Tracking.findAll({
+          where: {
+            delivereddate: {
+              [Op.gte]: start_date,
+              [Op.lte]: end_date
+            }
+          }
+        }).then(entry => callback(null, entry));
+      }
+    },
+    function(err, results) {
+      if (err) {
+        return next(err);
+      }
+      if (!results.tracking) {
+        // No results.
+        res.redirect('/mypage');
+      }
 
-  const rows_raw = await sheet.getRows();
+      // Prepare OK response
+      response['status'] = 'OK';
+      let d = new Date();
+      response['date'] = dateToString(d);
+      response['records'] = [];
 
-  let d = new Date();
-  d = dateToString(d);
-
-  // Prepare OK response
-  response['status'] = 'OK';
-  response['date'] = d;
-  response['records'] = [];
-
-  // tracking	delivereddate	delivered
-  rows_raw.forEach(r => {
-    if (r.lastchecked >= start && r.lastchecked <= end) {
-      response['records'].push({
-        tracking: r.tracking,
-        delivereddate: r.delivereddate,
-        delivered: r.delivered
+      // tracking	delivereddate	delivered
+      results.tracking.forEach(r => {
+        response['records'].push({
+          tracking: r.tracking,
+          delivereddate: r.delivereddate,
+          delivered: r.delivered
+        });
       });
-    }
-  });
 
-  res.json(response);
+      res.json(response);
+    }
+  );
 };
 
 // Helper functions
