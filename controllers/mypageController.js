@@ -284,7 +284,7 @@ async function TrackAll() {
                       where: { id: results.tracking_jp[i].id }
                     }
                   );
-                  updated_records++;
+                  last_tracked.count++;
                 }
               }
             }
@@ -328,7 +328,7 @@ async function TrackAll() {
                       where: { id: results.tracking_jp[i].id }
                     }
                   );
-                  updated_records++;
+                  last_tracked.count++;
                 }
               }
             }
@@ -384,7 +384,7 @@ async function TrackAll() {
                       where: { id: results.tracking_dhl[i].id }
                     }
                   );
-                  updated_records++;
+                  last_tracked.count++;
                 }
               }
             }
@@ -398,7 +398,6 @@ async function TrackAll() {
           console.log(`#${counter} tracking done! (${updated_records} updated records) ${JSON.stringify(results2)}`);
           const time_now = new Date();
           last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()}`;
-          last_tracked.count = updated_records;
         }
       );
     }
