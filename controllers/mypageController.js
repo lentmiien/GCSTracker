@@ -108,7 +108,7 @@ exports.delivered_country = async (req, res, next) => {
     {
       tracking: callback => {
         Tracking.findAll({
-          order: [['shippeddate', 'DESC']]
+          order: [['country', 'ASC']]
         }).then(entry => callback(null, entry));
       }
     },

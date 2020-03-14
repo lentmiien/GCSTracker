@@ -124,6 +124,9 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // Try to acquire destination country
       const ad = data.shipments[0].destination.address.addressLocality.split(' - ');
       output['country'] = ad[ad.length - 1];
+      if (output['country'] == 'KOREA, REPUBLIC OF (SOUTH K.)') {
+        output['country'] = 'KOREA REP';
+      }
       // Acquire last tracking update
       output['status'] = data.shipments[0].status.statusCode;
       // Acquire shipped date

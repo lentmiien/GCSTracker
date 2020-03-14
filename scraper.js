@@ -61,16 +61,17 @@ const getResults = async (siteUrl, carrier) => {
           status = content;
         }
         if (index - date_index == 4) {
+          const country_data = content.split('  ');
           tracking_data.push({
             timestamp: date,
             description: status,
-            location: content
+            location: country_data[0]
           });
         }
       });
       // Try to acquire destination country
       output['country'] = tracking_data[tracking_data.length - 1].location;
-      if (false && output['country'].indexOf('USA') == 0) {
+      if (false && output['country'] == 'USA') {
         // TODO: remove false to enable switching to USPS tracking
         output['carrier'] = 'USPS';
       }

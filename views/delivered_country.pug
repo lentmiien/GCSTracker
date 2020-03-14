@@ -33,7 +33,7 @@ block content
           - c.other.count++
         - added = true
     if added == false
-      - country_data.push({ country: row.country, dhl: { total: 0, max: 1000, min: 0, count: 0 }, ems: { total: 0, max: 1000, min: 0, count: 0 }, other: { total: 0, max: 1000, min: 0, count: 0 }})
+      - country_data.push({ country: row.country, dhl: { total: 0, max: 0, min: 1000, count: 0 }, ems: { total: 0, max: 0, min: 1000, count: 0 }, other: { total: 0, max: 0, min: 1000, count: 0 }})
       - const index = country_data.length - 1
       if row.carrier == 'DHL'
         - country_data[index].dhl.total = timediff
@@ -61,6 +61,21 @@ block content
       each country in country_data
         tr
           td= country.country
-          td= country.dhl.count > 0 ? `${Math.round(100 * country.dhl.total / country.dhl.count) / 100} days (${country.dhl.min}-${country.dhl.max} days)` : ''
-          td= country.ems.count > 0 ? `${Math.round(100 * country.ems.total / country.ems.count) / 100} days (${country.ems.min}-${country.ems.max} days)` : ''
-          td= country.other.count > 0 ? `${Math.round(100 * country.other.total / country.other.count) / 100} days (${country.other.min}-${country.other.max} days)` : ''
+          if country.dhl.count > 0
+            td
+              b= `${Math.round(100 * country.dhl.total / country.dhl.count) / 100} days `
+              i= `(${country.dhl.min}-${country.dhl.max} days)`
+          else
+            td
+          if country.ems.count > 0
+            td
+              b= `${Math.round(100 * country.ems.total / country.ems.count) / 100} days `
+              i= `(${country.ems.min}-${country.ems.max} days)`
+          else
+            td
+          if country.other.count > 0
+            td
+              b= `${Math.round(100 * country.other.total / country.other.count) / 100} days `
+              i= `(${country.other.min}-${country.other.max} days)`
+          else
+            td
