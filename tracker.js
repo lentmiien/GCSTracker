@@ -89,17 +89,19 @@ const getResultsAPI = async (siteUrl, carrier) => {
       data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
         if (event.indexOf('Acceptance,') == 0) {
           const data_parts = event.split(', ');
-          output['shippeddate'] = DateFormatter(`${data_parts[1]}, ${data_parts[2]}`);
+          const d = DateFormatter(`${data_parts[1]}, ${data_parts[2]}`).split('-');
+          output['shippeddate'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), 12, 0).getTime();
         }
       });
       // Try to acquire delivered date
-      output['delivered'] = '';
+      output['delivered'] = 0;
       if (output['status'].indexOf('Your item was delivered') == 0) {
         const data_parts = output['status'].split(', ');
         const first_parts = data_parts[0].split(' ');
         const f_p_len = first_parts.length;
         const second_parts = data_parts[1].split(' ');
-        output['delivered'] = DateFormatter(`${first_parts[f_p_len - 2]} ${first_parts[f_p_len - 1]}, ${second_parts[0]}`);
+        const d = DateFormatter(`${first_parts[f_p_len - 2]} ${first_parts[f_p_len - 1]}, ${second_parts[0]}`).split('-');
+        output['delivered'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), 12, 0).getTime();
       }
       // Save raw data
       const tracking_data = [
@@ -111,7 +113,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       ];
       data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
         tracking_data.push({
-          timestamp: '00-00-0000T00:00',
+          timestamp: 0,
           description: event,
           location: '---'
         });
@@ -122,18 +124,27 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // Try to acquire destination country
       const ad = data.shipments[0].destination.address.addressLocality.split(' - ');
       output['country'] = ad[ad.length - 1];
+      if (output['country'] == 'KOREA, REPUBLIC OF (SOUTH K.)') {
+        output['country'] = 'KOREA REP';
+      }
       // Acquire last tracking update
       output['status'] = data.shipments[0].status.statusCode;
       // Acquire shipped date
       data.shipments[0].events.forEach(event => {
         if (event.description == 'Shipment picked up') {
-          output['shippeddate'] = event.timestamp.split('T')[0];
+          const sdt = event.timestamp.split('T');
+          const d = sdt[0].split('-');
+          const t = sdt[1].split(':');
+          output['shippeddate'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(d[1])).getTime();
         }
       });
       // Try to acquire delivered date
-      output['delivered'] = '';
+      output['delivered'] = 0;
       if (data.shipments[0].status.statusCode == 'delivered') {
-        output['delivered'] = data.shipments[0].status.timestamp.split('T')[0];
+        const sdt = data.shipments[0].status.timestamp.split('T');
+        const d = sdt[0].split('-');
+        const t = sdt[1].split(':');
+        output['delivered'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(d[1])).getTime();
       }
       // Save raw data
       output['rawdata'] = JSON.stringify(data);

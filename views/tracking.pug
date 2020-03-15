@@ -9,6 +9,7 @@ block content
         th(scope="col") Status
     tbody
       each update in tracking
+        - const tdate = new Date(update.timestamp)
         tr
-          td= update.timestamp.split('T').join(' ')
+          td= `${tdate.getFullYear()}-${tdate.getMonth()+1}-${tdate.getDate()}`
           td= update.description

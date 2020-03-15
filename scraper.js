@@ -50,36 +50,46 @@ const getResults = async (siteUrl, carrier) => {
           date_index = index;
           date = content
             .split(' ')
-            .join('T')
+            .join(':')
             .split('/')
-            .join('-');
+            .join(':')
+            .split(':');
+          date = new Date(
+            parseInt(date[0]),
+            parseInt(date[1]) - 1,
+            parseInt(date[2]),
+            date[3] ? parseInt(date[3]) : 12,
+            date[4] ? parseInt(date[4]) : 0
+          );
+          date = date.getTime();
         }
         if (index - date_index == 1) {
           status = content;
         }
         if (index - date_index == 4) {
+          const country_data = content.split('  ');
           tracking_data.push({
             timestamp: date,
             description: status,
-            location: content
+            location: country_data[0]
           });
         }
       });
       // Try to acquire destination country
       output['country'] = tracking_data[tracking_data.length - 1].location;
-      if (false && output['country'].indexOf('USA') == 0) {
+      if (false && output['country'] == 'USA') {
         // TODO: remove false to enable switching to USPS tracking
         output['carrier'] = 'USPS';
       }
       // Acquire last tracking update
       output['status'] = tracking_data[tracking_data.length - 1].description;
       // Acquire shipped date
-      output['shippeddate'] = tracking_data[0].timestamp.split('T')[0];
+      output['shippeddate'] = tracking_data[0].timestamp;
       // Try to acquire delivered date
       if (output['status'] == 'お届け済み') {
-        output['delivered'] = tracking_data[tracking_data.length - 1].timestamp.split('T')[0];
+        output['delivered'] = tracking_data[tracking_data.length - 1].timestamp;
       } else {
-        output['delivered'] = '';
+        output['delivered'] = 0;
       }
       // Save raw data
       output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
@@ -92,8 +102,11 @@ const getResults = async (siteUrl, carrier) => {
         const time = tracking[i]['children'][5]['children'][0]['children'][0]['children'][0].data;
         const place = tracking[i]['children'][9]['children'][0]['children'][0].data;
         const status = tracking[i]['children'][13]['children'][0]['children'][0].data;
+        const d = DateFormatter(date).split('-');
+        const t = time.split(':');
+        const ds = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(t[1])).getTime();
         tracking_data.push({
-          timestamp: DateFormatter(date) + 'T' + time,
+          timestamp: ds,
           description: status,
           location: place.split(' - ')[1]
         });
@@ -104,12 +117,12 @@ const getResults = async (siteUrl, carrier) => {
       // Acquire last tracking update
       output['status'] = tracking_data[tracking_data.length - 1].description;
       // Acquire shipped date
-      output['shippeddate'] = tracking_data[0].timestamp.split('T')[0];
+      output['shippeddate'] = tracking_data[0].timestamp;
       // Try to acquire delivered date
       if (output['status'] == 'Shipment delivered') {
-        output['delivered'] = tracking_data[tracking_data.length - 1].timestamp.split('T')[0];
+        output['delivered'] = tracking_data[tracking_data.length - 1].timestamp;
       } else {
-        output['delivered'] = '';
+        output['delivered'] = 0;
       }
       // Save raw data
       output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
