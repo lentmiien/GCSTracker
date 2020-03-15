@@ -1,13 +1,15 @@
 extends layout
 
 block content
-  h1 Country delivery times
-  a(href="/mypage/delivered") &lt; Back
+  h1 Country data
+  a(href="/mypage/delivered_country") &lt; Back
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
+  - const shipping_times = []
   each row in rows
     - const sdate = new Date(row.shippeddate)
     - const edate = new Date(row.delivereddate)
     - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
+    - shipping_times.push(timediff)
     - let added = false
     each c in country_data
       if c.country == row.country
@@ -61,8 +63,7 @@ block content
     tbody
       each country in country_data
         tr
-          td
-            a(href=`/mypage/country/${country.country}`)= country.country
+          td= country.country
           if country.dhl.count > 0
             td
               b= `${Math.round(100 * country.dhl.total / country.dhl.count) / 100} days `
@@ -81,3 +82,20 @@ block content
               i= `(${country.other.min}-${country.other.max} days)`
           else
             td
+  i *Unchecked packages are not included (DHL: within 3 days from shipment, EMS: within 5 days from shipment, Other: within 21 days from shipment)
+  table.table.table-dark.table-striped
+    thead
+      tr
+        th(scope="col") Attribute
+        th(scope="col") Value
+    tbody
+      tr
+        td Total packages
+        td= rows.length + undelivered.length
+      tr
+        td Delivered packages
+        td= `${rows.length} (${Math.round(10000*rows.length/(rows.length + undelivered.length))/100}%)`
+  svg#chart
+  #chart_data= JSON.stringify(shipping_times)
+  script(src="https://d3js.org/d3.v5.min.js")
+  script(src="/javascripts/d3_controller.js")

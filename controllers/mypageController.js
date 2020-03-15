@@ -123,6 +123,30 @@ exports.delivered_country = async (req, res, next) => {
   );
 };
 
+// Show country delivery times
+exports.country = async (req, res, next) => {
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll({
+          where: {
+            country: req.params.country
+          }
+        }).then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const rows = results.tracking.filter(row => row.dataValues.delivered == true);
+      const undelivered = results.tracking.filter(row => row.dataValues.delivered == false);
+
+      res.render('country', { rows, undelivered });
+    }
+  );
+};
+
 // Tracker variables
 let JP_timer = 0;
 let DHL_timer = 0;
@@ -130,6 +154,7 @@ let USPS_timer = 0;
 const JP_scraping_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
+  done: 100,
   html: {
     status: HTTP_OK_CODE,
     text: 'OK'
@@ -138,6 +163,7 @@ const JP_scraping_counter = {
 const DHL_scraping_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
+  done: 100,
   html: {
     status: HTTP_OK_CODE,
     text: 'OK'
@@ -146,6 +172,7 @@ const DHL_scraping_counter = {
 const DHL_API_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
+  done: 100,
   html: {
     status: HTTP_OK_CODE,
     text: 'OK'
@@ -154,6 +181,7 @@ const DHL_API_counter = {
 const USPS_API_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
+  done: 100,
   html: {
     status: HTTP_OK_CODE,
     text: 'OK'
@@ -244,6 +272,7 @@ async function TrackAll() {
           jp_status_code: async function(callback) {
             // Loop through results.tracking_jp
             for (let i = 0; i < results.tracking_jp.length; i++) {
+              JP_scraping_counter.done = Math.round((10000 * (i + 1)) / results.tracking_jp.length) / 100;
               if (
                 (results.tracking_jp[i].tracking.indexOf('EM') == 0 &&
                   results.tracking_jp[i].addeddate <= emsfc &&
@@ -293,6 +322,7 @@ async function TrackAll() {
           usps_status_code: async function(callback) {
             // Loop through results.tracking_usps
             for (let i = 0; i < results.tracking_usps.length; i++) {
+              USPS_API_counter.done = Math.round((10000 * (i + 1)) / results.tracking_usps.length) / 100;
               if (results.tracking_usps[i].lastchecked <= emsnc) {
                 let result;
                 // Delay if previous request to close
@@ -337,6 +367,8 @@ async function TrackAll() {
           dhl_status_code: async function(callback) {
             // Loop through results.tracking_dhl
             for (let i = 0; i < results.tracking_dhl.length; i++) {
+              DHL_scraping_counter.done = Math.round((10000 * (i + 1)) / results.tracking_dhl.length) / 100;
+              DHL_API_counter.done = DHL_scraping_counter.done;
               if (results.tracking_dhl[i].addeddate <= dhlfc && results.tracking_dhl[i].lastchecked <= dhlnc) {
                 let result;
                 // Delay if previous request to close
@@ -395,8 +427,8 @@ async function TrackAll() {
           // Update progress
           track_progress = 1;
 
-          console.log(`#${counter} tracking done! (${updated_records} updated records) ${JSON.stringify(results2)}`);
           const time_now = new Date();
+          console.log(`#${counter} tracking done! (${dateToString(time_now)})`);
           last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()}`;
         }
       );
