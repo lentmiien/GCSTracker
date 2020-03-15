@@ -54,7 +54,13 @@ const getResults = async (siteUrl, carrier) => {
             .split('/')
             .join(':')
             .split(':');
-          date = new Date(parseInt(date[0]), parseInt(date[1]) - 1, parseInt(date[2]), parseInt(date[3]), parseInt(date[4]));
+          date = new Date(
+            parseInt(date[0]),
+            parseInt(date[1]) - 1,
+            parseInt(date[2]),
+            date[3] ? parseInt(date[3]) : 12,
+            date[4] ? parseInt(date[4]) : 0
+          );
           date = date.getTime();
         }
         if (index - date_index == 1) {
