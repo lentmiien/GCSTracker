@@ -28,12 +28,14 @@ exports.api_add = async (req, res) => {
   }
 
   // Get new data
-  // req.body = { records: [ 'rec1', 'rec2', 'rec3' ] }
+  // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp }
   const tracking = req.body.records.sort();
   const records_to_add = [];
 
   let d = new Date();
   d = dateToString(d);
+
+  let dts = req.body.date && req.body.date > 0 ? req.body.date : Date.now();
 
   // Prepare OK response
   response['status'] = 'OK';
@@ -98,7 +100,7 @@ exports.api_add = async (req, res) => {
           records_to_add.push({
             tracking: tracking[i],
             carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
-            addeddate: Date.now(),
+            addeddate: dts,
             delivered: '0'
           });
           response['added_records']++;

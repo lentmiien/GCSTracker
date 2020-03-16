@@ -40,8 +40,10 @@ block content
         a.btn.btn-danger(href="/mypage/clear", title="Delete records delivered over 2 weeks ago,\nand download CSV file containing deleted data.") Clear and save old (CSV)
       #add_collapse.collapse
         .card.card-body.bg-dark
+          label(for="date") Shipping date*
+          input#date.form-control(name="date", type="date", required)
           label(for="tracking") Tracking numbers*
-          textarea#tracking.form-control(name="tracking", cols="30", rows="10")
+          textarea#tracking.form-control(name="tracking", cols="30", rows="10", required)
           button.btn.btn-success.mt-3(onclick="api_post()", title="Save the records to the database.") Save to database
   .row
     .col

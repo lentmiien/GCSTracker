@@ -4,6 +4,8 @@
 
 async function api_post() {
   const records = document.getElementById('tracking').value.split('\n');
+  const date = document.getElementById('date').value.split('-');
+  const d_timestamp = new Date(parseInt(date[0]), parseInt(date[1]) - 1, parseInt(date[2]), 12, 0).getTime();
   const response = await fetch('/api/add', {
     method: 'POST',
     cache: 'no-cache',
@@ -11,7 +13,7 @@ async function api_post() {
       Accept: 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ records })
+    body: JSON.stringify({ records, date: d_timestamp })
   });
   const data = await response.json();
   document.getElementById('tracking').value = JSON.stringify(data, null, 2);
