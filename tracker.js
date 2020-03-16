@@ -34,19 +34,21 @@ const fetchDataUSPS = async siteUrl => {
   await axios
     .get(siteUrl)
     .then(response => {
-      response.data['error'] = false;
-      response.data['HTML_status'] = response.status;
-      response.data['HTML_statusText'] = response.statusText;
+      data['error'] = false;
+      data['HTML_status'] = response.status;
+      data['HTML_statusText'] = response.statusText;
       parseString(response.data, (err, result) => {
-        if (err || result.TrackResponse.TrackInfo[0].Error) {
+        console.log(JSON.stringify(result, null, 2));
+        if (err || result.Error) {
           data = { error: true, HTML_status: 'XMLERROR', HTML_statusText: 'Failed parsing XML' };
         } else {
-          response.data['xml_json'] = result;
-          data = response.data;
+          data['xml_json'] = result;
+          //data = response.data;
         }
       });
     })
     .catch(error => {
+      console.log(error);
       data = { error: true, HTML_status: '', HTML_statusText: '' };
       if (error.response == undefined) {
         data.HTML_status = error.errno;
@@ -113,7 +115,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       ];
       data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
         tracking_data.push({
-          timestamp: 0,
+          timestamp: Date.now(),
           description: event,
           location: '---'
         });

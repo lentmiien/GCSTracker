@@ -355,7 +355,7 @@ async function TrackAll() {
                       data: result.rawdata
                     },
                     {
-                      where: { id: results.tracking_jp[i].id }
+                      where: { id: results.tracking_usps[i].id }
                     }
                   );
                   last_tracked.count++;
