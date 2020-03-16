@@ -7,9 +7,11 @@ block content
       tr
         th(scope="col") Timestamp
         th(scope="col") Status
+        th(scope="col") Location
     tbody
       each update in tracking
         - const tdate = new Date(update.timestamp)
         tr
           td= `${tdate.getFullYear()}-${tdate.getMonth()+1}-${tdate.getDate()}`
           td= update.description
+          td= (typeof update.location) == "string" ? update.location : update.location.address.addressLocality
