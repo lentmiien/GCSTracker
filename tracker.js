@@ -125,10 +125,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // DHL tracking
       // Try to acquire destination country
       const ad = data.shipments[0].destination.address.addressLocality.split(' - ');
-      output['country'] = ad[ad.length - 1];
-      if (output['country'] == 'KOREA, REPUBLIC OF (SOUTH K.)') {
-        output['country'] = 'KOREA REP';
-      }
+      output['country'] = CountryNormalize(ad[ad.length - 1]);
       // Acquire last tracking update
       output['status'] = data.shipments[0].status.statusCode;
       // Acquire shipped date
@@ -176,6 +173,22 @@ function DateFormatter(in_date) {
   };
 
   return `${temp[1]}-${months[temp2[0]]}-${temp2[1]}`;
+}
+
+const country_mapper = {
+  'KOREA, REPUBLIC OF (SOUTH K.)': 'KOREA REP',
+  'KOREA, REPUBLIC OF': 'KOREA REP',
+  'NETHERLANDS, THE': 'NETHERLANDS',
+  'PHILIPPINES, THE': 'PHILIPPINES',
+  UK: 'UNITED KINGDOM',
+  'VIET NAM': 'VIETNAM'
+};
+function CountryNormalize(in_name) {
+  out_name = in_name.toUpperCase();
+  if (country_mapper[out_name]) {
+    return country_mapper[out_name];
+  }
+  return out_name;
 }
 
 module.exports = getResultsAPI;

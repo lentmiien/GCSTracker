@@ -76,7 +76,7 @@ const getResults = async (siteUrl, carrier) => {
         }
       });
       // Try to acquire destination country
-      output['country'] = tracking_data[tracking_data.length - 1].location;
+      output['country'] = CountryNormalize(tracking_data[tracking_data.length - 1].location);
       if (false && output['country'] == 'USA') {
         // TODO: remove false to enable switching to USPS tracking
         output['carrier'] = 'USPS';
@@ -113,7 +113,7 @@ const getResults = async (siteUrl, carrier) => {
       }
       // DHL scrapping
       // Try to acquire destination country
-      output['country'] = tracking_data[tracking_data.length - 1].location;
+      output['country'] = CountryNormalize(tracking_data[tracking_data.length - 1].location);
       // Acquire last tracking update
       output['status'] = tracking_data[tracking_data.length - 1].description;
       // Acquire shipped date
@@ -152,6 +152,22 @@ function DateFormatter(in_date) {
   };
 
   return `${temp[1]}-${months[temp2[0]]}-${temp2[1]}`;
+}
+
+const country_mapper = {
+  'KOREA, REPUBLIC OF (SOUTH K.)': 'KOREA REP',
+  'KOREA, REPUBLIC OF': 'KOREA REP',
+  'NETHERLANDS, THE': 'NETHERLANDS',
+  'PHILIPPINES, THE': 'PHILIPPINES',
+  UK: 'UNITED KINGDOM',
+  'VIET NAM': 'VIETNAM'
+};
+function CountryNormalize(in_name) {
+  out_name = in_name.toUpperCase();
+  if (country_mapper[out_name]) {
+    return country_mapper[out_name];
+  }
+  return out_name;
 }
 
 module.exports = getResults;
