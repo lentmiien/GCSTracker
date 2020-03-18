@@ -66,9 +66,13 @@ exports.api_add = async (req, res) => {
       let lastadded = '';
       for (let i = 0; i < tracking.length; i++) {
         let new_entry = true;
-        if (tracking[i].indexOf('-') < 0 && tracking[i].length > 0) {
+        if (tracking[i].indexOf('-') < 0 && tracking[i].length > 8) {
           if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
             // Does not support domestic shipping
+            new_entry = false;
+            response['domestic']++;
+          } else if (/^\d+$/.test(tracking[i]) == false && tracking[i].indexOf('JP') < 0) {
+            // A package shipped to Japan, treat as domestic shipping
             new_entry = false;
             response['domestic']++;
           } else {
