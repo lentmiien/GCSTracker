@@ -381,7 +381,7 @@ async function TrackAll() {
                   DHL_API_counter.html.status = result.HTML_status;
                   DHL_API_counter.html.text = result.HTML_statusText;
                   current_status = DHL_API_counter.html.status;
-                  DHL_timer = request_time;
+                  DHL_timer = Date.now();
                 } else if (DHL_scraping_counter.html.status == HTTP_OK_CODE) {
                   // Use DHL scraping
                   const url = `https://www.dhl.com/cgi-bin/tracking.pl?AWB=${results.tracking_dhl[i].tracking}`;

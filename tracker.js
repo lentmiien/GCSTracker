@@ -38,7 +38,6 @@ const fetchDataUSPS = async siteUrl => {
       data['HTML_status'] = response.status;
       data['HTML_statusText'] = response.statusText;
       parseString(response.data, (err, result) => {
-        console.log(JSON.stringify(result, null, 2));
         if (err || result.Error) {
           data = { error: true, HTML_status: 'XMLERROR', HTML_statusText: 'Failed parsing XML' };
         } else {
@@ -97,8 +96,9 @@ const getResultsAPI = async (siteUrl, carrier) => {
       });
       // Try to acquire delivered date
       output['delivered'] = 0;
-      if (output['status'].indexOf('Your item was delivered') == 0) {
-        const data_parts = output['status'].split(', ');
+      if (output['status'].indexOf('Your item was delivered') == 0 || output['status'].indexOf('Your item has been delivered') == 0) {
+        const _on_split = output['status'].split(' on ');
+        const data_parts = _on_split[1].split(', ');
         const first_parts = data_parts[0].split(' ');
         const f_p_len = first_parts.length;
         const second_parts = data_parts[1].split(' ');
