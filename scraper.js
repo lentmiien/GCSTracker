@@ -80,8 +80,7 @@ const getResults = async (siteUrl, carrier) => {
       for (let cnt = tracking_data.length - 1; cnt >= 0 && output['country'].length == 0; cnt--) {
         output['country'] = CountryNormalize(tracking_data[cnt].location);
       }
-      if (false && output['country'] == 'USA') {
-        // TODO: remove false to enable switching to USPS tracking
+      if (output['country'] == 'USA') {
         output['carrier'] = 'USPS';
       }
       // Acquire last tracking update
