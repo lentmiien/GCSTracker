@@ -160,7 +160,10 @@ const country_mapper = {
   'NETHERLANDS, THE': 'NETHERLANDS',
   'PHILIPPINES, THE': 'PHILIPPINES',
   UK: 'UNITED KINGDOM',
-  'VIET NAM': 'VIETNAM'
+  'VIET NAM': 'VIETNAM',
+  "CHINA, PEOPLE'S REPUBLIC": 'CHINA',
+  MACAU: 'MACAO',
+  東京都: 'JAPAN'
 };
 function CountryNormalize(in_name) {
   out_name = in_name.toUpperCase();
