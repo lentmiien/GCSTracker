@@ -69,6 +69,6 @@ block content
                   span= row.tracking
               td= `${sd.getFullYear()}-${sd.getMonth()+1}-${sd.getDate()}`
               td= `${lc.getFullYear()}-${lc.getMonth()+1}-${lc.getDate()}`
-              td= row.status
+              td= row.status.length < 40 ? row.status : row.status.slice(0, 40) + "..."
   script(src="/javascripts/update.js")
   script(src="/javascripts/api.js")
