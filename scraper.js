@@ -76,7 +76,10 @@ const getResults = async (siteUrl, carrier) => {
         }
       });
       // Try to acquire destination country
-      output['country'] = CountryNormalize(tracking_data[tracking_data.length - 1].location);
+      output['country'] = '';
+      for (let cnt = tracking_data.length - 1; cnt >= 0 && output['country'].length == 0; cnt--) {
+        output['country'] = CountryNormalize(tracking_data[cnt].location);
+      }
       if (false && output['country'] == 'USA') {
         // TODO: remove false to enable switching to USPS tracking
         output['carrier'] = 'USPS';
@@ -113,7 +116,10 @@ const getResults = async (siteUrl, carrier) => {
       }
       // DHL scrapping
       // Try to acquire destination country
-      output['country'] = CountryNormalize(tracking_data[tracking_data.length - 1].location);
+      output['country'] = '';
+      for (let cnt = tracking_data.length - 1; cnt >= 0 && output['country'].length == 0; cnt--) {
+        output['country'] = CountryNormalize(tracking_data[cnt].location);
+      }
       // Acquire last tracking update
       output['status'] = tracking_data[tracking_data.length - 1].description;
       // Acquire shipped date
