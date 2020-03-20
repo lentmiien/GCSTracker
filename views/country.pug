@@ -1,8 +1,7 @@
 extends layout
 
 block content
-  h1 Country data
-  a(href="/mypage/delivered_country") &lt; Back
+  h1 国別情報
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   - const shipping_times = []
   each row in rows

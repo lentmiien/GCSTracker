@@ -16,6 +16,10 @@ html
             if role != "guest"
               li.nav-item
                 a.nav-link(href="/mypage") Dashboard
+              li.nav-item
+                a.nav-link(href="/mypage/delivered") 配達済データ
+              li.nav-item
+                a.nav-link(href="/mypage/delivered_country") 国別情報
           if role == "guest"
             .form-inline.my-2.my-lg-0
               a.btn.btn-outline-info.my-2.my-sm-0(href="/login") Login

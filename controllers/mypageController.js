@@ -46,8 +46,8 @@ exports.mypage = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.dataValues.delivered == false && row.dataValues.lastchecked > limit_date.getTime());
-      const delivered_rows = results.tracking.filter(row => row.dataValues.delivered == true);
+      const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
+      const delivered_rows = results.tracking.filter(row => row.delivered == true);
 
       let total = results.tracking.length;
       let delivered = delivered_rows.length;
@@ -75,7 +75,50 @@ exports.mypage = async (req, res, next) => {
       ems_time = Math.round(100 * (ems_time / ems_time_count)) / 100;
       other_time = Math.round(100 * (other_time / other_time_count)) / 100;
 
-      res.render('dashboard', { rows, total, delivered, dhl_time, ems_time, other_time });
+      const undelivered = {
+        all: {
+          number_of_records: 0,
+          dhl_records: 0,
+          ems_records: 0,
+          other_records: 0
+        },
+        status_counter: []
+      };
+      rows.forEach(row => {
+        undelivered.all.number_of_records++;
+        if (row.carrier == 'DHL') {
+          undelivered.all.dhl_records++;
+        } else if (row.tracking.indexOf('EM') == 0) {
+          undelivered.all.ems_records++;
+        } else {
+          undelivered.all.other_records++;
+        }
+        let new_status = row.status ? true : false;
+        for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
+          if (undelivered.status_counter[i].status == row.status) {
+            undelivered.status_counter[i].count++;
+            new_status = false;
+          }
+        }
+        if (new_status) {
+          undelivered.status_counter.push({
+            status: row.status,
+            count: 1
+          });
+        }
+      });
+
+      undelivered.status_counter.sort((a, b) => {
+        if (a.count > b.count) {
+          return -1;
+        } else if (a.count < b.count) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+      res.render('dashboard', { rows, total, delivered, dhl_time, ems_time, other_time, undelivered });
     }
   );
 };
