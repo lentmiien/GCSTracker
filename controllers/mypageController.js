@@ -289,7 +289,7 @@ async function TrackAll() {
                   JP_scraping_counter.count++;
                   JP_scraping_counter.html.status = result.HTML_status;
                   JP_scraping_counter.html.text = result.HTML_statusText;
-                  JP_timer = request_time;
+                  JP_timer = Date.now();
                 }
                 // Update entry if successful
                 if (JP_scraping_counter.html.status == HTTP_OK_CODE) {
@@ -333,7 +333,7 @@ async function TrackAll() {
                   USPS_API_counter.count++;
                   USPS_API_counter.html.status = result.HTML_status;
                   USPS_API_counter.html.text = result.HTML_statusText;
-                  USPS_timer = request_time;
+                  USPS_timer = Date.now();
                 }
                 // Update entry if successful
                 if (USPS_API_counter.html.status == HTTP_OK_CODE) {
@@ -390,7 +390,7 @@ async function TrackAll() {
                   DHL_scraping_counter.html.status = result.HTML_status;
                   DHL_scraping_counter.html.text = result.HTML_statusText;
                   current_status = DHL_scraping_counter.html.status;
-                  DHL_timer = request_time;
+                  DHL_timer = Date.now();
                 } else {
                   current_status = HTTP_DEFAULT_DISABLE_CODE;
                 }
