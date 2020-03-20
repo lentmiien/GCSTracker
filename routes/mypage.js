@@ -12,7 +12,8 @@ var controller = require('../controllers/mypageController');
 // Dashboard
 router.get('/', controller.mypage);
 
-// Show delivered data
+// Show analysis data
+router.get('/undelivered', controller.undelivered);
 router.get('/delivered', controller.delivered);
 router.get('/delivered_country', controller.delivered_country);
 router.get('/country/:country', controller.country);

@@ -50,7 +50,6 @@ exports.mypage = async (req, res, next) => {
       const delivered_rows = results.tracking.filter(row => row.delivered == true);
 
       let total = results.tracking.length;
-      let delivered = delivered_rows.length;
       let dhl_time = 0;
       let dhl_time_count = 0;
       let ems_time = 0;
@@ -118,7 +117,28 @@ exports.mypage = async (req, res, next) => {
         }
       });
 
-      res.render('dashboard', { rows, total, delivered, dhl_time, ems_time, other_time, undelivered });
+      res.render('dashboard', { rows, total, dhl_time, ems_time, other_time, undelivered });
+    }
+  );
+};
+
+// Show all undelivered packages
+exports.undelivered = async (req, res, next) => {
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll({
+          order: [['shippeddate', 'ASC']]
+        }).then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
+
+      res.render('undelivered', { rows });
     }
   );
 };

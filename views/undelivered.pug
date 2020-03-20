@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h1 Undelivered
+  table.table.table-dark.table-striped
+    thead
+      tr
+        th(scope="col") Tracking#
+        th(scope="col") Country
+        th(scope="col") Status
+        th(scope="col") Days since shipped
+    tbody
+      - const edate = (new Date()).getTime()
+      each row in rows
+        - const timediff = Math.round((edate - row.shippeddate) / 86400000)
+        tr
+          td
+            a(href=`/mypage/details/${row.tracking}`)= row.tracking
+          td= row.country
+          td= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
+          td= `${timediff} days`
