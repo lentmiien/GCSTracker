@@ -217,7 +217,22 @@ exports.undelivered = async (req, res, next) => {
       }
       const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
 
-      res.render('undelivered', { rows });
+      const analyze = {
+        dhl_count: 0,
+        ems_count: 0,
+        other_count: 0
+      };
+      rows.forEach(entry => {
+        if (entry.carrier == 'DHL') {
+          analyze.dhl_count++;
+        } else if (entry.tracking.indexOf('EM') == 0) {
+          analyze.ems_count++;
+        } else {
+          analyze.other_count++;
+        }
+      });
+
+      res.render('undelivered', { rows, analyze, filter: req.params });
     }
   );
 };
