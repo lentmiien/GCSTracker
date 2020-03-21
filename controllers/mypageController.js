@@ -692,10 +692,48 @@ exports.progress = (req, res) => {
 
 // Download CSV file
 exports.csv = async (req, res, next) => {
+  /*
+  {
+  range: 'lastlastmonth',
+  range_start: '2020-01-01',
+  range_end: '2020-01-31',
+  taisho: 'shipped'
+  }
+  {
+  range: '7days',
+  range_start: '2020-01-01',
+  range_end: '2020-01-31',
+  taisho: 'delivered'
+  }
+  */
+  const range_start = req.query.range_start.split('-');
+  const range_end = req.query.range_end.split('-');
+
+  const start = new Date(parseInt(range_start[0]), parseInt(range_start[1]) - 1, parseInt(range_start[2]), 0, 0, 0, 0).getTime();
+  const end = new Date(parseInt(range_end[0]), parseInt(range_end[1]) - 1, parseInt(range_end[2]), 23, 59, 59, 999).getTime();
+
+  // Generate database search query
+  const query = {};
+  if (req.query.taisho == 'shipped') {
+    query['where'] = {
+      shippeddate: {
+        [Op.gte]: start,
+        [Op.lte]: end
+      }
+    };
+  } else {
+    query['where'] = {
+      delivereddate: {
+        [Op.gte]: start,
+        [Op.lte]: end
+      }
+    };
+  }
+
   async.parallel(
     {
       tracking: function(callback) {
-        Tracking.findAll().then(entry => callback(null, entry));
+        Tracking.findAll(query).then(entry => callback(null, entry));
       }
     },
     function(err, results) {
@@ -708,15 +746,18 @@ exports.csv = async (req, res, next) => {
       }
 
       // tracking	carrier	country	addeddate	lastchecked	status	shippeddate	delivereddate	delivered	data
-      let outdata = `Tracking,Carrier,Country,Added date,Last checked,Status,Shipped date,Delivered date,Delivered`;
+      let outdata = `Tracking,Carrier,Country,Added date,Last checked,Status,Shipped date,Delivered date,Delivered,Data`;
       results.tracking.forEach(r => {
-        if (r.lastchecked > limit_date.getTime()) {
-          outdata += `\n${r.tracking},${r.carrier},"${r.country}",${r.addeddate},${r.lastchecked},"${r.status}",${r.shippeddate},${r.delivereddate},${r.delivered}`;
-        }
+        outdata += `\n${r.tracking},${r.carrier},"${r.country}",${r.addeddate},${r.lastchecked},"${r.status}",${r.shippeddate},${
+          r.delivereddate
+        },${r.delivered},"${r.data.split('"').join("'")}"`;
       });
 
       res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="' + 'tracking-data-' + Date.now() + '.csv"');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${req.query.taisho}_S${req.query.range_start}_E${req.query.range_end}.csv"`
+      );
       res.send(outdata);
     }
   );
@@ -726,43 +767,10 @@ exports.csv = async (req, res, next) => {
 exports.clear = async (req, res, next) => {
   // Check if previous tracking is done
   if (JP_scraping_counter.done == 100 && DHL_scraping_counter.done == 100 && USPS_API_counter.done == 100 && DHL_API_counter.done == 100) {
-    // 2 weeks ago (2 weeks = 1209600000 ms)
     let d = new Date();
-    d = new Date(d.getTime() - 1209600000);
+    d = new Date(d.getFullYear() - 1, d.getMonth(), d.getDate());
 
-    async.parallel(
-      {
-        tracking: function(callback) {
-          Tracking.findAll({
-            where: {
-              delivered: true,
-              delivereddate: {
-                [Op.lt]: d.getTime()
-              }
-            }
-          }).then(entry => callback(null, entry));
-        }
-      },
-      function(err, results) {
-        if (err) {
-          return next(err);
-        }
-
-        // tracking	carrier	country	addeddate	lastchecked	status	shippeddate	delivereddate	delivered	data
-        let outdata = `Tracking,Carrier,Country,Added date,Last checked,Status,Shipped date,Delivered date,Delivered,Data`;
-        results.tracking.forEach(r => {
-          outdata += `\n${r.tracking},${r.carrier},"${r.country}",${r.addeddate},${r.lastchecked},"${r.status}",${r.shippeddate},${
-            r.delivereddate
-          },${r.delivered},"${r.data.split('"').join("'")}"`;
-        });
-
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename="' + 'backup-data-' + Date.now() + '.csv"');
-        res.send(outdata);
-      }
-    );
-
-    // Remove data from database that was returned to the user
+    // Remove data from database
     Tracking.destroy({
       where: {
         delivered: true,
@@ -771,10 +779,9 @@ exports.clear = async (req, res, next) => {
         }
       }
     });
-  } else {
-    // Do nothing if currently tracking
-    return res.redirect('/mypage');
   }
+
+  res.redirect('/mypage');
 };
 
 // Helper function

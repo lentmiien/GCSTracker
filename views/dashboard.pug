@@ -31,8 +31,8 @@ block content
       p
         button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#add_collapse", aria-expanded="false", aria-controls="add_collapse", title="手動でレコードを追加する") レコード追加
         a.btn.btn-success.mr-3(href="/mypage/track", title="追跡処理を開始する") トラッキング開始
-        button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#backup_collapse", aria-expanded="false", aria-controls="backup_collapse", title="バックアップをダウンロードする") バックアップ　★修正中
-        button.btn.btn-primary(type="button", data-toggle="collapse", data-target="#delete_collapse", aria-expanded="false", aria-controls="delete_collapse", title="古いレコードを削除する") 削除　★修正中
+        button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#backup_collapse", aria-expanded="false", aria-controls="backup_collapse", title="バックアップをダウンロードする") バックアップ（CSV）
+        button.btn.btn-primary(type="button", data-toggle="collapse", data-target="#delete_collapse", aria-expanded="false", aria-controls="delete_collapse", title="古いレコードを削除する") 削除
       #add_collapse.collapse
         .card.card-body.bg-dark
           .form-group
@@ -48,22 +48,22 @@ block content
             label(for="range_select") 期間*
             #range_select.form-group.form-control
               .form-check.form-check-inline
-                input#sevendays.form-check-input(type="radio", name="range", value="7days")
+                input#sevendays.form-check-input(type="radio", name="range", value="7days", onchange="Select('sevendays')")
                 label.form-check-label(for="sevendays") 過去7日間
               .form-check.form-check-inline
-                input#thirtydays.form-check-input(type="radio", name="range", value="30days")
+                input#thirtydays.form-check-input(type="radio", name="range", value="30days", onchange="Select('thirtydays')")
                 label.form-check-label(for="thirtydays") 過去30日間
               .form-check.form-check-inline
-                input#ninthydays.form-check-input(type="radio", name="range", value="90days")
+                input#ninthydays.form-check-input(type="radio", name="range", value="90days", onchange="Select('ninthydays')")
                 label.form-check-label(for="ninthydays") 過去90日間
               .form-check.form-check-inline
-                input#thismonth.form-check-input(type="radio", name="range", value="thismonth")
+                input#thismonth.form-check-input(type="radio", name="range", value="thismonth", onchange="Select('thismonth')")
                 label.form-check-label(for="thismonth") 今月
               .form-check.form-check-inline
-                input#lastmonth.form-check-input(type="radio", name="range", value="lastmonth")
+                input#lastmonth.form-check-input(type="radio", name="range", value="lastmonth", onchange="Select('lastmonth')")
                 label.form-check-label(for="lastmonth") 先月
               .form-check.form-check-inline
-                input#lastlastmonth.form-check-input(type="radio", name="range", value="lastlastmonth", checked)
+                input#lastlastmonth.form-check-input(type="radio", name="range", value="lastlastmonth", onchange="Select('lastlastmonth')", checked)
                 label.form-check-label(for="lastlastmonth") 先々月
               .form-check.form-check-inline
                 input#custom.form-check-input(type="radio", name="range", value="custom")
@@ -71,10 +71,10 @@ block content
             label(for="date_range") 期間
             #date_range.input-group
               .input-group-prepend
-                input#range_start.form-control(type="date", name="range_start" value="2020-01-01")
+                input#range_start.form-control(type="date", name="range_start", value="2020-01-01", onchange="Custom()")
               div.form-control.center-text スタート　　　⇒　　　エンド
               .input-group-append
-                input#range_end.form-control(type="date", name="range_end" value="2020-01-31")
+                input#range_end.form-control(type="date", name="range_end" value="2020-01-31", onchange="Custom()")
             label.mt-3(for="type") 対象*
             #type.form-group.form-control
               .form-check.form-check-inline
@@ -83,7 +83,7 @@ block content
               .form-check.form-check-inline
                 input#delivered.form-check-input(type="radio", name="taisho", value="delivered")
                 label.form-check-label(for="delivered") 配達日
-            button.btn.btn-warning.mt-3(type="submit", title="CSVをダウンロード") バックアップ
+            button.btn.btn-warning.mt-3(type="submit", title="CSVバックアップをダウンロードする") ダウンロード
       #delete_collapse.collapse
         .card.card-body.bg-dark
           h3.danger-text ■■　注意　■■
@@ -93,7 +93,7 @@ block content
             b ★復元は出来ませんので、先にバックアップを取るのがお勧めです。
             br
             b ★「削除」を押したら、削除処理を開始します。
-          button.btn.btn-danger.mt-3(type="submit", title="古いレコードをデータベースから削除する") 削除
+          a.btn.btn-danger.mt-3(href="/mypage/clear", title="古いレコードをデータベースから削除する") 削除
   .row
     .col
       h3 遅延状況
@@ -219,3 +219,4 @@ block content
             td= other
   script(src="/javascripts/update.js")
   script(src="/javascripts/api.js")
+  script(src="/javascripts/backup_form_control.js")
