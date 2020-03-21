@@ -239,7 +239,55 @@ exports.undelivered_country = async (req, res, next) => {
       }
       const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
 
-      res.render('undelivered_country', { rows });
+      const analyze = {
+        overall: {
+          all_dhl_count: 0,
+          all_ems_count: 0,
+          all_other_count: 0
+        },
+        countries: []
+      };
+
+      rows.forEach(entry => {
+        let new_entry = true;
+        for (let i = 0; i < analyze.countries.length && new_entry; i++) {
+          if (entry.country == analyze.countries[i].country) {
+            new_entry = false;
+            if (entry.carrier == 'DHL') {
+              analyze.countries[i].dhl_count++;
+              analyze.overall.all_dhl_count++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze.countries[i].ems_count++;
+              analyze.overall.all_ems_count++;
+            } else {
+              analyze.countries[i].other_count++;
+              analyze.overall.all_other_count++;
+            }
+          }
+        }
+        if (new_entry) {
+          new_entry = analyze.countries.length;
+          analyze.countries.push({
+            country: entry.country,
+            dhl_count: 0,
+            ems_count: 0,
+            other_count: 0
+          });
+
+          if (entry.carrier == 'DHL') {
+            analyze.countries[new_entry].dhl_count++;
+            analyze.overall.all_dhl_count++;
+          } else if (entry.tracking.indexOf('EM') == 0) {
+            analyze.countries[new_entry].ems_count++;
+            analyze.overall.all_ems_count++;
+          } else {
+            analyze.countries[new_entry].other_count++;
+            analyze.overall.all_other_count++;
+          }
+        }
+      });
+
+      res.render('undelivered_country', { analyze });
     }
   );
 };
@@ -331,7 +379,9 @@ exports.ucountry = async (req, res, next) => {
         }
       ];
       results.tracking.forEach(entry => {
-        analyze[0].current_shipping_times.push(Math.round((time - entry.shippeddate) / 86400000));
+        if (entry.delivered == false) {
+          analyze[0].current_shipping_times.push(Math.round((time - entry.shippeddate) / 86400000));
+        }
         for (let i = 0; i < analyze.length; i++) {
           if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {
             if (entry.carrier == 'DHL') {
