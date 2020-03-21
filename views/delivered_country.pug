@@ -1,7 +1,7 @@
 extends layout
 
 block content
-  h1 国別の配送時間
+  h1 国別の到着時間
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   each row in rows
     - const sdate = new Date(row.shippeddate)
@@ -54,9 +54,9 @@ block content
     thead
       tr
         th(scope="col") 国名
-        th(scope="col") DHL配送時間
-        th(scope="col") EMS配送時間
-        th(scope="col") Air/SAL配送時間
+        th(scope="col") DHL到着時間
+        th(scope="col") EMS到着時間
+        th(scope="col") Air/SAL到着時間
     tbody
       each country in country_data
         tr
