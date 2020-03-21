@@ -2,6 +2,7 @@ extends layout
 
 block content
   h1 配達済レコード
+  p= `※最近の1週間のみ、${rows.length}件`
   table.table.table-dark.table-striped
     thead
       tr

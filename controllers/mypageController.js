@@ -260,21 +260,118 @@ exports.ucountry = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == true);
-      const undelivered = results.tracking.filter(row => row.delivered == false);
 
-      res.render('ucountry', { rows, undelivered });
+      const time = Date.now();
+      const d = new Date();
+      const analyze = [
+        {
+          label: '全体',
+          start: 0,
+          end: time,
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 },
+          current_shipping_times: []
+        },
+        {
+          label: '7日以内',
+          start: time - 604800000,
+          end: time,
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        },
+        {
+          label: '8日～30日',
+          start: time - 2592000000,
+          end: time - 604800000,
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        },
+        {
+          label: '31日～90日',
+          start: time - 7776000000,
+          end: time - 2592000000,
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        },
+        {
+          label: '91日以上',
+          start: 0,
+          end: time - 7776000000,
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        },
+        {
+          label: '今月',
+          start: new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0).getTime(),
+          end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime(),
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        },
+        {
+          label: '先月',
+          start: new Date(d.getFullYear(), d.getMonth() - 1, 1, 0, 0, 0, 0).getTime(),
+          end: new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999).getTime(),
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        },
+        {
+          label: '先々月',
+          start: new Date(d.getFullYear(), d.getMonth() - 2, 1, 0, 0, 0, 0).getTime(),
+          end: new Date(d.getFullYear(), d.getMonth() - 1, 0, 23, 59, 59, 999).getTime(),
+          dhl_count: { all: 0, notdone: 0 },
+          ems_count: { all: 0, notdone: 0 },
+          other_count: { all: 0, notdone: 0 }
+        }
+      ];
+      results.tracking.forEach(entry => {
+        analyze[0].current_shipping_times.push(Math.round((time - entry.shippeddate) / 86400000));
+        for (let i = 0; i < analyze.length; i++) {
+          if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {
+            if (entry.carrier == 'DHL') {
+              analyze[i].dhl_count.all++;
+              if (entry.delivered == false) {
+                analyze[i].dhl_count.notdone++;
+              }
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze[i].ems_count.all++;
+              if (entry.delivered == false) {
+                analyze[i].ems_count.notdone++;
+              }
+            } else {
+              analyze[i].other_count.all++;
+              if (entry.delivered == false) {
+                analyze[i].other_count.notdone++;
+              }
+            }
+          }
+        }
+      });
+
+      res.render('ucountry', { analyze, country: req.params.country });
     }
   );
 };
 
 // Show all delivered packages
 exports.delivered = async (req, res, next) => {
+  const one_week = Date.now() - 604800000;
   async.parallel(
     {
       tracking: callback => {
         Tracking.findAll({
-          order: [['delivereddate', 'DESC']]
+          order: [['delivereddate', 'DESC']],
+          where: {
+            delivereddate: {
+              [Op.gte]: one_week
+            }
+          }
         }).then(entry => callback(null, entry));
       }
     },
