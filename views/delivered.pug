@@ -6,6 +6,19 @@ block content
   table.table.table-dark.table-striped
     thead
       tr
+        th(scope="col") DHL
+        th(scope="col") EMS
+        th(scope="col") Air/SAL
+        th(scope="col") 合計
+    tbody
+      tr
+        td= analyze.dhl_count
+        td= analyze.ems_count
+        td= analyze.other_count
+        td= `${rows.length}件`
+  table.table.table-dark.table-striped
+    thead
+      tr
         th(scope="col") 追跡番号
         th(scope="col") 国名（
           a(href="/mypage/delivered_country") 全国

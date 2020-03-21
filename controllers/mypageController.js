@@ -446,7 +446,22 @@ exports.delivered = async (req, res, next) => {
       }
       const rows = results.tracking.filter(row => row.dataValues.delivered == true);
 
-      res.render('delivered', { rows });
+      const analyze = {
+        dhl_count: 0,
+        ems_count: 0,
+        other_count: 0
+      };
+      rows.forEach(entry => {
+        if (entry.carrier == 'DHL') {
+          analyze.dhl_count++;
+        } else if (entry.tracking.indexOf('EM') == 0) {
+          analyze.ems_count++;
+        } else {
+          analyze.other_count++;
+        }
+      });
+
+      res.render('delivered', { rows, analyze });
     }
   );
 };
