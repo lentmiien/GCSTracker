@@ -1,12 +1,15 @@
 extends layout
 
 block content
-  h1 国別の配送時間
+  h1 国別情報（
+    a(href="/mypage/undelivered_country") 全国
+    | ）
+  i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
-  each row in rows
-    - const sdate = new Date(row.shippeddate)
-    - const edate = new Date(row.delivereddate)
-    - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
+  - const shipping_times = []
+  each row in undelivered
+    - const timediff = Math.round((Date.now() - row.shippeddate) / 86400000)
+    - shipping_times.push(timediff)
     - let added = false
     each c in country_data
       if c.country == row.country
@@ -60,23 +63,38 @@ block content
     tbody
       each country in country_data
         tr
-          td
-            a(href=`/mypage/country/${country.country}`)= country.country
+          td= country.country
           if country.dhl.count > 0
             td
               b= `${Math.round(100 * country.dhl.total / country.dhl.count) / 100}日 `
-              i= `(${country.dhl.min}-${country.dhl.max}日)`
+              i= `(${country.dhl.count}件、${country.dhl.min}-${country.dhl.max}日)`
           else
             td
           if country.ems.count > 0
             td
               b= `${Math.round(100 * country.ems.total / country.ems.count) / 100}日 `
-              i= `(${country.ems.min}-${country.ems.max}日)`
+              i= `(${country.ems.count}件、${country.ems.min}-${country.ems.max}日)`
           else
             td
           if country.other.count > 0
             td
               b= `${Math.round(100 * country.other.total / country.other.count) / 100}日 `
-              i= `(${country.other.min}-${country.other.max}日)`
+              i= `(${country.other.count}件、${country.other.min}-${country.other.max}日)`
           else
             td
+  table.table.table-dark.table-striped
+    thead
+      tr
+        th(scope="col") 情報
+        th(scope="col") 値
+    tbody
+      tr
+        td 全荷物
+        td= rows.length + undelivered.length
+      tr
+        td 未着
+        td= `${undelivered.length} (${Math.round(10000*undelivered.length/(rows.length + undelivered.length))/100}%)`
+  svg#chart
+  #chart_data.hidden= JSON.stringify(shipping_times)
+  script(src="https://d3js.org/d3.v5.min.js")
+  script(src="/javascripts/d3_controller.js")

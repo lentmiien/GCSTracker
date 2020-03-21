@@ -1,13 +1,14 @@
 extends layout
 
 block content
-  h1= `Tracking for shipment: ${id}`
+  h1= `${id}の追跡情報`
+  a.btn.btn-link(href=back_link) 戻る
   table.table.table-dark.table-striped
     thead
       tr
-        th(scope="col") Timestamp
-        th(scope="col") Status
-        th(scope="col") Location
+        th(scope="col") 日付
+        th(scope="col") 状況
+        th(scope="col") 場所
     tbody
       each update in tracking
         - const tdate = new Date(update.timestamp)

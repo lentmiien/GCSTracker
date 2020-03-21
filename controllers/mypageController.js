@@ -50,6 +50,7 @@ exports.mypage = async (req, res, next) => {
       const delivered_rows = results.tracking.filter(row => row.delivered == true);
 
       let total = results.tracking.length;
+      let delivered = delivered_rows.length;
       let dhl_time = 0;
       let dhl_time_count = 0;
       let ems_time = 0;
@@ -75,6 +76,27 @@ exports.mypage = async (req, res, next) => {
       other_time = Math.round(100 * (other_time / other_time_count)) / 100;
 
       const undelivered = {
+        last7days: {
+          limit: Date.now() - 604800000,
+          number_of_records: 0,
+          dhl_records: 0,
+          ems_records: 0,
+          other_records: 0
+        },
+        last30days: {
+          limit: Date.now() - 2592000000,
+          number_of_records: 0,
+          dhl_records: 0,
+          ems_records: 0,
+          other_records: 0
+        },
+        last90days: {
+          limit: Date.now() - 7776000000,
+          number_of_records: 0,
+          dhl_records: 0,
+          ems_records: 0,
+          other_records: 0
+        },
         all: {
           number_of_records: 0,
           dhl_records: 0,
@@ -85,12 +107,48 @@ exports.mypage = async (req, res, next) => {
       };
       rows.forEach(row => {
         undelivered.all.number_of_records++;
+        if (row.shippeddate > undelivered.last7days.limit) {
+          undelivered.last7days.number_of_records++;
+        }
+        if (row.shippeddate > undelivered.last30days.limit) {
+          undelivered.last30days.number_of_records++;
+        }
+        if (row.shippeddate > undelivered.last90days.limit) {
+          undelivered.last90days.number_of_records++;
+        }
         if (row.carrier == 'DHL') {
           undelivered.all.dhl_records++;
+          if (row.shippeddate > undelivered.last7days.limit) {
+            undelivered.last7days.dhl_records++;
+          }
+          if (row.shippeddate > undelivered.last30days.limit) {
+            undelivered.last30days.dhl_records++;
+          }
+          if (row.shippeddate > undelivered.last90days.limit) {
+            undelivered.last90days.dhl_records++;
+          }
         } else if (row.tracking.indexOf('EM') == 0) {
           undelivered.all.ems_records++;
+          if (row.shippeddate > undelivered.last7days.limit) {
+            undelivered.last7days.ems_records++;
+          }
+          if (row.shippeddate > undelivered.last30days.limit) {
+            undelivered.last30days.ems_records++;
+          }
+          if (row.shippeddate > undelivered.last90days.limit) {
+            undelivered.last90days.ems_records++;
+          }
         } else {
           undelivered.all.other_records++;
+          if (row.shippeddate > undelivered.last7days.limit) {
+            undelivered.last7days.other_records++;
+          }
+          if (row.shippeddate > undelivered.last30days.limit) {
+            undelivered.last30days.other_records++;
+          }
+          if (row.shippeddate > undelivered.last90days.limit) {
+            undelivered.last90days.other_records++;
+          }
         }
         let new_status = row.status ? true : false;
         for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
@@ -117,19 +175,40 @@ exports.mypage = async (req, res, next) => {
         }
       });
 
-      res.render('dashboard', { rows, total, dhl_time, ems_time, other_time, undelivered });
+      res.render('dashboard', { rows, total, delivered, dhl_time, ems_time, other_time, undelivered });
     }
   );
 };
 
 // Show all undelivered packages
+// /:carrier/:start/:end
 exports.undelivered = async (req, res, next) => {
+  const query = { order: [['shippeddate', 'ASC']] };
+  if (req.params.carrier && req.params.start && req.params.end) {
+    query['where'] = {};
+    if (req.params.carrier == 'dhl') {
+      query.where['carrier'] = 'DHL';
+    } else if (req.params.carrier == 'ems') {
+      query.where['tracking'] = {
+        [Op.like]: 'EM%'
+      };
+    } else if (req.params.carrier == 'other') {
+      query.where['carrier'] = {
+        [Op.not]: 'DHL'
+      };
+      query.where['tracking'] = {
+        [Op.notLike]: 'EM%'
+      };
+    }
+    query.where['shippeddate'] = {
+      [Op.gte]: parseInt(req.params.start),
+      [Op.lt]: parseInt(req.params.end)
+    };
+  }
   async.parallel(
     {
       tracking: callback => {
-        Tracking.findAll({
-          order: [['shippeddate', 'ASC']]
-        }).then(entry => callback(null, entry));
+        Tracking.findAll(query).then(entry => callback(null, entry));
       }
     },
     (err, results) => {
@@ -143,13 +222,59 @@ exports.undelivered = async (req, res, next) => {
   );
 };
 
+// Show country delivery times
+exports.undelivered_country = async (req, res, next) => {
+  // TODO fix!!!
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll({
+          order: [['country', 'ASC']]
+        }).then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
+
+      res.render('undelivered_country', { rows });
+    }
+  );
+};
+
+// Show country undelivery times
+exports.ucountry = async (req, res, next) => {
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll({
+          where: {
+            country: req.params.country
+          }
+        }).then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const rows = results.tracking.filter(row => row.delivered == true);
+      const undelivered = results.tracking.filter(row => row.delivered == false);
+
+      res.render('ucountry', { rows, undelivered });
+    }
+  );
+};
+
 // Show all delivered packages
 exports.delivered = async (req, res, next) => {
   async.parallel(
     {
       tracking: callback => {
         Tracking.findAll({
-          order: [['shippeddate', 'DESC']]
+          order: [['delivereddate', 'DESC']]
         }).then(entry => callback(null, entry));
       }
     },
@@ -532,6 +657,10 @@ exports.track = async (req, res) => {
 // Tracking details page
 exports.details = async (req, res, next) => {
   const tracking_id = req.params.id;
+  let back_link = '/mypage/delivered';
+  if (req.headers.referer.indexOf('undelivered') > 0) {
+    back_link = '/mypage/undelivered';
+  }
 
   async.parallel(
     {
@@ -551,7 +680,7 @@ exports.details = async (req, res, next) => {
       }
       // Successful, so render.
       const tracking_raw = JSON.parse(results.tracking.data);
-      res.render('tracking', { id: tracking_id, tracking: tracking_raw.shipments[0].events });
+      res.render('tracking', { id: tracking_id, tracking: tracking_raw.shipments[0].events, back_link });
     }
   );
 };

@@ -1,7 +1,7 @@
 width = 500;
-height = 500;
+height = 250;
 margin = { top: 20, right: 20, bottom: 30, left: 40 };
-data = JSON.parse(document.getElementById('chart_data').innerText);
+data = JSON.parse(document.getElementById('chart_data').innerHTML);
 
 const svg = d3.select('#chart').attr('viewBox', [0, 0, width, height]);
 

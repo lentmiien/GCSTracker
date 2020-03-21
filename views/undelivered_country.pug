@@ -1,12 +1,10 @@
 extends layout
 
 block content
-  h1 国別の配送時間
+  h1 未着の現在の配送時間
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   each row in rows
-    - const sdate = new Date(row.shippeddate)
-    - const edate = new Date(row.delivereddate)
-    - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
+    - const timediff = Math.round((Date.now() - row.shippeddate) / 86400000)
     - let added = false
     each c in country_data
       if c.country == row.country
@@ -54,29 +52,29 @@ block content
     thead
       tr
         th(scope="col") 国名
-        th(scope="col") DHL配送時間
-        th(scope="col") EMS配送時間
-        th(scope="col") Air/SAL配送時間
+        th(scope="col") DHL
+        th(scope="col") EMS
+        th(scope="col") Air/SAL
     tbody
       each country in country_data
         tr
           td
-            a(href=`/mypage/country/${country.country}`)= country.country
+            a(href=`/mypage/ucountry/${country.country}`)= country.country
           if country.dhl.count > 0
             td
               b= `${Math.round(100 * country.dhl.total / country.dhl.count) / 100}日 `
-              i= `(${country.dhl.min}-${country.dhl.max}日)`
+              i= `(${country.dhl.count}件、${country.dhl.min}-${country.dhl.max}日)`
           else
             td
           if country.ems.count > 0
             td
               b= `${Math.round(100 * country.ems.total / country.ems.count) / 100}日 `
-              i= `(${country.ems.min}-${country.ems.max}日)`
+              i= `(${country.ems.count}件、${country.ems.min}-${country.ems.max}日)`
           else
             td
           if country.other.count > 0
             td
               b= `${Math.round(100 * country.other.total / country.other.count) / 100}日 `
-              i= `(${country.other.min}-${country.other.max}日)`
+              i= `(${country.other.count}件、${country.other.min}-${country.other.max}日)`
           else
             td

@@ -8,8 +8,9 @@ block content
   .row.mb-3
     .col
       h3 追跡状況
-      div= `全レコード：${total}`
-      div= `～平均配送時間～`
+      div= `全レコード：${total}件`
+      civ= `未完了：${total - delivered}件`
+      div= `■平均配送時間■`
       div= `- DHL：${dhl_time}日`
       div= `- EMS：${ems_time}日`
       div= `- Air/SAL：${other_time}日`
@@ -28,42 +29,193 @@ block content
   .row
     .col
       p
-        button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#add_collapse", aria-expanded="false", aria-controls="add_collapse", title="Show add record input fields.") レコード追加
-        a.btn.btn-success.mr-3(href="/mypage/track", title="Start tracking process.\n*It is possible to close browser after started.") トラッキング開始
-        a.btn.btn-warning.mr-3(href="/mypage/csv", title="Download CSV file containing all records with tracking data.") 保存　★修正中
-        a.btn.btn-danger(href="/mypage/clear", title="Delete records delivered over 2 weeks ago,\nand download CSV file containing deleted data.") 削除・バックアップ　★修正中
+        button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#add_collapse", aria-expanded="false", aria-controls="add_collapse", title="手動でレコードを追加する") レコード追加
+        a.btn.btn-success.mr-3(href="/mypage/track", title="追跡処理を開始する") トラッキング開始
+        button.btn.btn-primary.mr-3(type="button", data-toggle="collapse", data-target="#backup_collapse", aria-expanded="false", aria-controls="backup_collapse", title="バックアップをダウンロードする") バックアップ　★修正中
+        button.btn.btn-primary(type="button", data-toggle="collapse", data-target="#delete_collapse", aria-expanded="false", aria-controls="delete_collapse", title="古いレコードを削除する") 削除　★修正中
       #add_collapse.collapse
         .card.card-body.bg-dark
-          label(for="date") 日付*
-          input#date.form-control(name="date", type="date", required)
-          label(for="tracking") 追跡番号*
-          textarea#tracking.form-control(name="tracking", cols="30", rows="10", required)
-          button.btn.btn-success.mt-3(onclick="api_post()", title="Save the records to the database.") データベースに保存
+          .form-group
+            label(for="date") 日付*
+            input#date.form-control(name="date", type="date", required)
+          .form-group
+            label(for="tracking") 追跡番号*
+            textarea#tracking.form-control(name="tracking", cols="30", rows="10", required)
+          button.btn.btn-success.mt-3(onclick="api_post()", title="レコードをデータベースに保存する") データベースに保存
+      #backup_collapse.collapse
+        .card.card-body.bg-dark
+          form(action="/mypage/csv", method="get")
+            label(for="range_select") 期間*
+            #range_select.form-group.form-control
+              .form-check.form-check-inline
+                input#sevendays.form-check-input(type="radio", name="range", value="7days")
+                label.form-check-label(for="sevendays") 過去7日間
+              .form-check.form-check-inline
+                input#thirtydays.form-check-input(type="radio", name="range", value="30days")
+                label.form-check-label(for="thirtydays") 過去30日間
+              .form-check.form-check-inline
+                input#ninthydays.form-check-input(type="radio", name="range", value="90days")
+                label.form-check-label(for="ninthydays") 過去90日間
+              .form-check.form-check-inline
+                input#thismonth.form-check-input(type="radio", name="range", value="thismonth")
+                label.form-check-label(for="thismonth") 今月
+              .form-check.form-check-inline
+                input#lastmonth.form-check-input(type="radio", name="range", value="lastmonth")
+                label.form-check-label(for="lastmonth") 先月
+              .form-check.form-check-inline
+                input#lastlastmonth.form-check-input(type="radio", name="range", value="lastlastmonth", checked)
+                label.form-check-label(for="lastlastmonth") 先々月
+              .form-check.form-check-inline
+                input#custom.form-check-input(type="radio", name="range", value="custom")
+                label.form-check-label(for="custom") カスタム
+            label(for="date_range") 期間
+            #date_range.input-group
+              .input-group-prepend
+                input#range_start.form-control(type="date", name="range_start" value="2020-01-01")
+              div.form-control.center-text スタート　　　⇒　　　エンド
+              .input-group-append
+                input#range_end.form-control(type="date", name="range_end" value="2020-01-31")
+            label.mt-3(for="type") 対象*
+            #type.form-group.form-control
+              .form-check.form-check-inline
+                input#shipped.form-check-input(type="radio", name="taisho", value="shipped", checked)
+                label.form-check-label(for="shipped") 発送日
+              .form-check.form-check-inline
+                input#delivered.form-check-input(type="radio", name="taisho", value="delivered")
+                label.form-check-label(for="delivered") 配達日
+            button.btn.btn-warning.mt-3(type="submit", title="CSVをダウンロード") バックアップ
+      #delete_collapse.collapse
+        .card.card-body.bg-dark
+          h3.danger-text ■■　注意　■■
+            br
+            b ★1年以上更新されていないレコードを削除します。
+            br
+            b ★復元は出来ませんので、先にバックアップを取るのがお勧めです。
+            br
+            b ★「削除」を押したら、削除処理を開始します。
+          button.btn.btn-danger.mt-3(type="submit", title="古いレコードをデータベースから削除する") 削除
   .row
     .col
       h3 遅延状況
       table.table.table-dark.table-striped
         thead
           tr
-            th(scope="col") DHL　（3日以上）
-            th(scope="col") EMS　（5日以上）
-            th(scope="col") Air/SAL　（21日以上）
+            th(scope="col") 発送日から
+            th(scope="col") DHL（3日以上）
+            th(scope="col") EMS（5日以上）
+            th(scope="col") Air/SAL（21日以上）
             th(scope="col") 合計
         tbody
           tr
-            td= undelivered.all.dhl_records
-            td= undelivered.all.ems_records
-            td= undelivered.all.other_records
-            td= undelivered.all.number_of_records
+            td 7日以内
+            td
+              if undelivered.last7days.dhl_records > 0
+                a.warning-text(href=`/mypage/undelivered/dhl/${undelivered.last7days.limit}/${Date.now()}`)= undelivered.last7days.dhl_records
+              else
+                span 0
+            td
+              if undelivered.last7days.ems_records > 0
+                a(href=`/mypage/undelivered/ems/${undelivered.last7days.limit}/${Date.now()}`)= undelivered.last7days.ems_records
+              else
+                span 0
+            td --
+            td
+              if undelivered.last7days.number_of_records > 0
+                a(href=`/mypage/undelivered/all/${undelivered.last7days.limit}/${Date.now()}`)= undelivered.last7days.number_of_records
+              else
+                span 0
+          tr
+            td 8日～30日
+            td
+              if undelivered.last30days.dhl_records - undelivered.last7days.dhl_records > 0
+                a.danger-text(href=`/mypage/undelivered/dhl/${undelivered.last30days.limit}/${undelivered.last7days.limit}`)= undelivered.last30days.dhl_records - undelivered.last7days.dhl_records
+              else
+                span 0
+            td
+              if undelivered.last30days.ems_records - undelivered.last7days.ems_records > 0
+                a.warning-text(href=`/mypage/undelivered/ems/${undelivered.last30days.limit}/${undelivered.last7days.limit}`)= undelivered.last30days.ems_records - undelivered.last7days.ems_records
+              else
+                span 0
+            td
+              if undelivered.last30days.other_records > 0
+                a(href=`/mypage/undelivered/other/${undelivered.last30days.limit}/${undelivered.last7days.limit}`)= undelivered.last30days.other_records
+              else
+                span 0
+            td
+              if undelivered.last30days.number_of_records - undelivered.last7days.number_of_records > 0
+                a(href=`/mypage/undelivered/all/${undelivered.last30days.limit}/${undelivered.last7days.limit}`)= undelivered.last30days.number_of_records - undelivered.last7days.number_of_records
+              else
+                span 0
+          tr
+            td 31日～90日
+            td
+              if undelivered.last90days.dhl_records - undelivered.last30days.dhl_records > 0
+                a.danger-text(href=`/mypage/undelivered/dhl/${undelivered.last90days.limit}/${undelivered.last30days.limit}`)= undelivered.last90days.dhl_records - undelivered.last30days.dhl_records
+              else
+                span 0
+            td
+              if undelivered.last90days.ems_records - undelivered.last30days.ems_records > 0
+                a.danger-text(href=`/mypage/undelivered/ems/${undelivered.last90days.limit}/${undelivered.last30days.limit}`)= undelivered.last90days.ems_records - undelivered.last30days.ems_records
+              else
+                span 0
+            td
+              if undelivered.last90days.other_records - undelivered.last30days.other_records > 0
+                a.warning-text(href=`/mypage/undelivered/other/${undelivered.last90days.limit}/${undelivered.last30days.limit}`)= undelivered.last90days.other_records - undelivered.last30days.other_records
+              else
+                span 0
+            td
+              if undelivered.last90days.number_of_records - undelivered.last30days.number_of_records > 0
+                a(href=`/mypage/undelivered/all/${undelivered.last90days.limit}/${undelivered.last30days.limit}`)= undelivered.last90days.number_of_records - undelivered.last30days.number_of_records
+              else
+                span 0
+          tr
+            td 91日以上
+            td
+              if undelivered.all.dhl_records - undelivered.last90days.dhl_records > 0
+                a.danger-text(href=`/mypage/undelivered/dhl/${0}/${undelivered.last90days.limit}`)= undelivered.all.dhl_records - undelivered.last90days.dhl_records
+              else
+                span 0
+            td
+              if undelivered.all.ems_records - undelivered.last90days.ems_records > 0
+                a.danger-text(href=`/mypage/undelivered/ems/${0}/${undelivered.last90days.limit}`)= undelivered.all.ems_records - undelivered.last90days.ems_records
+              else
+                span 0
+            td
+              if undelivered.all.other_records - undelivered.last90days.other_records > 0
+                a.danger-text(href=`/mypage/undelivered/other/${0}/${undelivered.last90days.limit}`)= undelivered.all.other_records - undelivered.last90days.other_records
+              else
+                span 0
+            td
+              if undelivered.all.number_of_records - undelivered.last90days.number_of_records > 0
+                a(href=`/mypage/undelivered/all/${0}/${undelivered.last90days.limit}`)= undelivered.all.number_of_records - undelivered.last90days.number_of_records
+              else
+                span 0
+          tr
+            td 合計
+            td
+              a(href=`/mypage/undelivered/dhl/${0}/${Date.now()}`)= undelivered.all.dhl_records
+            td
+              a(href=`/mypage/undelivered/ems/${0}/${Date.now()}`)= undelivered.all.ems_records
+            td
+              a(href=`/mypage/undelivered/other/${0}/${Date.now()}`)= undelivered.all.other_records
+            td
+              a(href=`/mypage/undelivered`)= undelivered.all.number_of_records
       table.table.table-dark.table-striped.mt-2
         thead
           tr
             th(scope="col") 状況
             th(scope="col") レコード件数
         tbody
+          - let other = 0
           each row in undelivered.status_counter
-            tr
-              td= row.status
-              td= row.count
+            if row.count > 1
+              tr
+                td= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
+                td= row.count
+            else
+              - other++
+          tr
+            td その他
+            td= other
   script(src="/javascripts/update.js")
   script(src="/javascripts/api.js")

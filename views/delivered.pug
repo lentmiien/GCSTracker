@@ -1,15 +1,17 @@
 extends layout
 
 block content
-  h1 Delivered
+  h1 配達済レコード
   table.table.table-dark.table-striped
     thead
       tr
-        th(scope="col") Tracking#
-        th(scope="col") Country
-        th(scope="col") Shipped date
-        th(scope="col") Delivered date
-        th(scope="col") Delivery time
+        th(scope="col") 追跡番号
+        th(scope="col") 国名（
+          a(href="/mypage/delivered_country") 全国
+          | ）
+        th(scope="col") 発送日
+        th(scope="col") 配達日
+        th(scope="col") 発送時間
     tbody
       each row in rows
         - const sdate = new Date(row.shippeddate)
@@ -18,7 +20,8 @@ block content
         tr
           td
             a(href=`/mypage/details/${row.tracking}`)= row.tracking
-          td= row.country
+          td
+            a(href=`/mypage/country/${row.country}`)= row.country
           td= `${sdate.getFullYear()}-${sdate.getMonth()+1}-${sdate.getDate()}`
           td= `${edate.getFullYear()}-${edate.getMonth()+1}-${edate.getDate()}`
-          td= `${timediff} days`
+          td= `${timediff}日`

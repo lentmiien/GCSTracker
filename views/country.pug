@@ -1,7 +1,10 @@
 extends layout
 
 block content
-  h1 国別情報
+  h1 国別情報（
+    a(href="/mypage/delivered_country") 全国
+    | ）
+  i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   - const shipping_times = []
   each row in rows
@@ -55,10 +58,10 @@ block content
   table.table.table-dark.table-striped
     thead
       tr
-        th(scope="col") Country
-        th(scope="col") DHL shipping time
-        th(scope="col") EMS shipping time
-        th(scope="col") Other shipping time
+        th(scope="col") 国名
+        th(scope="col") DHL発送時間
+        th(scope="col") EMS発送時間
+        th(scope="col") Air/SAL発送時間
     tbody
       each country in country_data
         tr
@@ -81,20 +84,19 @@ block content
               i= `(${country.other.min}-${country.other.max} days)`
           else
             td
-  i *Unchecked packages are not included (DHL: within 3 days from shipment, EMS: within 5 days from shipment, Other: within 21 days from shipment)
   table.table.table-dark.table-striped
     thead
       tr
-        th(scope="col") Attribute
-        th(scope="col") Value
+        th(scope="col") 情報
+        th(scope="col") 値
     tbody
       tr
-        td Total packages
+        td 全荷物
         td= rows.length + undelivered.length
       tr
-        td Delivered packages
+        td 配達済
         td= `${rows.length} (${Math.round(10000*rows.length/(rows.length + undelivered.length))/100}%)`
   svg#chart
-  #chart_data= JSON.stringify(shipping_times)
+  #chart_data.hidden= JSON.stringify(shipping_times)
   script(src="https://d3js.org/d3.v5.min.js")
   script(src="/javascripts/d3_controller.js")

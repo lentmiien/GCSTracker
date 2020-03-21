@@ -14,6 +14,9 @@ router.get('/', controller.mypage);
 
 // Show analysis data
 router.get('/undelivered', controller.undelivered);
+router.get('/undelivered/:carrier/:start/:end', controller.undelivered);
+router.get('/undelivered_country', controller.undelivered_country);
+router.get('/ucountry/:country', controller.ucountry);
 router.get('/delivered', controller.delivered);
 router.get('/delivered_country', controller.delivered_country);
 router.get('/country/:country', controller.country);

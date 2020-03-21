@@ -17,11 +17,9 @@ html
               li.nav-item
                 a.nav-link(href="/mypage") Dashboard
               li.nav-item
-                a.nav-link(href="/mypage/undelivered") 未着データ
+                a.nav-link(href="/mypage/undelivered") 未着
               li.nav-item
-                a.nav-link(href="/mypage/delivered") 配達済データ
-              li.nav-item
-                a.nav-link(href="/mypage/delivered_country") 国別情報
+                a.nav-link(href="/mypage/delivered") 配達済
           if role == "guest"
             .form-inline.my-2.my-lg-0
               a.btn.btn-outline-info.my-2.my-sm-0(href="/login") Login
@@ -30,5 +28,4 @@ html
               button.btn.btn-outline-info.my-2.my-sm-0(type="submit") Logout
       block content
     script(src="/javascripts/jquery-3.4.1.slim.min.js")
-    //- script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous")
     script(src="/javascripts/bootstrap.bundle.min.js")
