@@ -1,102 +1,43 @@
 extends layout
 
 block content
-  h1 国別情報（
-    a(href="/mypage/delivered_country") 全国
+  h1= `国別配達情報　【${country}】　（`
+    a(href="/mypage/delivered_country") 全国を見る
     | ）
   i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
-  - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
-  - const shipping_times = []
-  each row in rows
-    - const sdate = new Date(row.shippeddate)
-    - const edate = new Date(row.delivereddate)
-    - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
-    - shipping_times.push(timediff)
-    - let added = false
-    each c in country_data
-      if c.country == row.country
-        if row.carrier == 'DHL'
-          if c.dhl.min > timediff
-            - c.dhl.min = timediff
-          if c.dhl.max < timediff
-            - c.dhl.max = timediff
-          - c.dhl.total += timediff
-          - c.dhl.count++
-        else if row.tracking.indexOf('EM') == 0
-          if c.ems.min > timediff
-            - c.ems.min = timediff
-          if c.ems.max < timediff
-            - c.ems.max = timediff
-          - c.ems.total += timediff
-          - c.ems.count++
-        else
-          if c.other.min > timediff
-            - c.other.min = timediff
-          if c.other.max < timediff
-            - c.other.max = timediff
-          - c.other.total += timediff
-          - c.other.count++
-        - added = true
-    if added == false
-      - country_data.push({ country: row.country, dhl: { total: 0, max: 0, min: 1000, count: 0 }, ems: { total: 0, max: 0, min: 1000, count: 0 }, other: { total: 0, max: 0, min: 1000, count: 0 }})
-      - const index = country_data.length - 1
-      if row.carrier == 'DHL'
-        - country_data[index].dhl.total = timediff
-        - country_data[index].dhl.max = timediff
-        - country_data[index].dhl.min = timediff
-        - country_data[index].dhl.count = 1
-      else if row.tracking.indexOf('EM') == 0
-        - country_data[index].ems.total = timediff
-        - country_data[index].ems.max = timediff
-        - country_data[index].ems.min = timediff
-        - country_data[index].ems.count = 1
-      else
-        - country_data[index].other.total = timediff
-        - country_data[index].other.max = timediff
-        - country_data[index].other.min = timediff
-        - country_data[index].other.count = 1
   table.table.table-dark.table-striped
     thead
       tr
-        th(scope="col") 国名
-        th(scope="col") DHL発送時間
-        th(scope="col") EMS発送時間
-        th(scope="col") Air/SAL発送時間
+        th(scope="col") 発送期間
+        th(scope="col") DHL
+        th(scope="col") EMS
+        th(scope="col") Air/SAL
     tbody
-      each country in country_data
+      each row in analyze
         tr
-          td= country.country
-          if country.dhl.count > 0
+          td= row.label
+          if row.dhl_count.all > 0
             td
-              b= `${Math.round(100 * country.dhl.total / country.dhl.count) / 100} days `
-              i= `(${country.dhl.min}-${country.dhl.max} days)`
+              b= `${row.dhl_count.done}件 `
+              i= `（${Math.round(10000 * row.dhl_count.done / row.dhl_count.all) / 100}%）`
+              i= `（平均：${Math.round(10 * row.dhl_count.days / row.dhl_count.done) / 10}日）`
           else
             td
-          if country.ems.count > 0
+          if row.ems_count.all > 0
             td
-              b= `${Math.round(100 * country.ems.total / country.ems.count) / 100} days `
-              i= `(${country.ems.min}-${country.ems.max} days)`
+              b= `${row.ems_count.done}件 `
+              i= `（${Math.round(10000 * row.ems_count.done / row.ems_count.all) / 100}%）`
+              i= `（平均：${Math.round(10 * row.ems_count.days / row.ems_count.done) / 10}日）`
           else
             td
-          if country.other.count > 0
+          if row.other_count.all > 0
             td
-              b= `${Math.round(100 * country.other.total / country.other.count) / 100} days `
-              i= `(${country.other.min}-${country.other.max} days)`
+              b= `${row.other_count.done}件 `
+              i= `（${Math.round(10000 * row.other_count.done / row.other_count.all) / 100}%）`
+              i= `（平均：${Math.round(10 * row.other_count.days / row.other_count.done) / 10}日）`
           else
             td
-  table.table.table-dark.table-striped
-    thead
-      tr
-        th(scope="col") 情報
-        th(scope="col") 値
-    tbody
-      tr
-        td 全荷物
-        td= rows.length + undelivered.length
-      tr
-        td 配達済
-        td= `${rows.length} (${Math.round(10000*rows.length/(rows.length + undelivered.length))/100}%)`
   svg#chart
-  #chart_data.hidden= JSON.stringify(shipping_times)
+  #chart_data.hidden= JSON.stringify(analyze[0].delivery_times)
   script(src="https://d3js.org/d3.v5.min.js")
   script(src="/javascripts/d3_controller.js")

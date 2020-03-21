@@ -488,10 +488,110 @@ exports.country = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.dataValues.delivered == true);
-      const undelivered = results.tracking.filter(row => row.dataValues.delivered == false);
+      // const rows = results.tracking.filter(row => row.dataValues.delivered == true);
+      // const undelivered = results.tracking.filter(row => row.dataValues.delivered == false);
 
-      res.render('country', { rows, undelivered });
+      const time = Date.now();
+      const d = new Date();
+      const analyze = [
+        {
+          label: '全体',
+          start: 0,
+          end: time,
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 },
+          delivery_times: []
+        },
+        {
+          label: '7日以内',
+          start: time - 604800000,
+          end: time,
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        },
+        {
+          label: '8日～30日',
+          start: time - 2592000000,
+          end: time - 604800000,
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        },
+        {
+          label: '31日～90日',
+          start: time - 7776000000,
+          end: time - 2592000000,
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        },
+        {
+          label: '91日以上',
+          start: 0,
+          end: time - 7776000000,
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        },
+        {
+          label: '今月',
+          start: new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0).getTime(),
+          end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime(),
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        },
+        {
+          label: '先月',
+          start: new Date(d.getFullYear(), d.getMonth() - 1, 1, 0, 0, 0, 0).getTime(),
+          end: new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999).getTime(),
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        },
+        {
+          label: '先々月',
+          start: new Date(d.getFullYear(), d.getMonth() - 2, 1, 0, 0, 0, 0).getTime(),
+          end: new Date(d.getFullYear(), d.getMonth() - 1, 0, 23, 59, 59, 999).getTime(),
+          dhl_count: { all: 0, done: 0, days: 0 },
+          ems_count: { all: 0, done: 0, days: 0 },
+          other_count: { all: 0, done: 0, days: 0 }
+        }
+      ];
+      results.tracking.forEach(entry => {
+        let days = 0;
+        if (entry.delivered == true) {
+          days = Math.round((entry.delivereddate - entry.shippeddate) / 86400000);
+          analyze[0].delivery_times.push(days);
+        }
+        for (let i = 0; i < analyze.length; i++) {
+          if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {
+            if (entry.carrier == 'DHL') {
+              analyze[i].dhl_count.all++;
+              if (entry.delivered == true) {
+                analyze[i].dhl_count.done++;
+                analyze[i].dhl_count.days += days;
+              }
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze[i].ems_count.all++;
+              if (entry.delivered == true) {
+                analyze[i].ems_count.done++;
+                analyze[i].ems_count.days += days;
+              }
+            } else {
+              analyze[i].other_count.all++;
+              if (entry.delivered == true) {
+                analyze[i].other_count.done++;
+                analyze[i].other_count.days += days;
+              }
+            }
+          }
+        }
+      });
+
+      res.render('country', { analyze, country: req.params.country });
     }
   );
 };
