@@ -36,6 +36,7 @@ function Select(range) {
   start_date.value = sd;
   end_date.value = ed;
 }
+Select('lastlastmonth');
 
 function Custom() {
   document.getElementById('custom').checked = true;

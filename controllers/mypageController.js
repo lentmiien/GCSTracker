@@ -334,7 +334,7 @@ exports.ucountry = async (req, res, next) => {
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
           other_count: { all: 0, notdone: 0 },
-          current_shipping_times: []
+          current_shipping_times: { dhl: [], dhl_ems: [], all: [] }
         },
         {
           label: '7日以内',
@@ -395,7 +395,17 @@ exports.ucountry = async (req, res, next) => {
       ];
       results.tracking.forEach(entry => {
         if (entry.delivered == false) {
-          analyze[0].current_shipping_times.push(Math.round((time - entry.shippeddate) / 86400000));
+          const tdays = Math.round((time - entry.shippeddate) / 86400000);
+          if (entry.carrier == 'DHL') {
+            analyze[0].current_shipping_times.dhl.push(tdays);
+            analyze[0].current_shipping_times.dhl_ems.push(tdays);
+            analyze[0].current_shipping_times.all.push(tdays);
+          } else if (entry.tracking.indexOf('EM') == 0) {
+            analyze[0].current_shipping_times.dhl_ems.push(tdays);
+            analyze[0].current_shipping_times.all.push(tdays);
+          } else {
+            analyze[0].current_shipping_times.all.push(tdays);
+          }
         }
         for (let i = 0; i < analyze.length; i++) {
           if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {
@@ -516,7 +526,7 @@ exports.country = async (req, res, next) => {
           dhl_count: { all: 0, done: 0, days: 0 },
           ems_count: { all: 0, done: 0, days: 0 },
           other_count: { all: 0, done: 0, days: 0 },
-          delivery_times: []
+          delivery_times: { dhl: [], dhl_ems: [], all: [] }
         },
         {
           label: '7日以内',
@@ -579,7 +589,16 @@ exports.country = async (req, res, next) => {
         let days = 0;
         if (entry.delivered == true) {
           days = Math.round((entry.delivereddate - entry.shippeddate) / 86400000);
-          analyze[0].delivery_times.push(days);
+          if (entry.carrier == 'DHL') {
+            analyze[0].delivery_times.dhl.push(days);
+            analyze[0].delivery_times.dhl_ems.push(days);
+            analyze[0].delivery_times.all.push(days);
+          } else if (entry.tracking.indexOf('EM') == 0) {
+            analyze[0].delivery_times.dhl_ems.push(days);
+            analyze[0].delivery_times.all.push(days);
+          } else {
+            analyze[0].delivery_times.all.push(days);
+          }
         }
         for (let i = 0; i < analyze.length; i++) {
           if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {

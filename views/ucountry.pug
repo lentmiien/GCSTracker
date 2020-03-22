@@ -2,7 +2,7 @@ extends layout
 
 block content
   h1= `国別未着情報　【${country}】　（`
-    a(href="/mypage/undelivered_country") 全国を見る
+    a(href="/mypage/undelivered_country") すべての国
     | ）
   i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   table.table.table-dark.table-striped
@@ -82,6 +82,12 @@ block content
         else
           td
   svg#chart
+    rect(x="20", width="12", height="12", style="fill:orange;")
+    text(x="37", y="12", fill="white") DHL
+    rect(x="80", width="12", height="12", style="fill:green;")
+    text(x="97", y="12", fill="white") EMS
+    rect(x="140", width="12", height="12", style="fill:steelblue;")
+    text(x="157", y="12", fill="white") Air/SAL
   #chart_data.hidden= JSON.stringify(analyze[0].current_shipping_times)
   script(src="https://d3js.org/d3.v5.min.js")
   script(src="/javascripts/d3_controller.js")

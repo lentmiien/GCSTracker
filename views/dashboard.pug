@@ -71,10 +71,10 @@ block content
             label(for="date_range") 期間
             #date_range.input-group
               .input-group-prepend
-                input#range_start.form-control(type="date", name="range_start", value="2020-01-01", onchange="Custom()")
+                input#range_start.form-control(type="date", name="range_start", onchange="Custom()")
               div.form-control.center-text スタート　　　⇒　　　エンド
               .input-group-append
-                input#range_end.form-control(type="date", name="range_end" value="2020-01-31", onchange="Custom()")
+                input#range_end.form-control(type="date", name="range_end", onchange="Custom()")
             label.mt-3(for="type") 対象*
             #type.form-group.form-control
               .form-check.form-check-inline
