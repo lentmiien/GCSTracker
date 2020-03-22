@@ -1,14 +1,15 @@
 extends layout
 
 block content
-  h1 未着の現在の配送時間
+  h1 未着の現在の件数
+  i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   table.table.table-dark.table-striped
     thead
       tr
         th(scope="col") 国名
-        th(scope="col") DHL発送時間
-        th(scope="col") EMS発送時間
-        th(scope="col") Air/SAL発送時間
+        th(scope="col") DHL
+        th(scope="col") EMS
+        th(scope="col") Air/SAL
     tbody
       each country in analyze.countries
         tr

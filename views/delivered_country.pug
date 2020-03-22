@@ -2,6 +2,7 @@ extends layout
 
 block content
   h1 国別の到着時間
+  i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   each row in rows
     - const sdate = new Date(row.shippeddate)

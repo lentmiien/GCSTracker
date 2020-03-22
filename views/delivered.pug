@@ -2,7 +2,9 @@ extends layout
 
 block content
   h1 到着レコード
-  p= `※最近の1週間のみ、${rows.length}件`
+  i= `※最近の1週間のみの到着データ`
+  br
+  i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   table.table.table-dark.table-striped
     thead
       tr
@@ -12,9 +14,9 @@ block content
         th(scope="col") 合計
     tbody
       tr
-        td= analyze.dhl_count
-        td= analyze.ems_count
-        td= analyze.other_count
+        td= `${analyze.dhl_count}件`
+        td= `${analyze.ems_count}件`
+        td= `${analyze.other_count}件`
         td= `${rows.length}件`
   table.table.table-dark.table-striped
     thead
