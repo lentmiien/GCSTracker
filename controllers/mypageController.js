@@ -676,6 +676,7 @@ async function TrackAll() {
   // Today date
   const td = new Date();
   let d = dateToString(td);
+  last_tracked.count = 0;
 
   // Reset counters every day
   if (d != JP_scraping_counter.current_date) {
