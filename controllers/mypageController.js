@@ -45,10 +45,8 @@ exports.mypage = async (req, res, next) => {
         return next(err);
       }
       const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
-      const delivered_rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > 0);
+      const delivered_rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > Date.now() - 2592000000);
 
-      let total = results.tracking.length;
-      let delivered = delivered_rows.length;
       let dhl_time = 0;
       let dhl_time_count = 0;
       let ems_time = 0;
@@ -56,20 +54,17 @@ exports.mypage = async (req, res, next) => {
       let other_time = 0;
       let other_time_count = 0;
       delivered_rows.forEach(data => {
-        // Skip records with unknown delivery dates (delivereddate == 1)
-        if (data.delivereddate > 1) {
-          // Check delivery time
-          const days = Math.round((data.delivereddate - data.shippeddate) / 86400000); // Divide by 86400000 to get result in days
-          if (data.carrier == 'DHL') {
-            dhl_time += days;
-            dhl_time_count++;
-          } else if (data.tracking.indexOf('EM') == 0) {
-            ems_time += days;
-            ems_time_count++;
-          } else {
-            other_time += days;
-            other_time_count++;
-          }
+        // Check delivery time
+        const days = Math.round((data.delivereddate - data.shippeddate) / 86400000); // Divide by 86400000 to get result in days
+        if (data.carrier == 'DHL') {
+          dhl_time += days;
+          dhl_time_count++;
+        } else if (data.tracking.indexOf('EM') == 0) {
+          ems_time += days;
+          ems_time_count++;
+        } else {
+          other_time += days;
+          other_time_count++;
         }
       });
       dhl_time = Math.round(100 * (dhl_time / dhl_time_count)) / 100;
@@ -176,7 +171,7 @@ exports.mypage = async (req, res, next) => {
         }
       });
 
-      res.render('dashboard', { rows, total, delivered, dhl_time, ems_time, other_time, undelivered });
+      res.render('dashboard', { rows, dhl_time, ems_time, other_time, undelivered });
     }
   );
 };

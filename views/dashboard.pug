@@ -8,9 +8,7 @@ block content
   .row.mb-3
     .col
       h3 追跡状況
-      div= `全レコード：${total}件`
-      civ= `未着件数：${total - delivered}件`
-      div= `■平均配送時間■`
+      div= `■平均配送時間（最近の30日間）■`
       div= `- DHL：${dhl_time}日`
       div= `- EMS：${ems_time}日`
       div= `- Air/SAL：${other_time}日`
