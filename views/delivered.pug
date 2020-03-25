@@ -39,5 +39,5 @@ block content
           td
             a(href=`/mypage/country/${row.country}`)= row.country
           td= `${sdate.getFullYear()}-${sdate.getMonth()+1}-${sdate.getDate()}`
-          td= `${edate.getFullYear()}-${edate.getMonth()+1}-${edate.getDate()}`
-          td= `${timediff}日`
+          td= `${row.delivereddate == 1 ? "unknown" : edate.getFullYear()}-${row.delivereddate == 1 ? "" : edate.getMonth()+1}-${row.delivereddate == 1 ? "" : edate.getDate()}`
+          td= `${row.delivereddate == 1 ? "unknown" : timediff}日`

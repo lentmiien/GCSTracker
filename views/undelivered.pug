@@ -29,7 +29,7 @@ block content
         th(scope="col") 最新状況
         th(scope="col") 発送日から
     tbody
-      - const edate = (new Date()).getTime()
+      - const edate = Date.now()
       each row in rows
         - const timediff = Math.round((edate - row.shippeddate) / 86400000)
         tr

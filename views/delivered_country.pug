@@ -5,34 +5,36 @@ block content
   i ※対象外：DHL発送から3日以内、EMS発送から5日以内、Air/SAL発送から21日以内
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   each row in rows
+    - let added = true
     - const sdate = new Date(row.shippeddate)
     - const edate = new Date(row.delivereddate)
     - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
-    - let added = false
-    each c in country_data
-      if c.country == row.country
-        if row.carrier == 'DHL'
-          if c.dhl.min > timediff
-            - c.dhl.min = timediff
-          if c.dhl.max < timediff
-            - c.dhl.max = timediff
-          - c.dhl.total += timediff
-          - c.dhl.count++
-        else if row.tracking.indexOf('EM') == 0
-          if c.ems.min > timediff
-            - c.ems.min = timediff
-          if c.ems.max < timediff
-            - c.ems.max = timediff
-          - c.ems.total += timediff
-          - c.ems.count++
-        else
-          if c.other.min > timediff
-            - c.other.min = timediff
-          if c.other.max < timediff
-            - c.other.max = timediff
-          - c.other.total += timediff
-          - c.other.count++
-        - added = true
+    if row.delivereddate > 1
+      - added = false
+      each c in country_data
+        if c.country == row.country
+          if row.carrier == 'DHL'
+            if c.dhl.min > timediff
+              - c.dhl.min = timediff
+            if c.dhl.max < timediff
+              - c.dhl.max = timediff
+            - c.dhl.total += timediff
+            - c.dhl.count++
+          else if row.tracking.indexOf('EM') == 0
+            if c.ems.min > timediff
+              - c.ems.min = timediff
+            if c.ems.max < timediff
+              - c.ems.max = timediff
+            - c.ems.total += timediff
+            - c.ems.count++
+          else
+            if c.other.min > timediff
+              - c.other.min = timediff
+            if c.other.max < timediff
+              - c.other.max = timediff
+            - c.other.total += timediff
+            - c.other.count++
+          - added = true
     if added == false
       - country_data.push({ country: row.country, dhl: { total: 0, max: 0, min: 1000, count: 0 }, ems: { total: 0, max: 0, min: 1000, count: 0 }, other: { total: 0, max: 0, min: 1000, count: 0 }})
       - const index = country_data.length - 1

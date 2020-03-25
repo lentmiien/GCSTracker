@@ -235,10 +235,11 @@ exports.api_get = async (req, res) => {
       tracking: function(callback) {
         Tracking.findAll({
           where: {
-            delivereddate: {
+            lastchecked: {
               [Op.gte]: start_date,
               [Op.lte]: end_date
-            }
+            },
+            delivered: true
           }
         }).then(entry => callback(null, entry));
       }
@@ -260,11 +261,13 @@ exports.api_get = async (req, res) => {
 
       // tracking	delivereddate	delivered
       results.tracking.forEach(r => {
-        response['records'].push({
-          tracking: r.tracking,
-          delivereddate: r.delivereddate,
-          delivered: r.delivered
-        });
+        if (r.delivereddate > 1) {
+          response['records'].push({
+            tracking: r.tracking,
+            delivereddate: dateToString(new Date(r.delivereddate)),
+            delivered: r.delivered
+          });
+        }
       });
 
       res.json(response);

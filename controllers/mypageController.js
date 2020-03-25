@@ -37,9 +37,7 @@ exports.mypage = async (req, res, next) => {
   async.parallel(
     {
       tracking: callback => {
-        Tracking.findAll({
-          order: [['shippeddate', 'ASC']]
-        }).then(entry => callback(null, entry));
+        Tracking.findAll().then(entry => callback(null, entry));
       }
     },
     (err, results) => {
@@ -47,7 +45,7 @@ exports.mypage = async (req, res, next) => {
         return next(err);
       }
       const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
-      const delivered_rows = results.tracking.filter(row => row.delivered == true);
+      const delivered_rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > 0);
 
       let total = results.tracking.length;
       let delivered = delivered_rows.length;
@@ -58,17 +56,20 @@ exports.mypage = async (req, res, next) => {
       let other_time = 0;
       let other_time_count = 0;
       delivered_rows.forEach(data => {
-        // Check delivery time
-        const days = Math.round((data.delivereddate - data.shippeddate) / 86400000); // Divide by 86400000 to get result in days
-        if (data.carrier == 'DHL') {
-          dhl_time += days;
-          dhl_time_count++;
-        } else if (data.tracking.indexOf('EM') == 0) {
-          ems_time += days;
-          ems_time_count++;
-        } else {
-          other_time += days;
-          other_time_count++;
+        // Skip records with unknown delivery dates (delivereddate == 1)
+        if (data.delivereddate > 1) {
+          // Check delivery time
+          const days = Math.round((data.delivereddate - data.shippeddate) / 86400000); // Divide by 86400000 to get result in days
+          if (data.carrier == 'DHL') {
+            dhl_time += days;
+            dhl_time_count++;
+          } else if (data.tracking.indexOf('EM') == 0) {
+            ems_time += days;
+            ems_time_count++;
+          } else {
+            other_time += days;
+            other_time_count++;
+          }
         }
       });
       dhl_time = Math.round(100 * (dhl_time / dhl_time_count)) / 100;
@@ -454,7 +455,7 @@ exports.delivered = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.dataValues.delivered == true);
+      const rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > 0);
 
       const analyze = {
         dhl_count: 0,
@@ -490,7 +491,7 @@ exports.delivered_country = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.dataValues.delivered == true);
+      const rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > 0);
 
       res.render('delivered_country', { rows });
     }
@@ -587,7 +588,7 @@ exports.country = async (req, res, next) => {
       ];
       results.tracking.forEach(entry => {
         let days = 0;
-        if (entry.delivered == true) {
+        if (entry.delivered == true && entry.delivereddate > 1) {
           days = Math.round((entry.delivereddate - entry.shippeddate) / 86400000);
           if (entry.carrier == 'DHL') {
             analyze[0].delivery_times.dhl.push(days);
@@ -604,19 +605,19 @@ exports.country = async (req, res, next) => {
           if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {
             if (entry.carrier == 'DHL') {
               analyze[i].dhl_count.all++;
-              if (entry.delivered == true) {
+              if (entry.delivered == true && entry.delivereddate > 0) {
                 analyze[i].dhl_count.done++;
                 analyze[i].dhl_count.days += days;
               }
             } else if (entry.tracking.indexOf('EM') == 0) {
               analyze[i].ems_count.all++;
-              if (entry.delivered == true) {
+              if (entry.delivered == true && entry.delivereddate > 0) {
                 analyze[i].ems_count.done++;
                 analyze[i].ems_count.days += days;
               }
             } else {
               analyze[i].other_count.all++;
-              if (entry.delivered == true) {
+              if (entry.delivered == true && entry.delivereddate > 0) {
                 analyze[i].other_count.done++;
                 analyze[i].other_count.days += days;
               }
