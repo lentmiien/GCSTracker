@@ -51,7 +51,7 @@ exports.api_add = async (req, res) => {
   async.parallel(
     {
       tracking: function(callback) {
-        Tracking.findAll().then(entry => callback(null, entry));
+        Tracking.findAll({ attributes: ['tracking'] }).then(entry => callback(null, entry));
       }
     },
     function(err, results) {

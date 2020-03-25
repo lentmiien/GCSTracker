@@ -932,7 +932,9 @@ async function Automation() {
     setTimeout(Automation, AUTO_RETRY);
   }
 }
-Automation();
+if (process.env.LOCAL == undefined) {
+  Automation();
+}
 
 // Track (Scrap/API) start route (redirect to dashboard)
 exports.track = async (req, res) => {
