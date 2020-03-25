@@ -29,6 +29,46 @@ To come: USPS API tracking...
 
 This application uses a MySQL database.
 
+### Database columns
+
+- tracking: type.STRING
+  - Tracking number of package, always required
+- carrier: type.STRING
+  - The tracking service to use: JP / USPS / DHL
+- country: type.STRING
+  - The destination country according to the tracking information (country of last tracking update)
+  - \*If delivered within Japan, set to second last country, and mark record as failed delivery
+- addeddate: type.BIGINT
+  - Date when added to database, never needs to be updated
+- lastchecked: type.BIGINT
+  - Last time checked/updated
+- status: type.STRING
+  - Last tracking status
+- shippeddate: type.BIGINT
+  - Shipping date (date of first tracking status)
+- delivereddate: type.BIGINT
+  - Delivered date, should be the date when the package was delivered to the customer, or the same as the shipping date if unknown.
+  - \*If set to NULL/0 then the package was not delivered successfully (returned or lost)
+  - \*Also set to NULL/0 if currently in progress
+- delivered: type.BOOLEAN
+  - delivered should be set to 1 when a package has been delivered, determined as lost, or been returned (for returned packages, set to 1 when package arrives at our warehouse)
+- data: type.TEXT
+  - Acquired tracking data
+
+### Important statuses
+
+1. Currently tracking the package
+   - delivereddate == 0
+   - delivered == 0
+2. Package was delivered to customer
+   - delivereddate == timestamp or 1
+   - delivered == 1
+   - status == "delivered"
+3. Package was lost or returned
+   - delivereddate == 0
+   - delivered == 1
+   - status == "lost" or "returned"
+
 ## API
 
 This application has 2 API access points.
