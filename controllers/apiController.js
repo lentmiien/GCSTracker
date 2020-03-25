@@ -122,6 +122,81 @@ exports.api_add = async (req, res) => {
   );
 };
 
+exports.api_report = async (req, res) => {
+  const response = { status: 'OK' };
+
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
+  }
+
+  // Get new data
+  // req.body = {
+  //   lost: [ 'rec1', 'rec2', 'rec3' ],
+  //   delivered: [ {id:'rec4', timestamp:'12315646546'} ],
+  //   returned: [ 'rec5', 'rec6', 'rec7' ]
+  // }
+  const lost = req.body.lost;
+  const delivered = req.body.delivered;
+  const returned = req.body.returned;
+
+  // Update all lost records
+  lost.forEach(r => {
+    Tracking.update(
+      {
+        status: 'lost',
+        delivereddate: 0,
+        delivered: true
+      },
+      {
+        where: { tracking: r }
+      }
+    );
+  });
+
+  // Update all delivered records
+  delivered.forEach(r => {
+    const timestamp = parseInt(r.timestamp);
+    Tracking.update(
+      {
+        status: 'delivered',
+        delivereddate: timestamp > 1 ? timestamp : 1,
+        delivered: true
+      },
+      {
+        where: { tracking: r.id, delivered: false }
+      }
+    );
+  });
+
+  // Update all returned records
+  returned.forEach(r => {
+    Tracking.update(
+      {
+        status: 'returned',
+        delivereddate: 0,
+        delivered: true
+      },
+      {
+        where: { tracking: r }
+      }
+    );
+  });
+
+  // Done!
+  res.json(response);
+};
+
 // GET get "delivered" or "not delivered" status
 // /get/:startdate/:enddate
 exports.api_get = async (req, res) => {

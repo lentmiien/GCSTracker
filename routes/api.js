@@ -11,6 +11,7 @@ var controller = require('../controllers/apiController');
 
 // API routes
 router.post('/add', controller.api_add);
+router.post('/report', controller.api_report);
 router.get('/get/:startdate/:enddate', controller.api_get);
 
 // Export router
