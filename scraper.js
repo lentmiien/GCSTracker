@@ -167,6 +167,7 @@ const country_mapper = {
   UK: 'UNITED KINGDOM',
   'VIET NAM': 'VIETNAM',
   "CHINA, PEOPLE'S REPUBLIC": 'CHINA',
+  'CHINA MAINLAND': 'CHINA',
   MACAU: 'MACAO',
   東京都: 'JAPAN',
   'IRELAND, REPUBLIC OF': 'IRELAND'
