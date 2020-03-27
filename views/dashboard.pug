@@ -8,6 +8,9 @@ block content
   .row.mb-3
     .col
       h3 追跡状況
+      div= `無効レコード：${undelivered.invalid}件`
+        if undelivered.invalid > 0
+          a.btn.btn-link(href="/mypage/invalid") 表示
       div= `■平均配送時間（最近の30日間）■`
       div= `- DHL：${dhl_time}日`
       div= `- EMS：${ems_time}日`

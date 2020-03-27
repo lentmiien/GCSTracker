@@ -99,65 +99,70 @@ exports.mypage = async (req, res, next) => {
           ems_records: 0,
           other_records: 0
         },
-        status_counter: []
+        status_counter: [],
+        invalid: 0
       };
       rows.forEach(row => {
-        undelivered.all.number_of_records++;
-        if (row.shippeddate > undelivered.last7days.limit) {
-          undelivered.last7days.number_of_records++;
-        }
-        if (row.shippeddate > undelivered.last30days.limit) {
-          undelivered.last30days.number_of_records++;
-        }
-        if (row.shippeddate > undelivered.last90days.limit) {
-          undelivered.last90days.number_of_records++;
-        }
-        if (row.carrier == 'DHL') {
-          undelivered.all.dhl_records++;
-          if (row.shippeddate > undelivered.last7days.limit) {
-            undelivered.last7days.dhl_records++;
-          }
-          if (row.shippeddate > undelivered.last30days.limit) {
-            undelivered.last30days.dhl_records++;
-          }
-          if (row.shippeddate > undelivered.last90days.limit) {
-            undelivered.last90days.dhl_records++;
-          }
-        } else if (row.tracking.indexOf('EM') == 0) {
-          undelivered.all.ems_records++;
-          if (row.shippeddate > undelivered.last7days.limit) {
-            undelivered.last7days.ems_records++;
-          }
-          if (row.shippeddate > undelivered.last30days.limit) {
-            undelivered.last30days.ems_records++;
-          }
-          if (row.shippeddate > undelivered.last90days.limit) {
-            undelivered.last90days.ems_records++;
-          }
+        if (row.carrier == 'INVALID') {
+          undelivered.invalid++;
         } else {
-          undelivered.all.other_records++;
+          undelivered.all.number_of_records++;
           if (row.shippeddate > undelivered.last7days.limit) {
-            undelivered.last7days.other_records++;
+            undelivered.last7days.number_of_records++;
           }
           if (row.shippeddate > undelivered.last30days.limit) {
-            undelivered.last30days.other_records++;
+            undelivered.last30days.number_of_records++;
           }
           if (row.shippeddate > undelivered.last90days.limit) {
-            undelivered.last90days.other_records++;
+            undelivered.last90days.number_of_records++;
           }
-        }
-        let new_status = row.status ? true : false;
-        for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
-          if (undelivered.status_counter[i].status == row.status) {
-            undelivered.status_counter[i].count++;
-            new_status = false;
+          if (row.carrier == 'DHL') {
+            undelivered.all.dhl_records++;
+            if (row.shippeddate > undelivered.last7days.limit) {
+              undelivered.last7days.dhl_records++;
+            }
+            if (row.shippeddate > undelivered.last30days.limit) {
+              undelivered.last30days.dhl_records++;
+            }
+            if (row.shippeddate > undelivered.last90days.limit) {
+              undelivered.last90days.dhl_records++;
+            }
+          } else if (row.tracking.indexOf('EM') == 0) {
+            undelivered.all.ems_records++;
+            if (row.shippeddate > undelivered.last7days.limit) {
+              undelivered.last7days.ems_records++;
+            }
+            if (row.shippeddate > undelivered.last30days.limit) {
+              undelivered.last30days.ems_records++;
+            }
+            if (row.shippeddate > undelivered.last90days.limit) {
+              undelivered.last90days.ems_records++;
+            }
+          } else {
+            undelivered.all.other_records++;
+            if (row.shippeddate > undelivered.last7days.limit) {
+              undelivered.last7days.other_records++;
+            }
+            if (row.shippeddate > undelivered.last30days.limit) {
+              undelivered.last30days.other_records++;
+            }
+            if (row.shippeddate > undelivered.last90days.limit) {
+              undelivered.last90days.other_records++;
+            }
           }
-        }
-        if (new_status) {
-          undelivered.status_counter.push({
-            status: row.status,
-            count: 1
-          });
+          let new_status = row.status ? true : false;
+          for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
+            if (undelivered.status_counter[i].status == row.status) {
+              undelivered.status_counter[i].count++;
+              new_status = false;
+            }
+          }
+          if (new_status) {
+            undelivered.status_counter.push({
+              status: row.status,
+              count: 1
+            });
+          }
         }
       });
 
@@ -174,6 +179,41 @@ exports.mypage = async (req, res, next) => {
       res.render('dashboard', { rows, dhl_time, ems_time, other_time, undelivered });
     }
   );
+};
+
+// Show all invalid records
+exports.invalid = (req, res, next) => {
+  async.parallel(
+    {
+      invalid: callback => {
+        Tracking.findAll({ where: { carrier: 'INVALID' } }).then(data => callback(null, data));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      res.render('invalid', { records: results.invalid });
+    }
+  );
+};
+exports.process_invalid = (req, res, next) => {
+  Tracking.destroy({ where: { id: req.params.id } })
+    .then(() => {
+      res.json({ status: 'OK' });
+    })
+    .catch(() => {
+      res.json({ status: 'ERROR' });
+    });
+};
+exports.process_valid = (req, res, next) => {
+  Tracking.update({ carrier: req.params.carrier }, { where: { id: req.params.id } })
+    .then(() => {
+      res.json({ status: 'OK' });
+    })
+    .catch(() => {
+      res.json({ status: 'ERROR' });
+    });
 };
 
 // Show all undelivered packages
