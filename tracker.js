@@ -60,6 +60,7 @@ const fetchDataUSPS = async siteUrl => {
   return data;
 };
 
+let last_error = false;
 const getResultsAPI = async (siteUrl, carrier) => {
   let data;
   if (carrier == 'DHL') {
@@ -73,6 +74,8 @@ const getResultsAPI = async (siteUrl, carrier) => {
   };
 
   if (data.error == false) {
+    last_error = false;
+
     if (carrier == 'JP') {
       // Japan Post tracking
       // Try to acquire destination country
@@ -148,6 +151,16 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // Save raw data
       output['rawdata'] = JSON.stringify(data);
     }
+  } else if (output.HTML_status == 404 && last_error == false) {
+    last_error = true;
+    // Cound not find any trackable record
+    // Return an 'INVALID' result
+    output['country'] = 'JAPAN';
+    output['carrier'] = 'INVALID';
+    output['status'] = 'No tracking';
+    output['shippeddate'] = 0;
+    output['delivered'] = 0;
+    output.HTML_status = 200; // One 404 is OK, so change to 200 in return
   }
 
   return output;
