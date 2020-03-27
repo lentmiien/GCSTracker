@@ -75,22 +75,32 @@ const getResults = async (siteUrl, carrier) => {
           });
         }
       });
-      // Try to acquire destination country
-      output['country'] = '';
-      for (let cnt = tracking_data.length - 1; cnt >= 0 && output['country'].length == 0; cnt--) {
-        output['country'] = CountryNormalize(tracking_data[cnt].location);
-      }
-      if (output['country'] == 'USA') {
-        output['carrier'] = 'USPS';
-      }
-      // Acquire last tracking update
-      output['status'] = tracking_data[tracking_data.length - 1].description;
-      // Acquire shipped date
-      output['shippeddate'] = tracking_data[0].timestamp;
-      // Try to acquire delivered date
-      if (output['status'] == 'お届け済み') {
-        output['delivered'] = tracking_data[tracking_data.length - 1].timestamp;
+      if (tracking_data.length > 0) {
+        // Try to acquire destination country
+        output['country'] = '';
+        for (let cnt = tracking_data.length - 1; cnt >= 0 && output['country'].length == 0; cnt--) {
+          output['country'] = CountryNormalize(tracking_data[cnt].location);
+        }
+        if (output['country'] == 'USA') {
+          output['carrier'] = 'USPS';
+        }
+        // Acquire last tracking update
+        output['status'] = tracking_data[tracking_data.length - 1].description;
+        // Acquire shipped date
+        output['shippeddate'] = tracking_data[0].timestamp;
+        // Try to acquire delivered date
+        if (output['status'] == 'お届け済み') {
+          output['delivered'] = tracking_data[tracking_data.length - 1].timestamp;
+        } else {
+          output['delivered'] = 0;
+        }
       } else {
+        // Cound not find any trackable record
+        // Return an 'INVALID' result
+        output['country'] = 'JAPAN';
+        output['carrier'] = 'INVALID';
+        output['status'] = 'No tracking';
+        output['shippeddate'] = 0;
         output['delivered'] = 0;
       }
       // Save raw data
