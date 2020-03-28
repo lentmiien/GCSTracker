@@ -105,6 +105,7 @@ exports.api_add = async (req, res) => {
             tracking: tracking[i],
             carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
             addeddate: dts,
+            shippeddate: dts,
             delivered: '0'
           });
           response['added_records']++;

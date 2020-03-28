@@ -17,6 +17,26 @@ To come: USPS API tracking...
 3. Uses bootstrap styling and javascript
 4. Uses D3 library for plotting graphs
 
+### Timing
+
+DHL
+
+- Start tracking 3 days after shipment
+- Update every day
+- Stop tracking when delivered or after 90 days from shipment
+
+EMS
+
+- Start tracking 5 days after shipment
+- Update every 2nd day
+- Stop tracking when delivered or after 120 days from shipment
+
+Other
+
+- Start tracking 21 days after shipment
+- Update every 4th day (every 2nd day for USPS)
+- Stop tracking when delivered or after 120 days from shipment
+
 ## Startup
 
 1. Download git file and extract to an empty folder

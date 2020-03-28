@@ -161,6 +161,15 @@ const getResultsAPI = async (siteUrl, carrier) => {
     output['shippeddate'] = 0;
     output['delivered'] = 0;
     output.HTML_status = 200; // One 404 is OK, so change to 200 in return
+  } else {
+    last_error = true;
+    // Cound not find any trackable record
+    // Return an 'INVALID' result
+    output['country'] = 'JAPAN';
+    output['carrier'] = 'INVALID';
+    output['status'] = 'No tracking';
+    output['shippeddate'] = 0;
+    output['delivered'] = 0;
   }
 
   return output;
