@@ -275,7 +275,6 @@ exports.undelivered = async (req, res, next) => {
 
 // Show country delivery times
 exports.undelivered_country = async (req, res, next) => {
-  // TODO fix!!!
   async.parallel(
     {
       tracking: callback => {
@@ -739,17 +738,12 @@ async function TrackAll() {
   let dhlfc = DaysAgo(3);
   let dhlnc = DaysAgo(1);
 
-  // EMS checks, first check after 5 days, then check every 2nd day
-  let emsfc = DaysAgo(5);
-  let emsnc = DaysAgo(2);
+  // Postal checks, first check after 7 days, then check every 3rd day
+  let postalfc = DaysAgo(7);
+  let postalnc = DaysAgo(3);
 
-  // Other checks, first check after 21 days, then check every 4th day
-  let ofc = DaysAgo(21);
-  let onc = DaysAgo(4);
-
-  // Stop tracking after (DHL) 90 days / (Postal) 120 days
-  const dhl_cutoff = DaysAgo(90);
-  const post_cutoff = DaysAgo(120);
+  // Stop tracking after 90 days
+  const cutoff = DaysAgo(90);
 
   async.parallel(
     {
@@ -759,13 +753,13 @@ async function TrackAll() {
             carrier: 'JP',
             delivered: false,
             shippeddate: {
-              [Op.gte]: post_cutoff
+              [Op.gte]: cutoff
             },
             addeddate: {
-              [Op.lte]: emsfc
+              [Op.lte]: postalfc
             },
             lastchecked: {
-              [Op.lte]: onc
+              [Op.lte]: postalnc
             }
           }
         }).then(entry => callback(null, entry));
@@ -776,10 +770,10 @@ async function TrackAll() {
             carrier: 'USPS',
             delivered: false,
             shippeddate: {
-              [Op.gte]: post_cutoff
+              [Op.gte]: cutoff
             },
             lastchecked: {
-              [Op.lte]: emsnc
+              [Op.lte]: postalnc
             }
           }
         }).then(entry => callback(null, entry));
@@ -790,7 +784,7 @@ async function TrackAll() {
             carrier: 'DHL',
             delivered: false,
             shippeddate: {
-              [Op.gte]: dhl_cutoff
+              [Op.gte]: cutoff
             },
             addeddate: {
               [Op.lte]: dhlfc
@@ -836,7 +830,6 @@ async function TrackAll() {
 let JP_timer = 0;
 async function JP_tracker(tracking) {
   const total = tracking.length;
-  //JP_scraping_counter.done = 0;
 
   // Loop through tracking
   for (let i = 0; i < total; i++) {
@@ -890,7 +883,6 @@ async function JP_tracker(tracking) {
 let USPS_timer = 0;
 async function USPS_tracker(tracking) {
   const total = tracking.length;
-  //USPS_API_counter.done = 0;
 
   // Loop through tracking
   for (let i = 0; i < total; i++) {
@@ -944,8 +936,6 @@ async function USPS_tracker(tracking) {
 let DHL_timer = 0;
 async function DHL_tracker(tracking) {
   const total = tracking.length;
-  //DHL_scraping_counter.done = 0;
-  //DHL_API_counter.done = 0;
 
   // Loop through tracking
   for (let i = 0; i < total; i++) {

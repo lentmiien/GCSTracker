@@ -103,8 +103,8 @@ block content
           tr
             th(scope="col") 発送日から
             th(scope="col") DHL（3日以上）
-            th(scope="col") EMS（5日以上）
-            th(scope="col") Air/SAL（21日以上）
+            th(scope="col") EMS（7日以上）
+            th(scope="col") Air/SAL（7日以上）
             th(scope="col") 合計
         tbody
           tr
@@ -119,7 +119,11 @@ block content
                 a(href=`/mypage/undelivered/ems/${undelivered.last7days.limit}/${Date.now()}`)= undelivered.last7days.ems_records
               else
                 span 0
-            td --
+            td
+              if undelivered.last7days.other_records > 0
+                a(href=`/mypage/undelivered/other/${undelivered.last7days.limit}/${Date.now()}`)= undelivered.last7days.other_records
+              else
+                span 0
             td
               if undelivered.last7days.number_of_records > 0
                 a(href=`/mypage/undelivered/all/${undelivered.last7days.limit}/${Date.now()}`)= undelivered.last7days.number_of_records
@@ -138,8 +142,8 @@ block content
               else
                 span 0
             td
-              if undelivered.last30days.other_records > 0
-                a(href=`/mypage/undelivered/other/${undelivered.last30days.limit}/${undelivered.last7days.limit}`)= undelivered.last30days.other_records
+              if undelivered.last30days.other_records - undelivered.last7days.other_records > 0
+                a(href=`/mypage/undelivered/other/${undelivered.last30days.limit}/${undelivered.last7days.limit}`)= undelivered.last30days.other_records - undelivered.last7days.other_records
               else
                 span 0
             td
