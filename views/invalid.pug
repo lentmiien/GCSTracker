@@ -2,18 +2,21 @@ extends layout
 
 block content
   h1 無効レコード
-  table.table.table-dark.table-striped
+  table.table.table-dark.table-striped.table-bordered.table-hover
+    caption
+      a(href="/api/csv?labels=Tracking&columns=tracking&carrier=INVALID") Download
     thead
       tr
         td(span='col') 追跡番号
-        td(span='col') 指示
+        td.text-center(span='col') 指示
     tbody
       each r in records
         tr(id=`row${r.id}`)
           td= r.tracking
           td
-            div(id=`btn${r.id}`)
-              button.btn.btn-success.mr-3(type="button", onclick=`Valid(${r.id},'JP')`) 復元（JP）
-              button.btn.btn-success.mr-3(type="button", onclick=`Valid(${r.id},'DHL')`) 復元（DHL）
+            div.d-flex.justify-content-around(id=`btn${r.id}`)
+              button.btn.btn-success(type="button", onclick=`Valid(${r.id},'JP')`) 復元（JP）
+              button.btn.btn-success(type="button", onclick=`Valid(${r.id},'USPS')`) 復元（USPS）
+              button.btn.btn-success(type="button", onclick=`Valid(${r.id},'DHL')`) 復元（DHL）
               button.btn.btn-danger(type="button", onclick=`Invalid(${r.id})`) 削除
   script(src="/javascripts/invalid_controller.js")

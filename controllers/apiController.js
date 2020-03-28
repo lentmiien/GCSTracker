@@ -105,6 +105,7 @@ exports.api_add = async (req, res) => {
             tracking: tracking[i],
             carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
             addeddate: dts,
+            lastchecked: 0,
             shippeddate: dts,
             delivered: '0'
           });
@@ -272,6 +273,65 @@ exports.api_get = async (req, res) => {
       });
 
       res.json(response);
+    }
+  );
+};
+
+///api/csv?labels=Tracking&columns=tracking&carrier=INVALID
+exports.api_csv = async (req, res) => {
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
+  }
+
+  // Generate database search query
+  // labels=Tracking&columns=tracking&carrier=INVALID
+  const keys = Object.keys(req.query);
+  const where = {};
+  keys.forEach(key => {
+    if (!(key == 'labels' || key == 'columns')) {
+      where[key] = req.query[key];
+    }
+  });
+
+  async.parallel(
+    {
+      tracking: function(callback) {
+        Tracking.findAll({ where }).then(entry => callback(null, entry));
+      }
+    },
+    function(err, results) {
+      if (err) {
+        return next(err);
+      }
+      if (!results.tracking) {
+        // No results.
+        res.redirect('/mypage');
+      }
+
+      // labels=Tracking&columns=tracking&carrier=INVALID
+      const cols = req.query.columns.split(',');
+      let outdata = req.query.labels;
+      results.tracking.forEach(r => {
+        outdata += `\n${r[cols[0]]}`;
+        for (let i = 1; i < cols.length; i++) {
+          outdata += `,${r[cols[i]]}`;
+        }
+      });
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="Download_${Date.now()}.csv"`);
+      res.send(outdata);
     }
   );
 };

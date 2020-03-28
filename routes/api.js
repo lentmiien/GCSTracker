@@ -13,6 +13,7 @@ var controller = require('../controllers/apiController');
 router.post('/add', controller.api_add);
 router.post('/report', controller.api_report);
 router.get('/get/:startdate/:enddate', controller.api_get);
+router.get('/csv', controller.api_csv);
 
 // Export router
 module.exports = router;
