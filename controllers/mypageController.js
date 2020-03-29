@@ -44,8 +44,8 @@ exports.mypage = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
-      const delivered_rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > Date.now() - 2592000000);
+      const undelivered_rows = results.tracking.filter(row => row.delivereddate == 0);
+      const delivered_one_month_rows = results.tracking.filter(row => row.delivereddate > 1 && row.delivereddate > Date.now() - 2592000000);
 
       let dhl_time = 0;
       let dhl_time_count = 0;
@@ -53,7 +53,7 @@ exports.mypage = async (req, res, next) => {
       let ems_time_count = 0;
       let other_time = 0;
       let other_time_count = 0;
-      delivered_rows.forEach(data => {
+      delivered_one_month_rows.forEach(data => {
         // Check delivery time
         const days = Math.round((data.delivereddate - data.shippeddate) / 86400000); // Divide by 86400000 to get result in days
         if (data.carrier == 'DHL') {
@@ -67,9 +67,9 @@ exports.mypage = async (req, res, next) => {
           other_time_count++;
         }
       });
-      dhl_time = Math.round(100 * (dhl_time / dhl_time_count)) / 100;
-      ems_time = Math.round(100 * (ems_time / ems_time_count)) / 100;
-      other_time = Math.round(100 * (other_time / other_time_count)) / 100;
+      dhl_time = Math.round(10 * (dhl_time / dhl_time_count)) / 10;
+      ems_time = Math.round(10 * (ems_time / ems_time_count)) / 10;
+      other_time = Math.round(10 * (other_time / other_time_count)) / 10;
 
       const undelivered = {
         last7days: {
@@ -103,11 +103,11 @@ exports.mypage = async (req, res, next) => {
         invalid: 0,
         has_old: false
       };
-      rows.forEach(row => {
+      undelivered_rows.forEach(row => {
         if (row.carrier == 'INVALID') {
           undelivered.invalid++;
         } else {
-          if (row.shippeddate < DaysAgo(180)) {
+          if (row.shippeddate < DaysAgo(180) && row.delivered == 0) {
             undelivered.has_old = true;
           }
           undelivered.all.number_of_records++;
@@ -180,7 +180,7 @@ exports.mypage = async (req, res, next) => {
         }
       });
 
-      res.render('dashboard', { rows, dhl_time, ems_time, other_time, undelivered });
+      res.render('dashboard', { rows: undelivered_rows, dhl_time, ems_time, other_time, undelivered });
     }
   );
 };

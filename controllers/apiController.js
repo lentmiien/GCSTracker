@@ -104,10 +104,14 @@ exports.api_add = async (req, res) => {
           records_to_add.push({
             tracking: tracking[i],
             carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
+            country: 'UNKNOWN',
             addeddate: dts,
             lastchecked: 0,
+            status: 'Shipped',
             shippeddate: dts,
-            delivered: '0'
+            delivereddate: 0,
+            delivered: '0',
+            data: ''
           });
           response['added_records']++;
         }
@@ -220,8 +224,14 @@ exports.api_get = async (req, res) => {
   }
 
   // Verify dates
-  const start = req.params.startdate;
-  const end = req.params.enddate;
+  let start = req.params.startdate;
+  let end = req.params.enddate;
+  if (start > end) {
+    // Swap dates if in wrong order
+    const tmp = start;
+    start = end;
+    end = tmp;
+  }
   if (start.indexOf('-') != 4 || end.indexOf('-') != 4 || start.length != 10 || end.length != 10) {
     response['status'] = 'ERROR';
     response['message'] = 'Invalid date range';
@@ -248,11 +258,15 @@ exports.api_get = async (req, res) => {
     },
     function(err, results) {
       if (err) {
-        return next(err);
+        response['status'] = 'ERROR';
+        response['message'] = 'Database error';
+        return res.json(response);
       }
       if (!results.tracking) {
         // No results.
-        res.redirect('/mypage');
+        response['status'] = 'WARNING';
+        response['message'] = 'No records';
+        return res.json(response);
       }
 
       // Prepare OK response
@@ -263,7 +277,7 @@ exports.api_get = async (req, res) => {
 
       // tracking	delivereddate	delivered
       results.tracking.forEach(r => {
-        if (r.delivereddate > 1) {
+        if (r.delivereddate > 0) {
           response['records'].push({
             tracking: r.tracking,
             delivereddate: dateToString(new Date(r.delivereddate)),
