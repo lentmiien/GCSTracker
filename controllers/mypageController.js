@@ -223,9 +223,11 @@ exports.process_valid = (req, res, next) => {
 // Show all undelivered packages
 // /:carrier/:start/:end
 exports.undelivered = async (req, res, next) => {
-  const query = { order: [['shippeddate', 'ASC']] };
+  const query = {
+    order: [['shippeddate', 'ASC']],
+    where: { delivereddate: 0 }
+  };
   if (req.params.carrier && req.params.start && req.params.end) {
-    query['where'] = {};
     if (req.params.carrier == 'dhl') {
       query.where['carrier'] = 'DHL';
     } else if (req.params.carrier == 'ems') {
@@ -255,7 +257,7 @@ exports.undelivered = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
+      const rows = results.tracking.filter(row => row.delivered == false);
 
       const analyze = {
         dhl_count: 0,

@@ -1,8 +1,7 @@
 extends layout
 
 block content
-  h1 未着レコード
-  i ※対象外：DHL発送から3日以内、EMS発送から7日以内、Air/SAL発送から7日以内
+  h1 配送中レコード
   if filter.carrier != undefined
     - const tmp = { dhl: 'DHLのみ', ems: 'EMSのみ', other: 'Air/SALのみ', all: '全体'}
     p= `${tmp[filter.carrier]} (${new Date(parseInt(filter.start))}　～　${new Date(parseInt(filter.end))})`
@@ -19,6 +18,7 @@ block content
         td= `${analyze.ems_count}件`
         td= `${analyze.other_count}件`
         td= `${rows.length}件`
+  i ※下記対象外：DHL発送から3日以内、EMS発送から7日以内、Air/SAL発送から7日以内
   table.table.table-dark.table-striped
     thead
       tr
@@ -31,11 +31,12 @@ block content
     tbody
       - const edate = Date.now()
       each row in rows
-        - const timediff = Math.round((edate - row.shippeddate) / 86400000)
-        tr
-          td
-            a(href=`/mypage/details/${row.tracking}`)= row.tracking
-          td
-            a(href=`/mypage/ucountry/${row.country}`)= row.country
-          td= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
-          td= `${timediff}日`
+        if row.country != 'UNKNOWN'
+          - const timediff = Math.round((edate - row.shippeddate) / 86400000)
+          tr
+            td
+              a(href=`/mypage/details/${row.tracking}`)= row.tracking
+            td
+              a(href=`/mypage/ucountry/${row.country}`)= row.country
+            td= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
+            td= `${timediff}日`
