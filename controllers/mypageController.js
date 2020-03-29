@@ -455,17 +455,17 @@ exports.ucountry = async (req, res, next) => {
           if (entry.shippeddate >= analyze[i].start && entry.shippeddate < analyze[i].end) {
             if (entry.carrier == 'DHL') {
               analyze[i].dhl_count.all++;
-              if (entry.delivered == false) {
+              if (entry.delivereddate == 0) {
                 analyze[i].dhl_count.notdone++;
               }
             } else if (entry.tracking.indexOf('EM') == 0) {
               analyze[i].ems_count.all++;
-              if (entry.delivered == false) {
+              if (entry.delivereddate == 0) {
                 analyze[i].ems_count.notdone++;
               }
             } else {
               analyze[i].other_count.all++;
-              if (entry.delivered == false) {
+              if (entry.delivereddate == 0) {
                 analyze[i].other_count.notdone++;
               }
             }
