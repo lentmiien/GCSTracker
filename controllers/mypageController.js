@@ -526,7 +526,12 @@ exports.delivered_country = async (req, res, next) => {
     {
       tracking: callback => {
         Tracking.findAll({
-          order: [['country', 'ASC']]
+          order: [['country', 'ASC']],
+          where: {
+            delivereddate: {
+              [Op.gt]: 0
+            }
+          }
         }).then(entry => callback(null, entry));
       }
     },
@@ -534,7 +539,7 @@ exports.delivered_country = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > 0);
+      const rows = results.tracking;
 
       res.render('delivered_country', { rows });
     }

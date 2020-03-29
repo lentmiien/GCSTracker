@@ -6,8 +6,6 @@ block content
   - const country_data = []//{ country, dhl: {total, max, min, count}, ems: {...}, other: {...} }
   each row in rows
     - let added = true
-    - const sdate = new Date(row.shippeddate)
-    - const edate = new Date(row.delivereddate)
     - const timediff = Math.round((row.delivereddate - row.shippeddate) / 86400000)
     if row.delivereddate > 1
       - added = false
