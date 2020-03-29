@@ -8,8 +8,8 @@ block content
   .row.mb-3
     .col
       h3 追跡状況
-      div= `無効レコード：${undelivered.invalid}件`
-        if undelivered.invalid > 0
+      if undelivered.invalid > 0
+        div= `無効レコード：${undelivered.invalid}件`
           a.btn.btn-link(href="/mypage/invalid") 表示
       if undelivered.has_old == true
         div
