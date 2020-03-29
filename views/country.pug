@@ -22,21 +22,21 @@ block content
             td
               b= `${analyze[val].dhl_count.done}件 `
               i= `（${Math.round(10000 * analyze[val].dhl_count.done / analyze[val].dhl_count.all) / 100}%）`
-              i= `（平均：${Math.round(10 * analyze[val].dhl_count.days / analyze[val].dhl_count.done) / 10}日）`
+              i= `（平均：${Math.round(10 * analyze[val].dhl_count.days / (analyze[val].dhl_count.done - analyze[val].dhl_count.unknown_days)) / 10}日）`
           else
             td
           if analyze[val].ems_count.all > 0
             td
               b= `${analyze[val].ems_count.done}件 `
               i= `（${Math.round(10000 * analyze[val].ems_count.done / analyze[val].ems_count.all) / 100}%）`
-              i= `（平均：${Math.round(10 * analyze[val].ems_count.days / analyze[val].ems_count.done) / 10}日）`
+              i= `（平均：${Math.round(10 * analyze[val].ems_count.days / (analyze[val].ems_count.done - analyze[val].ems_count.unknown_days)) / 10}日）`
           else
             td
           if analyze[val].other_count.all > 0
             td
               b= `${analyze[val].other_count.done}件 `
               i= `（${Math.round(10000 * analyze[val].other_count.done / analyze[val].other_count.all) / 100}%）`
-              i= `（平均：${Math.round(10 * analyze[val].other_count.days / analyze[val].other_count.done) / 10}日）`
+              i= `（平均：${Math.round(10 * analyze[val].other_count.days / (analyze[val].other_count.done - analyze[val].other_count.unknown_days)) / 10}日）`
           else
             td
       tr
@@ -48,21 +48,21 @@ block content
             td
               b= `${analyze[val].dhl_count.done}件 `
               i= `（${Math.round(10000 * analyze[val].dhl_count.done / analyze[val].dhl_count.all) / 100}%）`
-              i= `（平均：${Math.round(10 * analyze[val].dhl_count.days / analyze[val].dhl_count.done) / 10}日）`
+              i= `（平均：${Math.round(10 * analyze[val].dhl_count.days / (analyze[val].dhl_count.done - analyze[val].dhl_count.unknown_days)) / 10}日）`
           else
             td
           if analyze[val].ems_count.all > 0
             td
               b= `${analyze[val].ems_count.done}件 `
               i= `（${Math.round(10000 * analyze[val].ems_count.done / analyze[val].ems_count.all) / 100}%）`
-              i= `（平均：${Math.round(10 * analyze[val].ems_count.days / analyze[val].ems_count.done) / 10}日）`
+              i= `（平均：${Math.round(10 * analyze[val].ems_count.days / (analyze[val].ems_count.done - analyze[val].ems_count.unknown_days)) / 10}日）`
           else
             td
           if analyze[val].other_count.all > 0
             td
               b= `${analyze[val].other_count.done}件 `
               i= `（${Math.round(10000 * analyze[val].other_count.done / analyze[val].other_count.all) / 100}%）`
-              i= `（平均：${Math.round(10 * analyze[val].other_count.days / analyze[val].other_count.done) / 10}日）`
+              i= `（平均：${Math.round(10 * analyze[val].other_count.days / (analyze[val].other_count.done - analyze[val].other_count.unknown_days)) / 10}日）`
           else
             td
       tr
@@ -73,21 +73,21 @@ block content
           td
             b= `${analyze[0].dhl_count.done}件 `
             i= `（${Math.round(10000 * analyze[0].dhl_count.done / analyze[0].dhl_count.all) / 100}%）`
-            i= `（平均：${Math.round(10 * analyze[0].dhl_count.days / analyze[0].dhl_count.done) / 10}日）`
+            i= `（平均：${Math.round(10 * analyze[0].dhl_count.days / (analyze[0].dhl_count.done - analyze[0].dhl_count.unknown_days)) / 10}日）`
         else
           td
         if analyze[0].ems_count.all > 0
           td
             b= `${analyze[0].ems_count.done}件 `
             i= `（${Math.round(10000 * analyze[0].ems_count.done / analyze[0].ems_count.all) / 100}%）`
-            i= `（平均：${Math.round(10 * analyze[0].ems_count.days / analyze[0].ems_count.done) / 10}日）`
+            i= `（平均：${Math.round(10 * analyze[0].ems_count.days / (analyze[0].ems_count.done - analyze[0].ems_count.unknown_days)) / 10}日）`
         else
           td
         if analyze[0].other_count.all > 0
           td
             b= `${analyze[0].other_count.done}件 `
             i= `（${Math.round(10000 * analyze[0].other_count.done / analyze[0].other_count.all) / 100}%）`
-            i= `（平均：${Math.round(10 * analyze[0].other_count.days / analyze[0].other_count.done) / 10}日）`
+            i= `（平均：${Math.round(10 * analyze[0].other_count.days / (analyze[0].other_count.done - analyze[0].other_count.unknown_days)) / 10}日）`
         else
           td
   svg#chart

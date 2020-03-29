@@ -572,71 +572,71 @@ exports.country = async (req, res, next) => {
           label: '全体',
           start: 0,
           end: time,
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 },
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           delivery_times: { dhl: [], dhl_ems: [], all: [] }
         },
         {
           label: '7日以内',
           start: time - 604800000,
           end: time,
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         },
         {
           label: '8日～30日',
           start: time - 2592000000,
           end: time - 604800000,
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         },
         {
           label: '31日～90日',
           start: time - 7776000000,
           end: time - 2592000000,
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         },
         {
           label: '91日以上',
           start: 0,
           end: time - 7776000000,
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         },
         {
           label: '今月',
           start: new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0).getTime(),
           end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime(),
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         },
         {
           label: '先月',
           start: new Date(d.getFullYear(), d.getMonth() - 1, 1, 0, 0, 0, 0).getTime(),
           end: new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999).getTime(),
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         },
         {
           label: '先々月',
           start: new Date(d.getFullYear(), d.getMonth() - 2, 1, 0, 0, 0, 0).getTime(),
           end: new Date(d.getFullYear(), d.getMonth() - 1, 0, 23, 59, 59, 999).getTime(),
-          dhl_count: { all: 0, done: 0, days: 0 },
-          ems_count: { all: 0, done: 0, days: 0 },
-          other_count: { all: 0, done: 0, days: 0 }
+          dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
         }
       ];
       results.tracking.forEach(entry => {
         let days = 0;
-        if (entry.delivered == true && entry.delivereddate > 1) {
+        if (entry.delivereddate > 1) {
           days = Math.round((entry.delivereddate - entry.shippeddate) / 86400000);
           if (entry.carrier == 'DHL') {
             analyze[0].delivery_times.dhl.push(days);
@@ -656,18 +656,27 @@ exports.country = async (req, res, next) => {
               if (entry.delivered == true && entry.delivereddate > 0) {
                 analyze[i].dhl_count.done++;
                 analyze[i].dhl_count.days += days;
+                if (entry.delivereddate == 1) {
+                  analyze[i].dhl_count.unknown_days++;
+                }
               }
             } else if (entry.tracking.indexOf('EM') == 0) {
               analyze[i].ems_count.all++;
               if (entry.delivered == true && entry.delivereddate > 0) {
                 analyze[i].ems_count.done++;
                 analyze[i].ems_count.days += days;
+                if (entry.delivereddate == 1) {
+                  analyze[i].ems_count.unknown_days++;
+                }
               }
             } else {
               analyze[i].other_count.all++;
               if (entry.delivered == true && entry.delivereddate > 0) {
                 analyze[i].other_count.done++;
                 analyze[i].other_count.days += days;
+                if (entry.delivereddate == 1) {
+                  analyze[i].other_count.unknown_days++;
+                }
               }
             }
           }
