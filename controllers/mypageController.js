@@ -498,7 +498,7 @@ exports.delivered = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == true && row.delivereddate > 0);
+      const rows = results.tracking;
 
       const analyze = {
         dhl_count: 0,
