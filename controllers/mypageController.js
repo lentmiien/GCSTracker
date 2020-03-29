@@ -44,7 +44,7 @@ exports.mypage = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const undelivered_rows = results.tracking.filter(row => row.delivereddate == 0);
+      const undelivered_rows = results.tracking.filter(row => row.delivereddate == 0 && row.delivered == false);
       const delivered_one_month_rows = results.tracking.filter(row => row.delivereddate > 1 && row.delivereddate > Date.now() - 2592000000);
 
       let dhl_time = 0;
@@ -257,7 +257,7 @@ exports.undelivered = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == false);
+      const rows = results.tracking.filter(row => row.delivered == false && row.carrier != 'INVALID');
 
       const analyze = {
         dhl_count: 0,
@@ -285,7 +285,10 @@ exports.undelivered_country = async (req, res, next) => {
     {
       tracking: callback => {
         Tracking.findAll({
-          order: [['country', 'ASC']]
+          order: [['country', 'ASC']],
+          where: {
+            delivered: 0
+          }
         }).then(entry => callback(null, entry));
       }
     },
@@ -293,7 +296,7 @@ exports.undelivered_country = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == false && row.status != null);
+      const rows = results.tracking.filter(row => row.country != 'UNKNOWN' && row.carrier != 'INVALID');
 
       const analyze = {
         overall: {
