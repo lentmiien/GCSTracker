@@ -100,12 +100,16 @@ exports.mypage = async (req, res, next) => {
           other_records: 0
         },
         status_counter: [],
-        invalid: 0
+        invalid: 0,
+        has_old: false
       };
       rows.forEach(row => {
         if (row.carrier == 'INVALID') {
           undelivered.invalid++;
         } else {
+          if (row.shippeddate < DaysAgo(180)) {
+            undelivered.has_old = true;
+          }
           undelivered.all.number_of_records++;
           if (row.shippeddate > undelivered.last7days.limit) {
             undelivered.last7days.number_of_records++;
@@ -1064,7 +1068,7 @@ exports.track = async (req, res) => {
 exports.details = async (req, res, next) => {
   const tracking_id = req.params.id;
   let back_link = '/mypage/delivered';
-  if (req.headers.referer.indexOf('undelivered') > 0) {
+  if (req.headers.referer && req.headers.referer.indexOf('undelivered') > 0) {
     back_link = '/mypage/undelivered';
   }
 
@@ -1188,6 +1192,39 @@ exports.clear = async (req, res, next) => {
   }
 
   res.redirect('/mypage');
+};
+
+// Old records
+exports.list_old = (req, res) => {
+  Tracking.findAll({
+    where: {
+      delivered: false,
+      shippeddate: {
+        [Op.lt]: DaysAgo(180)
+      }
+    }
+  }).then(result => {
+    res.render('old_list', { result });
+  });
+};
+exports.old_set_status = (req, res) => {
+  const id = req.params.id;
+  const request = req.params.request;
+
+  // Delete request
+  if (request == 'delete') {
+    Tracking.destroy({ where: { id } });
+  } else {
+    // Update status request
+    const to_update = {
+      delivereddate: request == 'Delivered' ? 1 : 0,
+      delivered: true,
+      status: request
+    };
+    Tracking.update(to_update, { where: { id } });
+  }
+
+  res.json({ status: 'OK' });
 };
 
 // Helper function

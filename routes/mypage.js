@@ -42,5 +42,9 @@ router.get('/csv', controller.csv);
 // Clear old records (delivered over 14 days ago) and return CSV of deleted records
 router.get('/clear', controller.clear);
 
+// Handle old records
+router.get('/old_list', controller.list_old);
+router.post('/old_set_status/:id/:request', controller.old_set_status);
+
 // Export router
 module.exports = router;

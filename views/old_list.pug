@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  h1 古いレコード
+  p ※180日前にに発送された荷物
+  table.table.table-dark.table-striped.table-bordered.table-hover
+    caption
+      a(href="") Download
+    thead
+      tr
+        td(span='col') 追跡番号
+        td.text-center(span='col') 指示
+    tbody
+      each r in result
+        tr(id=`row${r.id}`)
+          td= r.tracking
+          td
+            div.d-flex.justify-content-around(id=`btn${r.id}`)
+              button.btn.btn-success(type="button", onclick=`SetStatus(${r.id},'Delivered')`) Delivered
+              button.btn.btn-warning(type="button", onclick=`SetStatus(${r.id},'Lost')`) Lost
+              button.btn.btn-warning(type="button", onclick=`SetStatus(${r.id},'Returned')`) Returned
+              button.btn.btn-danger(type="button", onclick=`SetStatus(${r.id},'delete')`) 削除
+  script(src="/javascripts/old_controller.js")
