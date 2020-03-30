@@ -239,8 +239,8 @@ exports.api_get = async (req, res) => {
   }
   const start_split = start.split('-');
   const end_split = end.split('-');
-  const start_date = new Date(parseInt(start_split[0]), parseInt(start_split[1], parseInt(start_split[2])), 0, 0, 0, 0).getTime();
-  const end_date = new Date(parseInt(end_split[0]), parseInt(end_split[1], parseInt(end_split[2])), 23, 59, 59, 999).getTime();
+  const start_date = new Date(parseInt(start_split[0]), parseInt(start_split[1]) - 1, parseInt(start_split[2]), 0, 0, 0, 0).getTime();
+  const end_date = new Date(parseInt(end_split[0]), parseInt(end_split[1]) - 1, parseInt(end_split[2]), 23, 59, 59, 999).getTime();
 
   async.parallel(
     {
