@@ -133,7 +133,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       output['status'] = data.shipments[0].status.statusCode;
       // Acquire shipped date
       data.shipments[0].events.forEach(event => {
-        if (event.description == 'Shipment picked up') {
+        if (event.description == 'Shipment picked up' || event.description == 'Shipment scheduled to be picked up') {
           const sdt = event.timestamp.split('T');
           const d = sdt[0].split('-');
           const t = sdt[1].split(':');
