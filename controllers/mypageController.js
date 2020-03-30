@@ -821,8 +821,14 @@ async function TrackAll() {
     },
     function(err, results) {
       if (err) {
+        console.error(`---${new Date()}---[TrackAll]\n${err}`);
         return next(err);
       }
+      console.log(
+        `---${new Date()}---[TrackAll]\nJP: ${results.tracking_jp.length}\nUSPS: ${results.tracking_usps.length}\nDHL: ${
+          results.tracking_dhl.length
+        }`
+      );
       // Successful, so start tracking
       async.parallel(
         {
@@ -842,7 +848,6 @@ async function TrackAll() {
         function(err, results2) {
           const time_now = new Date();
           last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()}`;
-          console.log(`#${counter} tracking started! (${last_tracked.date})`);
         }
       );
     }
@@ -874,6 +879,7 @@ async function JP_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        console.error(`---${new Date()}---[JP_tracker]\n${JSON.stringify(result, null, 2)}`);
         JP_scraping_counter.html.status = result.HTML_status;
         JP_scraping_counter.html.text = result.HTML_statusText;
       } else {
@@ -927,6 +933,7 @@ async function USPS_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        console.error(`---${new Date()}---[USPS_tracker]\n${JSON.stringify(result, null, 2)}`);
         USPS_API_counter.html.status = result.HTML_status;
         USPS_API_counter.html.text = result.HTML_statusText;
       } else {
@@ -980,6 +987,7 @@ async function DHL_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        console.error(`---${new Date()}---[DHL_tracker]\n${JSON.stringify(result, null, 2)}`);
         DHL_API_counter.html.status = result.HTML_status;
         DHL_API_counter.html.text = result.HTML_statusText;
       } else {
@@ -1014,6 +1022,7 @@ async function DHL_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        console.error(`---${new Date()}---[DHL_tracker]\n${JSON.stringify(result, null, 2)}`);
         DHL_scraping_counter.html.status = result.HTML_status;
         DHL_scraping_counter.html.text = result.HTML_statusText;
       } else {
