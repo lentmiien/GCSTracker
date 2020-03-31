@@ -8,11 +8,13 @@ block content
     thead
       tr
         td(span='col') 追跡番号
+        td(span='col') 作成日
         td.text-center(span='col') 指示
     tbody
       each r in records
         tr(id=`row${r.id}`)
           td= r.tracking
+          td= new Date(r.addeddate)
           td
             div.d-flex.justify-content-around(id=`btn${r.id}`)
               button.btn.btn-success(type="button", onclick=`Valid(${r.id},'JP')`) 復元（JP）
