@@ -901,10 +901,9 @@ async function JP_tracker(tracking) {
         );
         last_tracked.count++;
       }
-
-      // Update progress
-      JP_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
     }
+    // Update progress
+    JP_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
   }
 }
 
@@ -955,10 +954,9 @@ async function USPS_tracker(tracking) {
         );
         last_tracked.count++;
       }
-
-      // Update progress
-      USPS_API_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
     }
+    // Update progress
+    USPS_API_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
   }
 }
 
@@ -1009,10 +1007,6 @@ async function DHL_tracker(tracking) {
         );
         last_tracked.count++;
       }
-
-      // Update progress
-      DHL_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
-      DHL_API_counter.done = DHL_scraping_counter.done;
     } else if (DHL_scraping_counter.html.status == HTTP_OK_CODE) {
       // If API is not available do web scraping instead
       DHL_scraping_counter.count++; // About to do a scraping request so update counter
@@ -1044,11 +1038,10 @@ async function DHL_tracker(tracking) {
         );
         last_tracked.count++;
       }
-
-      // Update progress
-      DHL_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
-      DHL_API_counter.done = DHL_scraping_counter.done;
     }
+    // Update progress
+    DHL_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
+    DHL_API_counter.done = DHL_scraping_counter.done;
   }
 }
 
@@ -1083,12 +1076,23 @@ exports.track = async (req, res) => {
   if (JP_scraping_counter.done == 100 && DHL_scraping_counter.done == 100 && USPS_API_counter.done == 100 && DHL_API_counter.done == 100) {
     // Start tracking (ASYNC)
     TrackAll();
-  } else {
+  } /* else {
     // Do not track
-    console.log(`Skip#${counter}, due to currently tracking...`);
-  }
+    return res.render('forcetracking', {
+      counter,
+      jp: JP_scraping_counter.done,
+      dhl: DHL_scraping_counter.done,
+      uspsapi: USPS_API_counter.done,
+      dhlapi: DHL_API_counter.done
+    });
+  }*/
 
   // Redirect to dashboard
+  res.redirect('/mypage');
+};
+exports.forcetracking = (req, res) => {
+  counter++;
+  TrackAll();
   res.redirect('/mypage');
 };
 

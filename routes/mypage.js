@@ -29,6 +29,7 @@ router.get('/process_valid/:id/:carrier', controller.process_valid);
 
 // Start tracking
 router.get('/track', controller.track);
+router.get('/forcetracking', controller.forcetracking);
 
 // Get progress
 router.get('/progress', controller.progress);
