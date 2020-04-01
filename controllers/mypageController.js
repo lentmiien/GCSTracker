@@ -709,9 +709,12 @@ exports.countrytrend = async (req, res, next) => {
         undelivered_packages: [] // { date: '2020-04-01', DHL_count: 25, ... } *Count packages that was shipped before 'date' and is still undelivered or was delivered after 'date'
       };
       results.tracking.forEach(entry => {
+        let start_date = new Date(entry.shippeddate);
+        let end_date = new Date();
         if (entry.delivereddate > 1) {
           let days = (entry.delivereddate - entry.shippeddate) / 86400000;
-          const date_str = dateToString(new Date(entry.delivereddate));
+          end_date = new Date(entry.delivereddate);
+          const date_str = dateToString(end_date);
           let updated = false;
           for (let i = 0; i < analyze.delivery_times.length && updated == false; i++) {
             if (analyze.delivery_times[i].date == date_str) {
@@ -751,6 +754,41 @@ exports.countrytrend = async (req, res, next) => {
               analyze.delivery_times[index].OTHER_count++;
             }
           }
+        }
+        while (start_date.getTime() < end_date.getTime()) {
+          const date_str = dateToString(start_date);
+          let updated = false;
+          for (let i = 0; i < analyze.undelivered_packages.length && updated == false; i++) {
+            if (analyze.undelivered_packages[i].date == date_str) {
+              if (entry.carrier == 'DHL') {
+                analyze.undelivered_packages[i].DHL_count++;
+              } else if (entry.tracking.indexOf('EM') == 0) {
+                analyze.undelivered_packages[i].EMS_count++;
+              } else {
+                analyze.undelivered_packages[i].OTHER_count++;
+              }
+              updated = true;
+            }
+          }
+          if (updated == false) {
+            // A new entry
+            const index = analyze.undelivered_packages.length;
+            analyze.undelivered_packages.push({
+              date: date_str,
+              DHL_count: 0,
+              EMS_count: 0,
+              OTHER_count: 0
+            });
+            if (entry.carrier == 'DHL') {
+              analyze.undelivered_packages[index].DHL_count++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze.undelivered_packages[index].EMS_count++;
+            } else {
+              analyze.undelivered_packages[index].OTHER_count++;
+            }
+          }
+          // Step forward one day
+          start_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate() + 1);
         }
       });
 
