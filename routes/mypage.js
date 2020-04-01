@@ -20,6 +20,7 @@ router.get('/ucountry/:country', controller.ucountry);
 router.get('/delivered', controller.delivered);
 router.get('/delivered_country', controller.delivered_country);
 router.get('/country/:country', controller.country);
+router.get('/countrytrend/:country', controller.countrytrend);
 router.get('/invalid', controller.invalid);
 router.get('/process_invalid/:id', controller.process_invalid);
 router.get('/process_valid/:id/:carrier', controller.process_valid);

@@ -688,6 +688,77 @@ exports.country = async (req, res, next) => {
   );
 };
 
+// Show country delivery trends
+exports.countrytrend = async (req, res, next) => {
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll({
+          where: {
+            country: req.params.country
+          }
+        }).then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const analyze = {
+        delivery_times: [], // { date: '2020-04-01', DHL_total_days: 100, DHL_count: 50, ... }
+        undelivered_packages: [] // { date: '2020-04-01', DHL_count: 25, ... } *Count packages that was shipped before 'date' and is still undelivered or was delivered after 'date'
+      };
+      results.tracking.forEach(entry => {
+        if (entry.delivereddate > 1) {
+          let days = (entry.delivereddate - entry.shippeddate) / 86400000;
+          const date_str = dateToString(new Date(entry.delivereddate));
+          let updated = false;
+          for (let i = 0; i < analyze.delivery_times.length && updated == false; i++) {
+            if (analyze.delivery_times[i].date == date_str) {
+              if (entry.carrier == 'DHL') {
+                analyze.delivery_times[i].DHL_total_days += days;
+                analyze.delivery_times[i].DHL_count++;
+              } else if (entry.tracking.indexOf('EM') == 0) {
+                analyze.delivery_times[i].EMS_total_days += days;
+                analyze.delivery_times[i].EMS_count++;
+              } else {
+                analyze.delivery_times[i].OTHER_total_days += days;
+                analyze.delivery_times[i].OTHER_count++;
+              }
+              updated = true;
+            }
+          }
+          if (updated == false) {
+            // A new entry
+            const index = analyze.delivery_times.length;
+            analyze.delivery_times.push({
+              date: date_str,
+              DHL_total_days: 0,
+              DHL_count: 0,
+              EMS_total_days: 0,
+              EMS_count: 0,
+              OTHER_total_days: 0,
+              OTHER_count: 0
+            });
+            if (entry.carrier == 'DHL') {
+              analyze.delivery_times[index].DHL_total_days += days;
+              analyze.delivery_times[index].DHL_count++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze.delivery_times[index].EMS_total_days += days;
+              analyze.delivery_times[index].EMS_count++;
+            } else {
+              analyze.delivery_times[index].OTHER_total_days += days;
+              analyze.delivery_times[index].OTHER_count++;
+            }
+          }
+        }
+      });
+
+      res.render('countrytrend', { analyze, country: req.params.country });
+    }
+  );
+};
+
 // Tracker variables
 const JP_scraping_counter = {
   current_date: DEFAULT_DATE,

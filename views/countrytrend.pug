@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  h1= `国別到着情報　【${country}】`
+  a.btn.btn-link(href=`/mypage/country/${country}`) Back
+  br
+  svg#chart_dhl
+    rect(x="20", width="12", height="12", style="fill:orange;")
+    text(x="37", y="12", fill="white") DHL
+    rect(x="80", width="12", height="12", style="fill:green;")
+    text(x="97", y="12", fill="white") EMS
+    rect(x="140", width="12", height="12", style="fill:steelblue;")
+    text(x="157", y="12", fill="white") Air/SAL
+  svg#chart_ems
+    rect(x="20", width="12", height="12", style="fill:orange;")
+    text(x="37", y="12", fill="white") DHL
+    rect(x="80", width="12", height="12", style="fill:green;")
+    text(x="97", y="12", fill="white") EMS
+    rect(x="140", width="12", height="12", style="fill:steelblue;")
+    text(x="157", y="12", fill="white") Air/SAL
+  svg#chart_other
+    rect(x="20", width="12", height="12", style="fill:orange;")
+    text(x="37", y="12", fill="white") DHL
+    rect(x="80", width="12", height="12", style="fill:green;")
+    text(x="97", y="12", fill="white") EMS
+    rect(x="140", width="12", height="12", style="fill:steelblue;")
+    text(x="157", y="12", fill="white") Air/SAL
+  #chart_data.hidden= JSON.stringify(analyze)
+  script(src="https://d3js.org/d3.v5.min.js")
+  script(src="/javascripts/d3_trend_controller.js")
