@@ -59,5 +59,6 @@ typings/
 
 # next.js build output
 .next
-Commands.txt
-tmp.json
+
+# do_not_push folder
+do_not_push/
