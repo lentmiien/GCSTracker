@@ -1368,6 +1368,10 @@ exports.old_set_status = (req, res) => {
   res.json({ status: 'OK' });
 };
 
+exports.report = (req, res) => {
+  res.render('report');
+};
+
 // Helper function
 function sleep(time) {
   return new Promise((resolve, reject) => {

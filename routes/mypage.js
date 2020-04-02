@@ -48,5 +48,8 @@ router.get('/clear', controller.clear);
 router.get('/old_list', controller.list_old);
 router.post('/old_set_status/:id/:request', controller.old_set_status);
 
+// Report Lost/Delivered/Returned
+router.get('/report', controller.report);
+
 // Export router
 module.exports = router;

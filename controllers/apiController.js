@@ -163,45 +163,50 @@ exports.api_report = async (req, res) => {
 
   // Update all lost records
   lost.forEach(r => {
-    Tracking.update(
-      {
-        status: 'lost',
-        delivereddate: 0,
-        delivered: true
-      },
-      {
-        where: { tracking: r }
-      }
-    );
+    if (r.length > 0) {
+      Tracking.update(
+        {
+          status: 'lost',
+          delivereddate: 0,
+          delivered: true
+        },
+        {
+          where: { tracking: r }
+        }
+      );
+    }
   });
 
   // Update all delivered records
   delivered.forEach(r => {
-    const timestamp = parseInt(r.timestamp);
-    Tracking.update(
-      {
-        status: 'delivered',
-        delivereddate: timestamp > 1 ? timestamp : 1,
-        delivered: true
-      },
-      {
-        where: { tracking: r.id, delivered: false }
-      }
-    );
+    if (r.length > 0) {
+      Tracking.update(
+        {
+          status: 'delivered',
+          delivereddate: 1,
+          delivered: true
+        },
+        {
+          where: { tracking: r, delivered: false }
+        }
+      );
+    }
   });
 
   // Update all returned records
   returned.forEach(r => {
-    Tracking.update(
-      {
-        status: 'returned',
-        delivereddate: 0,
-        delivered: true
-      },
-      {
-        where: { tracking: r }
-      }
-    );
+    if (r.length > 0) {
+      Tracking.update(
+        {
+          status: 'returned',
+          delivereddate: 0,
+          delivered: true
+        },
+        {
+          where: { tracking: r }
+        }
+      );
+    }
   });
 
   // Done!

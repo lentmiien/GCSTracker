@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 Report Lost/Delivered/Returned packages
+  pre#output
+  form(action="/api/report", method="post")
+    label(for="lost") Lost
+    textarea#lost.form-control(name="lost", cols="30", rows="10")
+    label(for="delivered") Delivered
+    textarea#delivered.form-control(name="delivered", cols="30", rows="10")
+    label(for="returned") Returned
+    textarea#returned.form-control(name="returned", cols="30", rows="10")
+  button.btn.btn-success.mt-3(type="button", onclick="ReportAPI()") Submit
+  script(src="/javascripts/report_controller.js")
