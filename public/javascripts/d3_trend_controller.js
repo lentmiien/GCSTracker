@@ -24,9 +24,9 @@ data.undelivered_packages.sort((a, b) => {
     return 0;
   }
 });
-const dhl_data_num = data.undelivered_packages.filter(d => d.DHL_count > 0);
-const ems_data_num = data.undelivered_packages.filter(d => d.EMS_count > 0);
-const other_data_num = data.undelivered_packages.filter(d => d.OTHER_count > 0);
+const dhl_data_num = data.undelivered_packages;
+const ems_data_num = data.undelivered_packages;
+const other_data_num = data.undelivered_packages;
 
 // DHL number of packages
 let svg = d3
@@ -88,7 +88,7 @@ svg = d3
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(dhl_data, function(d) {
+    d3.extent(data.delivery_times, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
@@ -102,7 +102,7 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(dhl_data, function(d) {
+    d3.max(data.delivery_times, function(d) {
       return d.DHL_count;
     })
   ])
@@ -111,7 +111,7 @@ svg.append('g').call(d3.axisLeft(y));
 
 svg
   .append('path')
-  .datum(dhl_data)
+  .datum(data.delivery_times)
   .attr('fill', 'none')
   .attr('stroke', 'green')
   .attr('stroke-width', 1.5)
@@ -235,7 +235,7 @@ svg = d3
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(ems_data, function(d) {
+    d3.extent(data.delivery_times, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
@@ -249,7 +249,7 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(ems_data, function(d) {
+    d3.max(data.delivery_times, function(d) {
       return d.EMS_count;
     })
   ])
@@ -258,7 +258,7 @@ svg.append('g').call(d3.axisLeft(y));
 
 svg
   .append('path')
-  .datum(ems_data)
+  .datum(data.delivery_times)
   .attr('fill', 'none')
   .attr('stroke', 'green')
   .attr('stroke-width', 1.5)
@@ -382,7 +382,7 @@ svg = d3
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(other_data, function(d) {
+    d3.extent(data.delivery_times, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
@@ -396,7 +396,7 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(other_data, function(d) {
+    d3.max(data.delivery_times, function(d) {
       return d.OTHER_count;
     })
   ])
@@ -405,7 +405,7 @@ svg.append('g').call(d3.axisLeft(y));
 
 svg
   .append('path')
-  .datum(other_data)
+  .datum(data.delivery_times)
   .attr('fill', 'none')
   .attr('stroke', 'green')
   .attr('stroke-width', 1.5)
