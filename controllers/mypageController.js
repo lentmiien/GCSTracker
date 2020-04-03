@@ -725,10 +725,7 @@ exports.countrytrend = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const analyze = {
-        delivery_times: [], // { date: '2020-04-01', DHL_total_days: 100, DHL_count: 50, ... }
-        undelivered_packages: [] // { date: '2020-04-01', DHL_count: 25, ... } *Count packages that was shipped before 'date' and is still undelivered or was delivered after 'date'
-      };
+      const analyze = []; // { date: '2020-04-01', DHL_total_days: 100, DHL_count_all: 25, ..., DHL_count_new: 25, ..., DHL_count_done: 25, ... }
       results.tracking.forEach(entry => {
         let start_date = new Date(entry.shippeddate);
         let end_date = new Date();
@@ -737,75 +734,141 @@ exports.countrytrend = async (req, res, next) => {
           end_date = new Date(entry.delivereddate);
           const date_str = dateToString(end_date);
           let updated = false;
-          for (let i = 0; i < analyze.delivery_times.length && updated == false; i++) {
-            if (analyze.delivery_times[i].date == date_str) {
+          for (let i = 0; i < analyze.length && updated == false; i++) {
+            if (analyze[i].date == date_str) {
               if (entry.carrier == 'DHL') {
-                analyze.delivery_times[i].DHL_total_days += days;
-                analyze.delivery_times[i].DHL_count++;
+                analyze[i].DHL_total_days += days;
+                analyze[i].DHL_count_done++;
               } else if (entry.tracking.indexOf('EM') == 0) {
-                analyze.delivery_times[i].EMS_total_days += days;
-                analyze.delivery_times[i].EMS_count++;
+                analyze[i].EMS_total_days += days;
+                analyze[i].EMS_count_done++;
               } else {
-                analyze.delivery_times[i].OTHER_total_days += days;
-                analyze.delivery_times[i].OTHER_count++;
+                analyze[i].OTHER_total_days += days;
+                analyze[i].OTHER_count_done++;
               }
               updated = true;
             }
           }
           if (updated == false) {
             // A new entry
-            const index = analyze.delivery_times.length;
-            analyze.delivery_times.push({
+            const index = analyze.length;
+            analyze.push({
               date: date_str,
               DHL_total_days: 0,
-              DHL_count: 0,
+              DHL_count_all: 0,
+              DHL_count_new: 0,
+              DHL_count_lost: 0,
+              DHL_count_done: 0,
               EMS_total_days: 0,
-              EMS_count: 0,
+              EMS_count_all: 0,
+              EMS_count_new: 0,
+              EMS_count_lost: 0,
+              EMS_count_done: 0,
               OTHER_total_days: 0,
-              OTHER_count: 0
+              OTHER_count_all: 0,
+              OTHER_count_new: 0,
+              OTHER_count_lost: 0,
+              OTHER_count_done: 0
             });
             if (entry.carrier == 'DHL') {
-              analyze.delivery_times[index].DHL_total_days += days;
-              analyze.delivery_times[index].DHL_count++;
+              analyze[index].DHL_total_days += days;
+              analyze[index].DHL_count_done++;
             } else if (entry.tracking.indexOf('EM') == 0) {
-              analyze.delivery_times[index].EMS_total_days += days;
-              analyze.delivery_times[index].EMS_count++;
+              analyze[index].EMS_total_days += days;
+              analyze[index].EMS_count_done++;
             } else {
-              analyze.delivery_times[index].OTHER_total_days += days;
-              analyze.delivery_times[index].OTHER_count++;
+              analyze[index].OTHER_total_days += days;
+              analyze[index].OTHER_count_done++;
             }
           }
+        } else if (entry.delivereddate == 1) {
+          end_date = start_date;
         }
-        while (start_date.getTime() < end_date.getTime()) {
+        const sdate_str = dateToString(start_date);
+        let supdated = false;
+        for (let i = 0; i < analyze.length && supdated == false; i++) {
+          if (analyze[i].date == sdate_str) {
+            if (entry.carrier == 'DHL') {
+              analyze[i].DHL_count_new++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze[i].EMS_count_new++;
+            } else {
+              analyze[i].OTHER_count_new++;
+            }
+            supdated = true;
+          }
+        }
+        if (supdated == false) {
+          // A new entry
+          const index = analyze.length;
+          analyze.push({
+            date: sdate_str,
+            DHL_total_days: 0,
+            DHL_count_all: 0,
+            DHL_count_new: 0,
+            DHL_count_lost: 0,
+            DHL_count_done: 0,
+            EMS_total_days: 0,
+            EMS_count_all: 0,
+            EMS_count_new: 0,
+            EMS_count_lost: 0,
+            EMS_count_done: 0,
+            OTHER_total_days: 0,
+            OTHER_count_all: 0,
+            OTHER_count_new: 0,
+            OTHER_count_lost: 0,
+            OTHER_count_done: 0
+          });
+          if (entry.carrier == 'DHL') {
+            analyze[index].DHL_count_new++;
+          } else if (entry.tracking.indexOf('EM') == 0) {
+            analyze[index].EMS_count_new++;
+          } else {
+            analyze[index].OTHER_count_new++;
+          }
+        }
+        while (start_date.getTime() <= end_date.getTime()) {
           const date_str = dateToString(start_date);
           let updated = false;
-          for (let i = 0; i < analyze.undelivered_packages.length && updated == false; i++) {
-            if (analyze.undelivered_packages[i].date == date_str) {
+          for (let i = 0; i < analyze.length && updated == false; i++) {
+            if (analyze[i].date == date_str) {
               if (entry.carrier == 'DHL') {
-                analyze.undelivered_packages[i].DHL_count++;
+                analyze[i].DHL_count_all++;
               } else if (entry.tracking.indexOf('EM') == 0) {
-                analyze.undelivered_packages[i].EMS_count++;
+                analyze[i].EMS_count_all++;
               } else {
-                analyze.undelivered_packages[i].OTHER_count++;
+                analyze[i].OTHER_count_all++;
               }
               updated = true;
             }
           }
           if (updated == false) {
             // A new entry
-            const index = analyze.undelivered_packages.length;
-            analyze.undelivered_packages.push({
+            const index = analyze.length;
+            analyze.push({
               date: date_str,
-              DHL_count: 0,
-              EMS_count: 0,
-              OTHER_count: 0
+              DHL_total_days: 0,
+              DHL_count_all: 0,
+              DHL_count_new: 0,
+              DHL_count_lost: 0,
+              DHL_count_done: 0,
+              EMS_total_days: 0,
+              EMS_count_all: 0,
+              EMS_count_new: 0,
+              EMS_count_lost: 0,
+              EMS_count_done: 0,
+              OTHER_total_days: 0,
+              OTHER_count_all: 0,
+              OTHER_count_new: 0,
+              OTHER_count_lost: 0,
+              OTHER_count_done: 0
             });
             if (entry.carrier == 'DHL') {
-              analyze.undelivered_packages[index].DHL_count++;
+              analyze[index].DHL_count_all++;
             } else if (entry.tracking.indexOf('EM') == 0) {
-              analyze.undelivered_packages[index].EMS_count++;
+              analyze[index].EMS_count_all++;
             } else {
-              analyze.undelivered_packages[index].OTHER_count++;
+              analyze[index].OTHER_count_all++;
             }
           }
           // Step forward one day

@@ -1,9 +1,9 @@
 const width = 800;
-const height = 750;
+const height = 500;
 const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
 const data = JSON.parse(document.getElementById('chart_data').innerHTML);
-data.delivery_times.sort((a, b) => {
+data.sort((a, b) => {
   if (a.date > b.date) {
     return 1;
   } else if (a.date < b.date) {
@@ -12,21 +12,9 @@ data.delivery_times.sort((a, b) => {
     return 0;
   }
 });
-const dhl_data = data.delivery_times.filter(d => d.DHL_count > 0);
-const ems_data = data.delivery_times.filter(d => d.EMS_count > 0);
-const other_data = data.delivery_times.filter(d => d.OTHER_count > 0);
-data.undelivered_packages.sort((a, b) => {
-  if (a.date > b.date) {
-    return 1;
-  } else if (a.date < b.date) {
-    return -1;
-  } else {
-    return 0;
-  }
-});
-const dhl_data_num = data.undelivered_packages;
-const ems_data_num = data.undelivered_packages;
-const other_data_num = data.undelivered_packages;
+const dhl_avg = data.filter(d => d.DHL_count_done > 0);
+const ems_avg = data.filter(d => d.EMS_count_done > 0);
+const other_avg = data.filter(d => d.OTHER_count_done > 0);
 
 // DHL number of packages
 let svg = d3
@@ -40,126 +28,117 @@ let svg = d3
 let x = d3
   .scaleTime()
   .domain(
-    d3.extent(dhl_data_num, function(d) {
+    d3.extent(data, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
   .range([0, width]);
 svg
   .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
+  .attr('transform', 'translate(0,' + height / 2 + ')')
   .call(d3.axisBottom(x));
 
 let y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(dhl_data_num, function(d) {
-      return d.DHL_count;
+    d3.max(data, function(d) {
+      return d.DHL_count_all;
     })
   ])
-  .range([height / 3, 0]);
+  .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
-
+// Total
 svg
   .append('path')
-  .datum(dhl_data_num)
-  .attr('fill', 'none')
+  .datum(data)
+  .attr('fill', '#ffbbaa')
   .attr('stroke', 'red')
   .attr('stroke-width', 1.5)
   .attr(
     'd',
     d3
-      .line()
+      .area()
       .x(function(d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.DHL_count);
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.DHL_count_all);
       })
   );
-// DHL number delivered
-svg = d3
-  .select('#chart_dhl')
-  .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 3) + ')');
-
-// Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data.delivery_times, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
-svg
-  .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
-  .call(d3.axisBottom(x));
-
-y = d3
-  .scaleLinear()
-  .domain([
-    0,
-    d3.max(data.delivery_times, function(d) {
-      return d.DHL_count;
-    })
-  ])
-  .range([height / 3, 0]);
-svg.append('g').call(d3.axisLeft(y));
-
+// Total, excluding newly shipped
 svg
   .append('path')
-  .datum(data.delivery_times)
-  .attr('fill', 'none')
+  .datum(data)
+  .attr('fill', '#ffaaaa')
+  .attr('stroke', 'red')
+  .attr('stroke-width', 0.5)
+  .attr(
+    'd',
+    d3
+      .area()
+      .x(function(d) {
+        return x(d3.timeParse('%Y-%m-%d')(d.date));
+      })
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.DHL_count_all - d.DHL_count_new);
+      })
+  );
+// Delivered
+svg
+  .append('path')
+  .datum(data)
+  .attr('fill', '#aaffaa')
   .attr('stroke', 'green')
   .attr('stroke-width', 1.5)
   .attr(
     'd',
     d3
-      .line()
+      .area()
       .x(function(d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.DHL_count);
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.DHL_count_done);
       })
   );
 // DHL average time
 svg = d3
   .select('#chart_dhl')
   .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + (2 * height) / 3) + ')');
+  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 2) + ')');
 
 // Draw a line graph
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(dhl_data, function(d) {
+    d3.extent(data, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
   .range([0, width]);
 svg
   .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
+  .attr('transform', 'translate(0,' + height / 2 + ')')
   .call(d3.axisBottom(x));
 
 y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(dhl_data, function(d) {
-      return d.DHL_count > 0 ? d.DHL_total_days / d.DHL_count : 0;
+    d3.max(dhl_avg, function(d) {
+      return d.DHL_total_days / d.DHL_count_done;
     })
   ])
-  .range([height / 3, 0]);
+  .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
 
 svg
   .append('path')
-  .datum(dhl_data)
+  .datum(dhl_avg)
   .attr('fill', 'none')
   .attr('stroke', 'steelblue')
   .attr('stroke-width', 1.5)
@@ -171,7 +150,7 @@ svg
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y(function(d) {
-        return y(d.DHL_count > 0 ? d.DHL_total_days / d.DHL_count : 0);
+        return y(d.DHL_total_days / d.DHL_count_done);
       })
   );
 
@@ -187,126 +166,117 @@ svg = d3
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(ems_data_num, function(d) {
+    d3.extent(data, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
   .range([0, width]);
 svg
   .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
+  .attr('transform', 'translate(0,' + height / 2 + ')')
   .call(d3.axisBottom(x));
 
 y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(ems_data_num, function(d) {
-      return d.EMS_count;
+    d3.max(data, function(d) {
+      return d.EMS_count_all;
     })
   ])
-  .range([height / 3, 0]);
+  .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
-
+// Total
 svg
   .append('path')
-  .datum(ems_data_num)
-  .attr('fill', 'none')
+  .datum(data)
+  .attr('fill', '#ffbbaa')
   .attr('stroke', 'red')
   .attr('stroke-width', 1.5)
   .attr(
     'd',
     d3
-      .line()
+      .area()
       .x(function(d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.EMS_count);
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.EMS_count_all);
       })
   );
-// EMS number delivered
-svg = d3
-  .select('#chart_ems')
-  .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 3) + ')');
-
-// Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data.delivery_times, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
-svg
-  .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
-  .call(d3.axisBottom(x));
-
-y = d3
-  .scaleLinear()
-  .domain([
-    0,
-    d3.max(data.delivery_times, function(d) {
-      return d.EMS_count;
-    })
-  ])
-  .range([height / 3, 0]);
-svg.append('g').call(d3.axisLeft(y));
-
+// Total, excluding newly shipped
 svg
   .append('path')
-  .datum(data.delivery_times)
-  .attr('fill', 'none')
+  .datum(data)
+  .attr('fill', '#ffaaaa')
+  .attr('stroke', 'red')
+  .attr('stroke-width', 0.5)
+  .attr(
+    'd',
+    d3
+      .area()
+      .x(function(d) {
+        return x(d3.timeParse('%Y-%m-%d')(d.date));
+      })
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.EMS_count_all - d.EMS_count_new);
+      })
+  );
+// Delivered
+svg
+  .append('path')
+  .datum(data)
+  .attr('fill', '#aaffaa')
   .attr('stroke', 'green')
   .attr('stroke-width', 1.5)
   .attr(
     'd',
     d3
-      .line()
+      .area()
       .x(function(d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.EMS_count);
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.EMS_count_done);
       })
   );
 // EMS average time
 svg = d3
   .select('#chart_ems')
   .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + (2 * height) / 3) + ')');
+  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 2) + ')');
 
 // Draw a line graph
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(ems_data, function(d) {
+    d3.extent(data, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
   .range([0, width]);
 svg
   .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
+  .attr('transform', 'translate(0,' + height / 2 + ')')
   .call(d3.axisBottom(x));
 
 y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(ems_data, function(d) {
-      return d.EMS_count > 0 ? d.EMS_total_days / d.EMS_count : 0;
+    d3.max(ems_avg, function(d) {
+      return d.EMS_total_days / d.EMS_count_done;
     })
   ])
-  .range([height / 3, 0]);
+  .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
 
 svg
   .append('path')
-  .datum(ems_data)
+  .datum(ems_avg)
   .attr('fill', 'none')
   .attr('stroke', 'steelblue')
   .attr('stroke-width', 1.5)
@@ -318,7 +288,7 @@ svg
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y(function(d) {
-        return y(d.EMS_count > 0 ? d.EMS_total_days / d.EMS_count : 0);
+        return y(d.EMS_total_days / d.EMS_count_done);
       })
   );
 
@@ -334,126 +304,117 @@ svg = d3
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(other_data_num, function(d) {
+    d3.extent(data, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
   .range([0, width]);
 svg
   .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
+  .attr('transform', 'translate(0,' + height / 2 + ')')
   .call(d3.axisBottom(x));
 
 y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(other_data_num, function(d) {
-      return d.OTHER_count;
+    d3.max(data, function(d) {
+      return d.OTHER_count_all;
     })
   ])
-  .range([height / 3, 0]);
+  .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
-
+// Total
 svg
   .append('path')
-  .datum(other_data_num)
-  .attr('fill', 'none')
+  .datum(data)
+  .attr('fill', '#ffbbaa')
   .attr('stroke', 'red')
   .attr('stroke-width', 1.5)
   .attr(
     'd',
     d3
-      .line()
+      .area()
       .x(function(d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.OTHER_count);
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.OTHER_count_all);
       })
   );
-// OTHER number delivered
-svg = d3
-  .select('#chart_other')
-  .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 3) + ')');
-
-// Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data.delivery_times, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
-svg
-  .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
-  .call(d3.axisBottom(x));
-
-y = d3
-  .scaleLinear()
-  .domain([
-    0,
-    d3.max(data.delivery_times, function(d) {
-      return d.OTHER_count;
-    })
-  ])
-  .range([height / 3, 0]);
-svg.append('g').call(d3.axisLeft(y));
-
+// Total, excluding newly shipped
 svg
   .append('path')
-  .datum(data.delivery_times)
-  .attr('fill', 'none')
+  .datum(data)
+  .attr('fill', '#ffaaaa')
+  .attr('stroke', 'red')
+  .attr('stroke-width', 0.5)
+  .attr(
+    'd',
+    d3
+      .area()
+      .x(function(d) {
+        return x(d3.timeParse('%Y-%m-%d')(d.date));
+      })
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.OTHER_count_all - d.OTHER_count_new);
+      })
+  );
+// Delivered
+svg
+  .append('path')
+  .datum(data)
+  .attr('fill', '#aaffaa')
   .attr('stroke', 'green')
   .attr('stroke-width', 1.5)
   .attr(
     'd',
     d3
-      .line()
+      .area()
       .x(function(d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.OTHER_count);
+      .y0(y(0))
+      .y1(function(d) {
+        return y(d.OTHER_count_done);
       })
   );
-// Other average time
+// OTHER average time
 svg = d3
   .select('#chart_other')
   .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + (2 * height) / 3) + ')');
+  .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 2) + ')');
 
 // Draw a line graph
 x = d3
   .scaleTime()
   .domain(
-    d3.extent(other_data, function(d) {
+    d3.extent(data, function(d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
   .range([0, width]);
 svg
   .append('g')
-  .attr('transform', 'translate(0,' + height / 3 + ')')
+  .attr('transform', 'translate(0,' + height / 2 + ')')
   .call(d3.axisBottom(x));
 
 y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(other_data, function(d) {
-      return d.OTHER_count > 0 ? d.OTHER_total_days / d.OTHER_count : 0;
+    d3.max(other_avg, function(d) {
+      return d.OTHER_total_days / d.OTHER_count_done;
     })
   ])
-  .range([height / 3, 0]);
+  .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
 
 svg
   .append('path')
-  .datum(other_data)
+  .datum(other_avg)
   .attr('fill', 'none')
   .attr('stroke', 'steelblue')
   .attr('stroke-width', 1.5)
@@ -465,6 +426,6 @@ svg
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y(function(d) {
-        return y(d.OTHER_count > 0 ? d.OTHER_total_days / d.OTHER_count : 0);
+        return y(d.OTHER_total_days / d.OTHER_count_done);
       })
   );
