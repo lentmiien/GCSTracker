@@ -39,6 +39,7 @@ const fetchDataUSPS = async siteUrl => {
       data['HTML_statusText'] = response.statusText;
       parseString(response.data, (err, result) => {
         if (err || result.Error) {
+          console.error(`###fetchDataUSPS###\n\n${err}\n\n${result}\n\n######################`);
           data = { error: true, HTML_status: 'XMLERROR', HTML_statusText: 'Failed parsing XML' };
         } else {
           data['xml_json'] = result;
