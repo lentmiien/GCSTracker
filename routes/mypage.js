@@ -11,6 +11,7 @@ var controller = require('../controllers/mypageController');
 
 // Dashboard
 router.get('/', controller.mypage);
+router.get('/status', controller.status_check);
 
 // Show analysis data
 router.get('/undelivered', controller.undelivered);

@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  .row
+    .col
+      h1 Status list
+  .row
+    .col
+      h3 遅延状況
+      table.table.table-dark.table-striped.mt-2
+        thead
+          tr
+            th(scope="col") 状況
+            th(scope="col") レコード件数
+        tbody
+          - let other = 0
+          each row in undelivered.status_counter
+            if row.count > 1
+              tr
+                td= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
+                td= row.count
+            else
+              - other++
+          tr
+            td その他
+            td= other

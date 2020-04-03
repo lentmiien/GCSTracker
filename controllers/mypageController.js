@@ -99,7 +99,6 @@ exports.mypage = async (req, res, next) => {
           ems_records: 0,
           other_records: 0
         },
-        status_counter: [],
         invalid: 0,
         has_old: false
       };
@@ -154,19 +153,41 @@ exports.mypage = async (req, res, next) => {
               undelivered.last90days.other_records++;
             }
           }
-          let new_status = row.status ? true : false;
-          for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
-            if (undelivered.status_counter[i].status == row.status) {
-              undelivered.status_counter[i].count++;
-              new_status = false;
-            }
+        }
+      });
+
+      res.render('dashboard', { rows: undelivered_rows, dhl_time, ems_time, other_time, undelivered });
+    }
+  );
+};
+// Check status distribution
+exports.status_check = (req, res, next) => {
+  async.parallel(
+    {
+      tracking: callback => {
+        Tracking.findAll().then(entry => callback(null, entry));
+      }
+    },
+    (err, results) => {
+      if (err) {
+        return next(err);
+      }
+      const undelivered_rows = results.tracking.filter(row => row.delivereddate == 0 && row.delivered == false);
+
+      const undelivered = { status_counter: [] };
+      undelivered_rows.forEach(row => {
+        let new_status = true;
+        for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
+          if (undelivered.status_counter[i].status == row.status) {
+            undelivered.status_counter[i].count++;
+            new_status = false;
           }
-          if (new_status) {
-            undelivered.status_counter.push({
-              status: row.status,
-              count: 1
-            });
-          }
+        }
+        if (new_status) {
+          undelivered.status_counter.push({
+            status: row.status,
+            count: 1
+          });
         }
       });
 
@@ -180,7 +201,7 @@ exports.mypage = async (req, res, next) => {
         }
       });
 
-      res.render('dashboard', { rows: undelivered_rows, dhl_time, ems_time, other_time, undelivered });
+      res.render('status', { undelivered });
     }
   );
 };
