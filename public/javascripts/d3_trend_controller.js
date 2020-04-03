@@ -153,6 +153,17 @@ svg
         return y(d.DHL_total_days / d.DHL_count_done);
       })
   );
+// Cutoff line
+svg
+  .append('line')
+  .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[data.length - 3].date)))
+  .attr('y1', y(0))
+  .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[data.length - 3].date)))
+  .attr('y2', y(1000))
+  .attr('stroke', '#aabb55')
+  .attr('stroke-width', 2)
+  .attr('stroke-dasharray', '5 5')
+  .attr('class', 'zeroline');
 
 // EMS number of packages
 svg = d3
@@ -291,6 +302,17 @@ svg
         return y(d.EMS_total_days / d.EMS_count_done);
       })
   );
+// Cutoff line
+svg
+  .append('line')
+  .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
+  .attr('y1', y(0))
+  .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
+  .attr('y2', y(1000))
+  .attr('stroke', '#aabb55')
+  .attr('stroke-width', 2)
+  .attr('stroke-dasharray', '5 5')
+  .attr('class', 'zeroline');
 
 // OTHER number of packages
 svg = d3
@@ -429,3 +451,14 @@ svg
         return y(d.OTHER_total_days / d.OTHER_count_done);
       })
   );
+// Cutoff line
+svg
+  .append('line')
+  .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
+  .attr('y1', y(0))
+  .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
+  .attr('y2', y(1000))
+  .attr('stroke', '#aabb55')
+  .attr('stroke-width', 2)
+  .attr('stroke-dasharray', '5 5')
+  .attr('class', 'zeroline');
