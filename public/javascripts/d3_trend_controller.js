@@ -1,4 +1,4 @@
-const width = 800;
+const width = 1000;
 const height = 500;
 const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
@@ -12,9 +12,15 @@ data.sort((a, b) => {
     return 0;
   }
 });
-const dhl_avg = data.filter(d => d.DHL_count_done > 0);
-const ems_avg = data.filter(d => d.EMS_count_done > 0);
-const other_avg = data.filter(d => d.OTHER_count_done > 0);
+const dhl_avg = data.filter((d) => d.DHL_total_count > 0);
+const ems_avg = data.filter((d) => d.EMS_total_count > 0);
+const other_avg = data.filter((d) => d.OTHER_total_count > 0);
+
+/*****************************
+ *
+ *            DHL
+ *
+ */
 
 // DHL number of packages
 let svg = d3
@@ -28,7 +34,7 @@ let svg = d3
 let x = d3
   .scaleTime()
   .domain(
-    d3.extent(data, function(d) {
+    d3.extent(data, function (d) {
       return d3.timeParse('%Y-%m-%d')(d.date);
     })
   )
@@ -42,13 +48,32 @@ let y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(data, function(d) {
-      return d.DHL_count_all;
-    })
+    d3.max(data, function (d) {
+      return d.DHL_count_all + d.DHL_count_new + d.DHL_count_lost;
+    }),
   ])
   .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
-// Total
+// Lost
+svg
+  .append('path')
+  .datum(data)
+  .attr('fill', '#773377')
+  .attr('stroke', '#550055')
+  .attr('stroke-width', 1.5)
+  .attr(
+    'd',
+    d3
+      .area()
+      .x(function (d) {
+        return x(d3.timeParse('%Y-%m-%d')(d.date));
+      })
+      .y0(y(0))
+      .y1(function (d) {
+        return y(d.DHL_count_all + d.DHL_count_new + d.DHL_count_lost);
+      })
+  );
+// New
 svg
   .append('path')
   .datum(data)
@@ -59,15 +84,15 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
-        return y(d.DHL_count_all);
+      .y1(function (d) {
+        return y(d.DHL_count_all + d.DHL_count_new);
       })
   );
-// Total, excluding newly shipped
+// Total
 svg
   .append('path')
   .datum(data)
@@ -78,12 +103,12 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
-        return y(d.DHL_count_all - d.DHL_count_new);
+      .y1(function (d) {
+        return y(d.DHL_count_all);
       })
   );
 // Delivered
@@ -97,11 +122,11 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
+      .y1(function (d) {
         return y(d.DHL_count_done);
       })
   );
@@ -112,14 +137,6 @@ svg = d3
   .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 2) + ')');
 
 // Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
 svg
   .append('g')
   .attr('transform', 'translate(0,' + height / 2 + ')')
@@ -129,9 +146,9 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(dhl_avg, function(d) {
-      return d.DHL_total_days / d.DHL_count_done;
-    })
+    d3.max(dhl_avg, function (d) {
+      return d.DHL_total_days / d.DHL_total_count;
+    }),
   ])
   .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
@@ -141,19 +158,29 @@ svg
   .datum(dhl_avg)
   .attr('fill', 'none')
   .attr('stroke', 'steelblue')
-  .attr('stroke-width', 1.5)
+  .attr('stroke-width', 3)
   .attr(
     'd',
     d3
       .line()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.DHL_total_days / d.DHL_count_done);
+      .y(function (d) {
+        return y(d.DHL_total_days / d.DHL_total_count);
       })
   );
-// Cutoff line
+// Cutoff lines
+svg
+  .append('line')
+  .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[4].date)))
+  .attr('y1', y(0))
+  .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[4].date)))
+  .attr('y2', y(1000))
+  .attr('stroke', '#aabb55')
+  .attr('stroke-width', 1)
+  .attr('stroke-dasharray', '5 5')
+  .attr('class', 'zeroline');
 svg
   .append('line')
   .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[data.length - 3].date)))
@@ -161,9 +188,15 @@ svg
   .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[data.length - 3].date)))
   .attr('y2', y(1000))
   .attr('stroke', '#aabb55')
-  .attr('stroke-width', 2)
+  .attr('stroke-width', 1)
   .attr('stroke-dasharray', '5 5')
   .attr('class', 'zeroline');
+
+/*****************************
+ *
+ *            EMS
+ *
+ */
 
 // EMS number of packages
 svg = d3
@@ -174,14 +207,6 @@ svg = d3
   .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 // Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
 svg
   .append('g')
   .attr('transform', 'translate(0,' + height / 2 + ')')
@@ -191,13 +216,32 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(data, function(d) {
-      return d.EMS_count_all;
-    })
+    d3.max(data, function (d) {
+      return d.EMS_count_all + d.EMS_count_new + d.EMS_count_lost;
+    }),
   ])
   .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
-// Total
+// Lost
+svg
+  .append('path')
+  .datum(data)
+  .attr('fill', '#773377')
+  .attr('stroke', '#550055')
+  .attr('stroke-width', 1.5)
+  .attr(
+    'd',
+    d3
+      .area()
+      .x(function (d) {
+        return x(d3.timeParse('%Y-%m-%d')(d.date));
+      })
+      .y0(y(0))
+      .y1(function (d) {
+        return y(d.EMS_count_all + d.EMS_count_new + d.EMS_count_lost);
+      })
+  );
+// New
 svg
   .append('path')
   .datum(data)
@@ -208,15 +252,15 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
-        return y(d.EMS_count_all);
+      .y1(function (d) {
+        return y(d.EMS_count_all + d.EMS_count_new);
       })
   );
-// Total, excluding newly shipped
+// Total
 svg
   .append('path')
   .datum(data)
@@ -227,12 +271,12 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
-        return y(d.EMS_count_all - d.EMS_count_new);
+      .y1(function (d) {
+        return y(d.EMS_count_all);
       })
   );
 // Delivered
@@ -246,11 +290,11 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
+      .y1(function (d) {
         return y(d.EMS_count_done);
       })
   );
@@ -261,14 +305,6 @@ svg = d3
   .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 2) + ')');
 
 // Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
 svg
   .append('g')
   .attr('transform', 'translate(0,' + height / 2 + ')')
@@ -278,9 +314,9 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(ems_avg, function(d) {
-      return d.EMS_total_days / d.EMS_count_done;
-    })
+    d3.max(ems_avg, function (d) {
+      return d.EMS_total_days / d.EMS_total_count;
+    }),
   ])
   .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
@@ -290,19 +326,29 @@ svg
   .datum(ems_avg)
   .attr('fill', 'none')
   .attr('stroke', 'steelblue')
-  .attr('stroke-width', 1.5)
+  .attr('stroke-width', 3)
   .attr(
     'd',
     d3
       .line()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.EMS_total_days / d.EMS_count_done);
+      .y(function (d) {
+        return y(d.EMS_total_days / d.EMS_total_count);
       })
   );
-// Cutoff line
+// Cutoff lines
+svg
+  .append('line')
+  .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[10].date)))
+  .attr('y1', y(0))
+  .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[10].date)))
+  .attr('y2', y(1000))
+  .attr('stroke', '#aabb55')
+  .attr('stroke-width', 1)
+  .attr('stroke-dasharray', '5 5')
+  .attr('class', 'zeroline');
 svg
   .append('line')
   .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
@@ -310,9 +356,15 @@ svg
   .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
   .attr('y2', y(1000))
   .attr('stroke', '#aabb55')
-  .attr('stroke-width', 2)
+  .attr('stroke-width', 1)
   .attr('stroke-dasharray', '5 5')
   .attr('class', 'zeroline');
+
+/*****************************
+ *
+ *           OTHER
+ *
+ */
 
 // OTHER number of packages
 svg = d3
@@ -323,14 +375,6 @@ svg = d3
   .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
 // Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
 svg
   .append('g')
   .attr('transform', 'translate(0,' + height / 2 + ')')
@@ -340,13 +384,32 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(data, function(d) {
-      return d.OTHER_count_all;
-    })
+    d3.max(data, function (d) {
+      return d.OTHER_count_all + d.OTHER_count_new + d.OTHER_count_lost;
+    }),
   ])
   .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
-// Total
+// Lost
+svg
+  .append('path')
+  .datum(data)
+  .attr('fill', '#773377')
+  .attr('stroke', '#550055')
+  .attr('stroke-width', 1.5)
+  .attr(
+    'd',
+    d3
+      .area()
+      .x(function (d) {
+        return x(d3.timeParse('%Y-%m-%d')(d.date));
+      })
+      .y0(y(0))
+      .y1(function (d) {
+        return y(d.OTHER_count_all + d.OTHER_count_new + d.OTHER_count_lost);
+      })
+  );
+// New
 svg
   .append('path')
   .datum(data)
@@ -357,15 +420,15 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
-        return y(d.OTHER_count_all);
+      .y1(function (d) {
+        return y(d.OTHER_count_all + d.OTHER_count_new);
       })
   );
-// Total, excluding newly shipped
+// Total
 svg
   .append('path')
   .datum(data)
@@ -376,12 +439,12 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
-        return y(d.OTHER_count_all - d.OTHER_count_new);
+      .y1(function (d) {
+        return y(d.OTHER_count_all);
       })
   );
 // Delivered
@@ -395,11 +458,11 @@ svg
     'd',
     d3
       .area()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
       .y0(y(0))
-      .y1(function(d) {
+      .y1(function (d) {
         return y(d.OTHER_count_done);
       })
   );
@@ -410,14 +473,6 @@ svg = d3
   .attr('transform', 'translate(' + margin.left + ',' + (margin.top + height / 2) + ')');
 
 // Draw a line graph
-x = d3
-  .scaleTime()
-  .domain(
-    d3.extent(data, function(d) {
-      return d3.timeParse('%Y-%m-%d')(d.date);
-    })
-  )
-  .range([0, width]);
 svg
   .append('g')
   .attr('transform', 'translate(0,' + height / 2 + ')')
@@ -427,9 +482,9 @@ y = d3
   .scaleLinear()
   .domain([
     0,
-    d3.max(other_avg, function(d) {
-      return d.OTHER_total_days / d.OTHER_count_done;
-    })
+    d3.max(other_avg, function (d) {
+      return d.OTHER_total_days / d.OTHER_total_count;
+    }),
   ])
   .range([height / 2, 0]);
 svg.append('g').call(d3.axisLeft(y));
@@ -439,19 +494,29 @@ svg
   .datum(other_avg)
   .attr('fill', 'none')
   .attr('stroke', 'steelblue')
-  .attr('stroke-width', 1.5)
+  .attr('stroke-width', 3)
   .attr(
     'd',
     d3
       .line()
-      .x(function(d) {
+      .x(function (d) {
         return x(d3.timeParse('%Y-%m-%d')(d.date));
       })
-      .y(function(d) {
-        return y(d.OTHER_total_days / d.OTHER_count_done);
+      .y(function (d) {
+        return y(d.OTHER_total_days / d.OTHER_total_count);
       })
   );
 // Cutoff line
+svg
+  .append('line')
+  .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[24].date)))
+  .attr('y1', y(0))
+  .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[24].date)))
+  .attr('y2', y(1000))
+  .attr('stroke', '#aabb55')
+  .attr('stroke-width', 1)
+  .attr('stroke-dasharray', '5 5')
+  .attr('class', 'zeroline');
 svg
   .append('line')
   .attr('x1', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
@@ -459,6 +524,6 @@ svg
   .attr('x2', x(d3.timeParse('%Y-%m-%d')(data[data.length - 7].date)))
   .attr('y2', y(1000))
   .attr('stroke', '#aabb55')
-  .attr('stroke-width', 2)
+  .attr('stroke-width', 1)
   .attr('stroke-dasharray', '5 5')
   .attr('class', 'zeroline');

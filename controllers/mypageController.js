@@ -29,23 +29,25 @@ const limit_date = new Date(2020, 0, 2, 12, 0, 0); // Just after 2020-01-01 12:0
 // Progress variables
 let last_tracked = {
   date: DEFAULT_DATE,
-  count: 0
+  count: 0,
 };
 
 // Open dashboard page
 exports.mypage = async (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
-        Tracking.findAll().then(entry => callback(null, entry));
-      }
+      tracking: (callback) => {
+        Tracking.findAll().then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
         return next(err);
       }
-      const undelivered_rows = results.tracking.filter(row => row.delivereddate == 0 && row.delivered == false);
-      const delivered_one_month_rows = results.tracking.filter(row => row.delivereddate > 1 && row.delivereddate > Date.now() - 2592000000);
+      const undelivered_rows = results.tracking.filter((row) => row.delivereddate == 0 && row.delivered == false);
+      const delivered_one_month_rows = results.tracking.filter(
+        (row) => row.delivereddate > 1 && row.delivereddate > Date.now() - 2592000000
+      );
 
       let dhl_time = 0;
       let dhl_time_count = 0;
@@ -53,7 +55,7 @@ exports.mypage = async (req, res, next) => {
       let ems_time_count = 0;
       let other_time = 0;
       let other_time_count = 0;
-      delivered_one_month_rows.forEach(data => {
+      delivered_one_month_rows.forEach((data) => {
         // Check delivery time
         const days = Math.round((data.delivereddate - data.shippeddate) / 86400000); // Divide by 86400000 to get result in days
         if (data.carrier == 'DHL') {
@@ -77,32 +79,32 @@ exports.mypage = async (req, res, next) => {
           number_of_records: 0,
           dhl_records: 0,
           ems_records: 0,
-          other_records: 0
+          other_records: 0,
         },
         last30days: {
           limit: Date.now() - 2592000000,
           number_of_records: 0,
           dhl_records: 0,
           ems_records: 0,
-          other_records: 0
+          other_records: 0,
         },
         last90days: {
           limit: Date.now() - 7776000000,
           number_of_records: 0,
           dhl_records: 0,
           ems_records: 0,
-          other_records: 0
+          other_records: 0,
         },
         all: {
           number_of_records: 0,
           dhl_records: 0,
           ems_records: 0,
-          other_records: 0
+          other_records: 0,
         },
         invalid: 0,
-        has_old: false
+        has_old: false,
       };
-      undelivered_rows.forEach(row => {
+      undelivered_rows.forEach((row) => {
         if (row.carrier == 'INVALID') {
           undelivered.invalid++;
         } else {
@@ -164,18 +166,18 @@ exports.mypage = async (req, res, next) => {
 exports.status_check = (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
-        Tracking.findAll().then(entry => callback(null, entry));
-      }
+      tracking: (callback) => {
+        Tracking.findAll().then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
         return next(err);
       }
-      const undelivered_rows = results.tracking.filter(row => row.delivereddate == 0 && row.delivered == false);
+      const undelivered_rows = results.tracking.filter((row) => row.delivereddate == 0 && row.delivered == false);
 
       const undelivered = { status_counter: [] };
-      undelivered_rows.forEach(row => {
+      undelivered_rows.forEach((row) => {
         let new_status = true;
         for (let i = 0; i < undelivered.status_counter.length && new_status; i++) {
           if (undelivered.status_counter[i].status == row.status) {
@@ -186,7 +188,7 @@ exports.status_check = (req, res, next) => {
         if (new_status) {
           undelivered.status_counter.push({
             status: row.status,
-            count: 1
+            count: 1,
           });
         }
       });
@@ -210,9 +212,9 @@ exports.status_check = (req, res, next) => {
 exports.invalid = (req, res, next) => {
   async.parallel(
     {
-      invalid: callback => {
-        Tracking.findAll({ where: { carrier: 'INVALID' } }).then(data => callback(null, data));
-      }
+      invalid: (callback) => {
+        Tracking.findAll({ where: { carrier: 'INVALID' } }).then((data) => callback(null, data));
+      },
     },
     (err, results) => {
       if (err) {
@@ -246,46 +248,46 @@ exports.process_valid = (req, res, next) => {
 exports.undelivered = async (req, res, next) => {
   const query = {
     order: [['shippeddate', 'ASC']],
-    where: { delivereddate: 0 }
+    where: { delivereddate: 0 },
   };
   if (req.params.carrier && req.params.start && req.params.end) {
     if (req.params.carrier == 'dhl') {
       query.where['carrier'] = 'DHL';
     } else if (req.params.carrier == 'ems') {
       query.where['tracking'] = {
-        [Op.like]: 'EM%'
+        [Op.like]: 'EM%',
       };
     } else if (req.params.carrier == 'other') {
       query.where['carrier'] = {
-        [Op.not]: 'DHL'
+        [Op.not]: 'DHL',
       };
       query.where['tracking'] = {
-        [Op.notLike]: 'EM%'
+        [Op.notLike]: 'EM%',
       };
     }
     query.where['shippeddate'] = {
       [Op.gte]: parseInt(req.params.start),
-      [Op.lt]: parseInt(req.params.end)
+      [Op.lt]: parseInt(req.params.end),
     };
   }
   async.parallel(
     {
-      tracking: callback => {
-        Tracking.findAll(query).then(entry => callback(null, entry));
-      }
+      tracking: (callback) => {
+        Tracking.findAll(query).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.delivered == false && row.carrier != 'INVALID');
+      const rows = results.tracking.filter((row) => row.delivered == false && row.carrier != 'INVALID');
 
       const analyze = {
         dhl_count: 0,
         ems_count: 0,
-        other_count: 0
+        other_count: 0,
       };
-      rows.forEach(entry => {
+      rows.forEach((entry) => {
         if (entry.carrier == 'DHL') {
           analyze.dhl_count++;
         } else if (entry.tracking.indexOf('EM') == 0) {
@@ -304,31 +306,31 @@ exports.undelivered = async (req, res, next) => {
 exports.undelivered_country = async (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
+      tracking: (callback) => {
         Tracking.findAll({
           order: [['country', 'ASC']],
           where: {
-            delivered: 0
-          }
-        }).then(entry => callback(null, entry));
-      }
+            delivered: 0,
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter(row => row.country != 'UNKNOWN' && row.carrier != 'INVALID');
+      const rows = results.tracking.filter((row) => row.country != 'UNKNOWN' && row.carrier != 'INVALID');
 
       const analyze = {
         overall: {
           all_dhl_count: 0,
           all_ems_count: 0,
-          all_other_count: 0
+          all_other_count: 0,
         },
-        countries: []
+        countries: [],
       };
 
-      rows.forEach(entry => {
+      rows.forEach((entry) => {
         let new_entry = true;
         for (let i = 0; i < analyze.countries.length && new_entry; i++) {
           if (entry.country == analyze.countries[i].country) {
@@ -351,7 +353,7 @@ exports.undelivered_country = async (req, res, next) => {
             country: entry.country,
             dhl_count: 0,
             ems_count: 0,
-            other_count: 0
+            other_count: 0,
           });
 
           if (entry.carrier == 'DHL') {
@@ -376,13 +378,13 @@ exports.undelivered_country = async (req, res, next) => {
 exports.ucountry = async (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
+      tracking: (callback) => {
         Tracking.findAll({
           where: {
-            country: req.params.country
-          }
-        }).then(entry => callback(null, entry));
-      }
+            country: req.params.country,
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
@@ -399,7 +401,7 @@ exports.ucountry = async (req, res, next) => {
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
           other_count: { all: 0, notdone: 0 },
-          current_shipping_times: { dhl: [], dhl_ems: [], all: [] }
+          current_shipping_times: { dhl: [], dhl_ems: [], all: [] },
         },
         {
           label: '7日以内',
@@ -407,7 +409,7 @@ exports.ucountry = async (req, res, next) => {
           end: time,
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
+          other_count: { all: 0, notdone: 0 },
         },
         {
           label: '8日～30日',
@@ -415,7 +417,7 @@ exports.ucountry = async (req, res, next) => {
           end: time - 604800000,
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
+          other_count: { all: 0, notdone: 0 },
         },
         {
           label: '31日～90日',
@@ -423,7 +425,7 @@ exports.ucountry = async (req, res, next) => {
           end: time - 2592000000,
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
+          other_count: { all: 0, notdone: 0 },
         },
         {
           label: '91日以上',
@@ -431,7 +433,7 @@ exports.ucountry = async (req, res, next) => {
           end: time - 7776000000,
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
+          other_count: { all: 0, notdone: 0 },
         },
         {
           label: '今月',
@@ -439,7 +441,7 @@ exports.ucountry = async (req, res, next) => {
           end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime(),
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
+          other_count: { all: 0, notdone: 0 },
         },
         {
           label: '先月',
@@ -447,7 +449,7 @@ exports.ucountry = async (req, res, next) => {
           end: new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999).getTime(),
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
+          other_count: { all: 0, notdone: 0 },
         },
         {
           label: '先々月',
@@ -455,10 +457,10 @@ exports.ucountry = async (req, res, next) => {
           end: new Date(d.getFullYear(), d.getMonth() - 1, 0, 23, 59, 59, 999).getTime(),
           dhl_count: { all: 0, notdone: 0 },
           ems_count: { all: 0, notdone: 0 },
-          other_count: { all: 0, notdone: 0 }
-        }
+          other_count: { all: 0, notdone: 0 },
+        },
       ];
-      results.tracking.forEach(entry => {
+      results.tracking.forEach((entry) => {
         if (entry.delivered == false) {
           const tdays = Math.round((time - entry.shippeddate) / 86400000);
           if (entry.carrier == 'DHL') {
@@ -504,16 +506,16 @@ exports.delivered = async (req, res, next) => {
   const one_week = Date.now() - 604800000;
   async.parallel(
     {
-      tracking: callback => {
+      tracking: (callback) => {
         Tracking.findAll({
           order: [['delivereddate', 'DESC']],
           where: {
             delivereddate: {
-              [Op.gte]: one_week
-            }
-          }
-        }).then(entry => callback(null, entry));
-      }
+              [Op.gte]: one_week,
+            },
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
@@ -524,9 +526,9 @@ exports.delivered = async (req, res, next) => {
       const analyze = {
         dhl_count: 0,
         ems_count: 0,
-        other_count: 0
+        other_count: 0,
       };
-      rows.forEach(entry => {
+      rows.forEach((entry) => {
         if (entry.carrier == 'DHL') {
           analyze.dhl_count++;
         } else if (entry.tracking.indexOf('EM') == 0) {
@@ -545,16 +547,16 @@ exports.delivered = async (req, res, next) => {
 exports.delivered_country = async (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
+      tracking: (callback) => {
         Tracking.findAll({
           order: [['country', 'ASC']],
           where: {
             delivereddate: {
-              [Op.gt]: 0
-            }
-          }
-        }).then(entry => callback(null, entry));
-      }
+              [Op.gt]: 0,
+            },
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
@@ -571,13 +573,13 @@ exports.delivered_country = async (req, res, next) => {
 exports.country = async (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
+      tracking: (callback) => {
         Tracking.findAll({
           where: {
-            country: req.params.country
-          }
-        }).then(entry => callback(null, entry));
-      }
+            country: req.params.country,
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
@@ -596,7 +598,7 @@ exports.country = async (req, res, next) => {
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          delivery_times: { dhl: [], dhl_ems: [], all: [] }
+          delivery_times: { dhl: [], dhl_ems: [], all: [] },
         },
         {
           label: '7日以内',
@@ -604,7 +606,7 @@ exports.country = async (req, res, next) => {
           end: time,
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
         },
         {
           label: '8日～30日',
@@ -612,7 +614,7 @@ exports.country = async (req, res, next) => {
           end: time - 604800000,
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
         },
         {
           label: '31日～90日',
@@ -620,7 +622,7 @@ exports.country = async (req, res, next) => {
           end: time - 2592000000,
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
         },
         {
           label: '91日以上',
@@ -628,7 +630,7 @@ exports.country = async (req, res, next) => {
           end: time - 7776000000,
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
         },
         {
           label: '今月',
@@ -636,7 +638,7 @@ exports.country = async (req, res, next) => {
           end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999).getTime(),
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
         },
         {
           label: '先月',
@@ -644,7 +646,7 @@ exports.country = async (req, res, next) => {
           end: new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59, 999).getTime(),
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
         },
         {
           label: '先々月',
@@ -652,10 +654,10 @@ exports.country = async (req, res, next) => {
           end: new Date(d.getFullYear(), d.getMonth() - 1, 0, 23, 59, 59, 999).getTime(),
           dhl_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
           ems_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
-          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 }
-        }
+          other_count: { all: 0, done: 0, days: 0, unknown_days: 0 },
+        },
       ];
-      results.tracking.forEach(entry => {
+      results.tracking.forEach((entry) => {
         let days = 0;
         if (entry.delivereddate > 1) {
           days = Math.round((entry.delivereddate - entry.shippeddate) / 86400000);
@@ -713,37 +715,92 @@ exports.country = async (req, res, next) => {
 exports.countrytrend = async (req, res, next) => {
   async.parallel(
     {
-      tracking: callback => {
+      tracking: (callback) => {
         Tracking.findAll({
           where: {
-            country: req.params.country
-          }
-        }).then(entry => callback(null, entry));
-      }
+            country: req.params.country,
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
     (err, results) => {
       if (err) {
         return next(err);
       }
       const analyze = []; // { date: '2020-04-01', DHL_total_days: 100, DHL_count_all: 25, ..., DHL_count_new: 25, ..., DHL_count_done: 25, ... }
-      results.tracking.forEach(entry => {
+      results.tracking.forEach((entry) => {
+        // Date interval for this shipment
         let start_date = new Date(entry.shippeddate);
-        let end_date = new Date();
+        let end_date = entry.delivereddate > 1 ? new Date(entry.delivereddate) : entry.delivereddate == 1 ? start_date : new Date();
+
+        // Average values
         if (entry.delivereddate > 1) {
           let days = (entry.delivereddate - entry.shippeddate) / 86400000;
-          end_date = new Date(entry.delivereddate);
           const date_str = dateToString(end_date);
           let updated = false;
           for (let i = 0; i < analyze.length && updated == false; i++) {
             if (analyze[i].date == date_str) {
               if (entry.carrier == 'DHL') {
                 analyze[i].DHL_total_days += days;
-                analyze[i].DHL_count_done++;
+                analyze[i].DHL_total_count++;
               } else if (entry.tracking.indexOf('EM') == 0) {
                 analyze[i].EMS_total_days += days;
-                analyze[i].EMS_count_done++;
+                analyze[i].EMS_total_count++;
               } else {
                 analyze[i].OTHER_total_days += days;
+                analyze[i].OTHER_total_count++;
+              }
+              updated = true;
+            }
+          }
+          if (updated == false) {
+            // A new entry
+            const index = analyze.length;
+            analyze.push({
+              date: date_str,
+              DHL_total_days: 0,
+              DHL_total_count: 0,
+              DHL_count_all: 0,
+              DHL_count_new: 0,
+              DHL_count_lost: 0,
+              DHL_count_done: 0,
+              EMS_total_days: 0,
+              EMS_total_count: 0,
+              EMS_count_all: 0,
+              EMS_count_new: 0,
+              EMS_count_lost: 0,
+              EMS_count_done: 0,
+              OTHER_total_days: 0,
+              OTHER_total_count: 0,
+              OTHER_count_all: 0,
+              OTHER_count_new: 0,
+              OTHER_count_lost: 0,
+              OTHER_count_done: 0,
+            });
+            if (entry.carrier == 'DHL') {
+              analyze[index].DHL_total_days += days;
+              analyze[index].DHL_total_count++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze[index].EMS_total_days += days;
+              analyze[index].EMS_total_count++;
+            } else {
+              analyze[index].OTHER_total_days += days;
+              analyze[index].OTHER_total_count++;
+            }
+          }
+        }
+
+        // Delivered count
+        if (entry.delivereddate > 0) {
+          const date_str = dateToString(end_date);
+          let updated = false;
+          for (let i = 0; i < analyze.length && updated == false; i++) {
+            if (analyze[i].date == date_str) {
+              if (entry.carrier == 'DHL') {
+                analyze[i].DHL_count_done++;
+              } else if (entry.tracking.indexOf('EM') == 0) {
+                analyze[i].EMS_count_done++;
+              } else {
                 analyze[i].OTHER_count_done++;
               }
               updated = true;
@@ -755,78 +812,138 @@ exports.countrytrend = async (req, res, next) => {
             analyze.push({
               date: date_str,
               DHL_total_days: 0,
+              DHL_total_count: 0,
               DHL_count_all: 0,
               DHL_count_new: 0,
               DHL_count_lost: 0,
               DHL_count_done: 0,
               EMS_total_days: 0,
+              EMS_total_count: 0,
               EMS_count_all: 0,
               EMS_count_new: 0,
               EMS_count_lost: 0,
               EMS_count_done: 0,
               OTHER_total_days: 0,
+              OTHER_total_count: 0,
               OTHER_count_all: 0,
               OTHER_count_new: 0,
               OTHER_count_lost: 0,
-              OTHER_count_done: 0
+              OTHER_count_done: 0,
             });
             if (entry.carrier == 'DHL') {
-              analyze[index].DHL_total_days += days;
               analyze[index].DHL_count_done++;
             } else if (entry.tracking.indexOf('EM') == 0) {
-              analyze[index].EMS_total_days += days;
               analyze[index].EMS_count_done++;
             } else {
-              analyze[index].OTHER_total_days += days;
               analyze[index].OTHER_count_done++;
             }
           }
-        } else if (entry.delivereddate == 1) {
-          end_date = start_date;
         }
-        const sdate_str = dateToString(start_date);
-        let supdated = false;
-        for (let i = 0; i < analyze.length && supdated == false; i++) {
-          if (analyze[i].date == sdate_str) {
-            if (entry.carrier == 'DHL') {
-              analyze[i].DHL_count_new++;
-            } else if (entry.tracking.indexOf('EM') == 0) {
-              analyze[i].EMS_count_new++;
-            } else {
-              analyze[i].OTHER_count_new++;
+
+        // Shipped count
+        if (!(entry.delivereddate == 0 && entry.delivered == true)) {
+          const date_str = dateToString(start_date);
+          let updated = false;
+          for (let i = 0; i < analyze.length && updated == false; i++) {
+            if (analyze[i].date == date_str) {
+              if (entry.carrier == 'DHL') {
+                analyze[i].DHL_count_new++;
+              } else if (entry.tracking.indexOf('EM') == 0) {
+                analyze[i].EMS_count_new++;
+              } else {
+                analyze[i].OTHER_count_new++;
+              }
+              updated = true;
             }
-            supdated = true;
+          }
+          if (updated == false) {
+            // A new entry
+            const index = analyze.length;
+            analyze.push({
+              date: date_str,
+              DHL_total_days: 0,
+              DHL_total_count: 0,
+              DHL_count_all: 0,
+              DHL_count_new: 0,
+              DHL_count_lost: 0,
+              DHL_count_done: 0,
+              EMS_total_days: 0,
+              EMS_total_count: 0,
+              EMS_count_all: 0,
+              EMS_count_new: 0,
+              EMS_count_lost: 0,
+              EMS_count_done: 0,
+              OTHER_total_days: 0,
+              OTHER_total_count: 0,
+              OTHER_count_all: 0,
+              OTHER_count_new: 0,
+              OTHER_count_lost: 0,
+              OTHER_count_done: 0,
+            });
+            if (entry.carrier == 'DHL') {
+              analyze[index].DHL_count_new++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze[index].EMS_count_new++;
+            } else {
+              analyze[index].OTHER_count_new++;
+            }
           }
         }
-        if (supdated == false) {
-          // A new entry
-          const index = analyze.length;
-          analyze.push({
-            date: sdate_str,
-            DHL_total_days: 0,
-            DHL_count_all: 0,
-            DHL_count_new: 0,
-            DHL_count_lost: 0,
-            DHL_count_done: 0,
-            EMS_total_days: 0,
-            EMS_count_all: 0,
-            EMS_count_new: 0,
-            EMS_count_lost: 0,
-            EMS_count_done: 0,
-            OTHER_total_days: 0,
-            OTHER_count_all: 0,
-            OTHER_count_new: 0,
-            OTHER_count_lost: 0,
-            OTHER_count_done: 0
-          });
-          if (entry.carrier == 'DHL') {
-            analyze[index].DHL_count_new++;
-          } else if (entry.tracking.indexOf('EM') == 0) {
-            analyze[index].EMS_count_new++;
-          } else {
-            analyze[index].OTHER_count_new++;
+
+        // Lost/Returned count
+        if (entry.delivereddate == 0 && entry.delivered == true) {
+          end_date = start_date;
+          const date_str = dateToString(start_date);
+          let updated = false;
+          for (let i = 0; i < analyze.length && updated == false; i++) {
+            if (analyze[i].date == date_str) {
+              if (entry.carrier == 'DHL') {
+                analyze[i].DHL_count_lost++;
+              } else if (entry.tracking.indexOf('EM') == 0) {
+                analyze[i].EMS_count_lost++;
+              } else {
+                analyze[i].OTHER_count_lost++;
+              }
+              updated = true;
+            }
+          }
+          if (updated == false) {
+            // A new entry
+            const index = analyze.length;
+            analyze.push({
+              date: date_str,
+              DHL_total_days: 0,
+              DHL_total_count: 0,
+              DHL_count_all: 0,
+              DHL_count_new: 0,
+              DHL_count_lost: 0,
+              DHL_count_done: 0,
+              EMS_total_days: 0,
+              EMS_total_count: 0,
+              EMS_count_all: 0,
+              EMS_count_new: 0,
+              EMS_count_lost: 0,
+              EMS_count_done: 0,
+              OTHER_total_days: 0,
+              OTHER_total_count: 0,
+              OTHER_count_all: 0,
+              OTHER_count_new: 0,
+              OTHER_count_lost: 0,
+              OTHER_count_done: 0,
+            });
+            if (entry.carrier == 'DHL') {
+              analyze[index].DHL_count_lost++;
+            } else if (entry.tracking.indexOf('EM') == 0) {
+              analyze[index].EMS_count_lost++;
+            } else {
+              analyze[index].OTHER_count_lost++;
+            }
           }
         }
+
+        // All count
+        // Skip first day (counted in new or lost)
+        start_date = new Date(start_date.getFullYear(), start_date.getMonth(), start_date.getDate() + 1);
         while (start_date.getTime() <= end_date.getTime()) {
           const date_str = dateToString(start_date);
           let updated = false;
@@ -848,20 +965,23 @@ exports.countrytrend = async (req, res, next) => {
             analyze.push({
               date: date_str,
               DHL_total_days: 0,
+              DHL_total_count: 0,
               DHL_count_all: 0,
               DHL_count_new: 0,
               DHL_count_lost: 0,
               DHL_count_done: 0,
               EMS_total_days: 0,
+              EMS_total_count: 0,
               EMS_count_all: 0,
               EMS_count_new: 0,
               EMS_count_lost: 0,
               EMS_count_done: 0,
               OTHER_total_days: 0,
+              OTHER_total_count: 0,
               OTHER_count_all: 0,
               OTHER_count_new: 0,
               OTHER_count_lost: 0,
-              OTHER_count_done: 0
+              OTHER_count_done: 0,
             });
             if (entry.carrier == 'DHL') {
               analyze[index].DHL_count_all++;
@@ -888,8 +1008,8 @@ const JP_scraping_counter = {
   done: 100,
   html: {
     status: HTTP_OK_CODE,
-    text: 'OK'
-  }
+    text: 'OK',
+  },
 };
 const DHL_scraping_counter = {
   current_date: DEFAULT_DATE,
@@ -897,8 +1017,8 @@ const DHL_scraping_counter = {
   done: 100,
   html: {
     status: HTTP_OK_CODE,
-    text: 'OK'
-  }
+    text: 'OK',
+  },
 };
 const DHL_API_counter = {
   current_date: DEFAULT_DATE,
@@ -906,8 +1026,8 @@ const DHL_API_counter = {
   done: 100,
   html: {
     status: HTTP_OK_CODE,
-    text: 'OK'
-  }
+    text: 'OK',
+  },
 };
 const USPS_API_counter = {
   current_date: DEFAULT_DATE,
@@ -915,8 +1035,8 @@ const USPS_API_counter = {
   done: 100,
   html: {
     status: HTTP_OK_CODE,
-    text: 'OK'
-  }
+    text: 'OK',
+  },
 };
 let counter = 0;
 
@@ -963,56 +1083,56 @@ async function TrackAll() {
 
   async.parallel(
     {
-      tracking_jp: function(callback) {
+      tracking_jp: function (callback) {
         Tracking.findAll({
           where: {
             carrier: 'JP',
             delivered: false,
             shippeddate: {
-              [Op.gte]: cutoff
+              [Op.gte]: cutoff,
             },
             addeddate: {
-              [Op.lte]: postalfc
+              [Op.lte]: postalfc,
             },
             lastchecked: {
-              [Op.lte]: postalnc
-            }
-          }
-        }).then(entry => callback(null, entry));
+              [Op.lte]: postalnc,
+            },
+          },
+        }).then((entry) => callback(null, entry));
       },
-      tracking_usps: function(callback) {
+      tracking_usps: function (callback) {
         Tracking.findAll({
           where: {
             carrier: 'USPS',
             delivered: false,
             shippeddate: {
-              [Op.gte]: cutoff
+              [Op.gte]: cutoff,
             },
             lastchecked: {
-              [Op.lte]: postalnc
-            }
-          }
-        }).then(entry => callback(null, entry));
+              [Op.lte]: postalnc,
+            },
+          },
+        }).then((entry) => callback(null, entry));
       },
-      tracking_dhl: function(callback) {
+      tracking_dhl: function (callback) {
         Tracking.findAll({
           where: {
             carrier: 'DHL',
             delivered: false,
             shippeddate: {
-              [Op.gte]: cutoff
+              [Op.gte]: cutoff,
             },
             addeddate: {
-              [Op.lte]: dhlfc
+              [Op.lte]: dhlfc,
             },
             lastchecked: {
-              [Op.lte]: dhlnc
-            }
-          }
-        }).then(entry => callback(null, entry));
-      }
+              [Op.lte]: dhlnc,
+            },
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
-    function(err, results) {
+    function (err, results) {
       if (err) {
         console.error(`---${new Date()}---[TrackAll]\n${err}`);
         return next(err);
@@ -1025,20 +1145,20 @@ async function TrackAll() {
       // Successful, so start tracking
       async.parallel(
         {
-          jp_status_code: async function(callback) {
+          jp_status_code: async function (callback) {
             JP_tracker(results.tracking_jp);
             callback(null, 'OK');
           },
-          usps_status_code: async function(callback) {
+          usps_status_code: async function (callback) {
             USPS_tracker(results.tracking_usps);
             callback(null, 'OK');
           },
-          dhl_status_code: function(callback) {
+          dhl_status_code: function (callback) {
             DHL_tracker(results.tracking_dhl);
             callback(null, 'OK');
-          }
+          },
         },
-        function(err, results2) {
+        function (err, results2) {
           const time_now = new Date();
           last_tracked.date = `${d} ${time_now.getHours()}:${time_now.getMinutes()}`;
         }
@@ -1086,10 +1206,10 @@ async function JP_tracker(tracking) {
             shippeddate: result.shippeddate,
             delivereddate: result.delivered,
             delivered: result.delivered > limit_date.getTime() ? true : false,
-            data: result.rawdata
+            data: result.rawdata,
           },
           {
-            where: { id: item.id }
+            where: { id: item.id },
           }
         );
         last_tracked.count++;
@@ -1139,10 +1259,10 @@ async function USPS_tracker(tracking) {
             shippeddate: result.shippeddate,
             delivereddate: result.delivered,
             delivered: result.delivered > limit_date.getTime() ? true : false,
-            data: result.rawdata
+            data: result.rawdata,
           },
           {
-            where: { id: item.id }
+            where: { id: item.id },
           }
         );
         last_tracked.count++;
@@ -1192,10 +1312,10 @@ async function DHL_tracker(tracking) {
             shippeddate: result.shippeddate,
             delivereddate: result.delivered,
             delivered: result.delivered > limit_date.getTime() ? true : false,
-            data: result.rawdata
+            data: result.rawdata,
           },
           {
-            where: { id: item.id }
+            where: { id: item.id },
           }
         );
         last_tracked.count++;
@@ -1223,10 +1343,10 @@ async function DHL_tracker(tracking) {
             shippeddate: result.shippeddate,
             delivereddate: result.delivered,
             delivered: result.delivered > limit_date.getTime() ? true : false,
-            data: result.rawdata
+            data: result.rawdata,
           },
           {
-            where: { id: item.id }
+            where: { id: item.id },
           }
         );
         last_tracked.count++;
@@ -1299,13 +1419,13 @@ exports.details = async (req, res, next) => {
 
   async.parallel(
     {
-      tracking: function(callback) {
+      tracking: function (callback) {
         Tracking.findAll({
-          where: { tracking: tracking_id }
-        }).then(entry => callback(null, entry[0]));
-      }
+          where: { tracking: tracking_id },
+        }).then((entry) => callback(null, entry[0]));
+      },
     },
-    function(err, results) {
+    function (err, results) {
       if (err) {
         return next(err);
       }
@@ -1353,25 +1473,25 @@ exports.csv = async (req, res, next) => {
     query['where'] = {
       shippeddate: {
         [Op.gte]: start,
-        [Op.lte]: end
-      }
+        [Op.lte]: end,
+      },
     };
   } else {
     query['where'] = {
       delivereddate: {
         [Op.gte]: start,
-        [Op.lte]: end
-      }
+        [Op.lte]: end,
+      },
     };
   }
 
   async.parallel(
     {
-      tracking: function(callback) {
-        Tracking.findAll(query).then(entry => callback(null, entry));
-      }
+      tracking: function (callback) {
+        Tracking.findAll(query).then((entry) => callback(null, entry));
+      },
     },
-    function(err, results) {
+    function (err, results) {
       if (err) {
         return next(err);
       }
@@ -1382,7 +1502,7 @@ exports.csv = async (req, res, next) => {
 
       // tracking	carrier	country	addeddate	lastchecked	status	shippeddate	delivereddate	delivered	data
       let outdata = `Tracking,Carrier,Country,Added date,Last checked,Status,Shipped date,Delivered date,Delivered,Data`;
-      results.tracking.forEach(r => {
+      results.tracking.forEach((r) => {
         outdata += `\n${r.tracking},${r.carrier},"${r.country}",${r.addeddate},${r.lastchecked},"${r.status}",${r.shippeddate},${
           r.delivereddate
         },${r.delivered},"${r.data.split('"').join("'")}"`;
@@ -1410,9 +1530,9 @@ exports.clear = async (req, res, next) => {
       where: {
         delivered: true,
         delivereddate: {
-          [Op.lt]: d.getTime()
-        }
-      }
+          [Op.lt]: d.getTime(),
+        },
+      },
     });
   }
 
@@ -1425,10 +1545,10 @@ exports.list_old = (req, res) => {
     where: {
       delivered: false,
       shippeddate: {
-        [Op.lt]: DaysAgo(180)
-      }
-    }
-  }).then(result => {
+        [Op.lt]: DaysAgo(180),
+      },
+    },
+  }).then((result) => {
     res.render('old_list', { result });
   });
 };
@@ -1444,7 +1564,7 @@ exports.old_set_status = (req, res) => {
     const to_update = {
       delivereddate: request == 'Delivered' ? 1 : 0,
       delivered: true,
-      status: request
+      status: request,
     };
     Tracking.update(to_update, { where: { id } });
   }

@@ -10,8 +10,10 @@ block content
     text(x="37", y="12", fill="white") Total
     rect(x="80", width="12", height="12", style="fill:#aaffaa;")
     text(x="97", y="12", fill="white") Delivered
-    rect(x="170", width="12", height="12", style="fill:steelblue;")
-    text(x="187", y="12", fill="white") Average time
+    rect(x="170", width="12", height="12", style="fill:#773377;")
+    text(x="187", y="12", fill="white") Lost/Returned
+    rect(x="290", width="12", height="12", style="fill:steelblue;")
+    text(x="307", y="12", fill="white") Average time
   h2 EMS
   svg#chart_ems
     rect(x="20", width="12", height="6", style="fill:#ffbbaa;")
@@ -19,8 +21,10 @@ block content
     text(x="37", y="12", fill="white") Total
     rect(x="80", width="12", height="12", style="fill:#aaffaa;")
     text(x="97", y="12", fill="white") Delivered
-    rect(x="170", width="12", height="12", style="fill:steelblue;")
-    text(x="187", y="12", fill="white") Average time
+    rect(x="170", width="12", height="12", style="fill:#773377;")
+    text(x="187", y="12", fill="white") Lost/Returned
+    rect(x="290", width="12", height="12", style="fill:steelblue;")
+    text(x="307", y="12", fill="white") Average time
   h2 SAL/Air
   svg#chart_other
     rect(x="20", width="12", height="6", style="fill:#ffbbaa;")
@@ -28,8 +32,10 @@ block content
     text(x="37", y="12", fill="white") Total
     rect(x="80", width="12", height="12", style="fill:#aaffaa;")
     text(x="97", y="12", fill="white") Delivered
-    rect(x="170", width="12", height="12", style="fill:steelblue;")
-    text(x="187", y="12", fill="white") Average time
+    rect(x="170", width="12", height="12", style="fill:#773377;")
+    text(x="187", y="12", fill="white") Lost/Returned
+    rect(x="290", width="12", height="12", style="fill:steelblue;")
+    text(x="307", y="12", fill="white") Average time
   #chart_data.hidden= JSON.stringify(analyze)
   script(src="https://d3js.org/d3.v5.min.js")
   script(src="/javascripts/d3_trend_controller.js")
