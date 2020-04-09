@@ -1,22 +1,22 @@
 const axios = require('axios');
 var parseString = require('xml2js').parseString;
 
-const fetchData = async siteUrl => {
+const fetchData = async (siteUrl) => {
   let data = {};
   await axios
     .get(siteUrl, {
       headers: {
         accept: 'application/json',
-        'DHL-API-Key': process.env.DHL_API_KEY
-      }
+        'DHL-API-Key': process.env.DHL_API_KEY,
+      },
     })
-    .then(response => {
+    .then((response) => {
       response.data['error'] = false;
       response.data['HTML_status'] = response.status;
       response.data['HTML_statusText'] = response.statusText;
       data = response.data;
     })
-    .catch(error => {
+    .catch((error) => {
       data = { error: true, HTML_status: '', HTML_statusText: '' };
       if (error.response == undefined) {
         data.HTML_status = error.errno;
@@ -29,11 +29,11 @@ const fetchData = async siteUrl => {
   return data;
 };
 
-const fetchDataUSPS = async siteUrl => {
+const fetchDataUSPS = async (siteUrl) => {
   let data = {};
   await axios
     .get(siteUrl)
-    .then(response => {
+    .then((response) => {
       data['error'] = false;
       data['HTML_status'] = response.status;
       data['HTML_statusText'] = response.statusText;
@@ -47,7 +47,7 @@ const fetchDataUSPS = async siteUrl => {
         }
       });
     })
-    .catch(error => {
+    .catch((error) => {
       console.log(error);
       data = { error: true, HTML_status: '', HTML_statusText: '' };
       if (error.response == undefined) {
@@ -71,7 +71,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
   }
   const output = {
     HTML_status: data.HTML_status,
-    HTML_statusText: data.HTML_statusText
+    HTML_statusText: data.HTML_statusText,
   };
 
   if (data.error == false) {
@@ -91,7 +91,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // Acquire last tracking update
       output['status'] = data.xml_json.TrackResponse.TrackInfo[0].TrackSummary[0];
       // Acquire shipped date
-      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
+      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
         if (event.indexOf('Acceptance,') == 0) {
           const data_parts = event.split(', ');
           const d = DateFormatter(`${data_parts[1]}, ${data_parts[2]}`).split('-');
@@ -114,14 +114,14 @@ const getResultsAPI = async (siteUrl, carrier) => {
         {
           timestamp: output['delivered'],
           description: output['status'],
-          location: 'USA'
-        }
+          location: 'USA',
+        },
       ];
-      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach(event => {
+      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
         tracking_data.push({
           timestamp: Date.now(),
           description: event,
-          location: '---'
+          location: '---',
         });
       });
       output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
@@ -133,7 +133,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // Acquire last tracking update
       output['status'] = data.shipments[0].status.statusCode;
       // Acquire shipped date
-      data.shipments[0].events.forEach(event => {
+      data.shipments[0].events.forEach((event) => {
         if (event.description == 'Shipment picked up' || event.description == 'Shipment scheduled to be picked up') {
           const sdt = event.timestamp.split('T');
           const d = sdt[0].split('-');
@@ -192,7 +192,7 @@ function DateFormatter(in_date) {
     September: '09',
     October: '10',
     November: '11',
-    December: '12'
+    December: '12',
   };
 
   return `${temp[1]}-${months[temp2[0]]}-${temp2[1]}`;
@@ -209,8 +209,10 @@ const country_mapper = {
   'CHINA MAINLAND': 'CHINA',
   MACAU: 'MACAO',
   東京都: 'JAPAN',
-  'IRELAND, REPUBLIC OF': 'IRELAND'
+  'IRELAND, REPUBLIC OF': 'IRELAND',
+  'CZECH REPUBLIC, THE': 'CZECH',
 };
+
 function CountryNormalize(in_name) {
   out_name = in_name.toUpperCase();
   if (country_mapper[out_name]) {

@@ -4,16 +4,16 @@ const axios = require('axios');
 let HTML_status;
 let HTML_statusText;
 
-const fetchData = async siteUrl => {
+const fetchData = async (siteUrl) => {
   let data;
   await axios
     .get(siteUrl)
-    .then(response => {
+    .then((response) => {
       HTML_status = response.status;
       HTML_statusText = response.statusText;
       data = cheerio.load(response.data);
     })
-    .catch(error => {
+    .catch((error) => {
       if (error.response == undefined) {
         HTML_status = error.errno;
         HTML_statusText = error.errno;
@@ -34,7 +34,7 @@ const getResults = async (siteUrl, carrier) => {
   const $ = await fetchData(siteUrl);
   const output = {
     HTML_status: HTML_status,
-    HTML_statusText: HTML_statusText
+    HTML_statusText: HTML_statusText,
   };
 
   if ($ != undefined) {
@@ -48,12 +48,7 @@ const getResults = async (siteUrl, carrier) => {
         const content = $(element).text();
         if (content.indexOf('/') == 4) {
           date_index = index;
-          date = content
-            .split(' ')
-            .join(':')
-            .split('/')
-            .join(':')
-            .split(':');
+          date = content.split(' ').join(':').split('/').join(':').split(':');
           date = new Date(
             parseInt(date[0]),
             parseInt(date[1]) - 1,
@@ -71,7 +66,7 @@ const getResults = async (siteUrl, carrier) => {
           tracking_data.push({
             timestamp: date,
             description: status,
-            location: country_data[0]
+            location: country_data[0],
           });
         }
       });
@@ -120,7 +115,7 @@ const getResults = async (siteUrl, carrier) => {
         tracking_data.push({
           timestamp: ds,
           description: status,
-          location: place.split(' - ')[1]
+          location: place.split(' - ')[1],
         });
       }
       // DHL scrapping
@@ -173,7 +168,7 @@ function DateFormatter(in_date) {
     September: '09',
     October: '10',
     November: '11',
-    December: '12'
+    December: '12',
   };
 
   return `${temp[1]}-${months[temp2[0]]}-${temp2[1]}`;
@@ -190,7 +185,8 @@ const country_mapper = {
   'CHINA MAINLAND': 'CHINA',
   MACAU: 'MACAO',
   東京都: 'JAPAN',
-  'IRELAND, REPUBLIC OF': 'IRELAND'
+  'IRELAND, REPUBLIC OF': 'IRELAND',
+  'CZECH REPUBLIC, THE': 'CZECH',
 };
 function CountryNormalize(in_name) {
   out_name = in_name.toUpperCase();
