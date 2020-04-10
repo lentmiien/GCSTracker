@@ -17,7 +17,8 @@ block content
           each row in undelivered.status_counter
             if row.count > 1
               tr
-                td= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
+                td
+                  a(href=`/mypage/undelivered?status=${row.status}`)= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
                 td= row.count
             else
               - other++
