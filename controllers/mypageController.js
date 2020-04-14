@@ -33,7 +33,7 @@ let last_tracked = {
 };
 
 // Open dashboard page
-exports.mypage = async (req, res, next) => {
+exports.mypage = (req, res, next) => {
   async.parallel(
     {
       tracking: (callback) => {
@@ -248,7 +248,10 @@ exports.process_valid = (req, res, next) => {
 exports.undelivered = async (req, res, next) => {
   const query = {
     order: [['shippeddate', 'ASC']],
-    where: { delivereddate: 0 },
+    where: {
+      delivereddate: 0,
+      delivered: 0,
+    },
   };
   if (req.params.carrier && req.params.start && req.params.end) {
     if (req.params.carrier == 'dhl') {
@@ -270,6 +273,33 @@ exports.undelivered = async (req, res, next) => {
       [Op.lt]: parseInt(req.params.end),
     };
   }
+  if (req.query.carrier && req.query.start && req.query.end) {
+    if (req.query.carrier == 'dhl') {
+      query.where['carrier'] = 'DHL';
+    } else if (req.query.carrier == 'ems') {
+      query.where['tracking'] = {
+        [Op.like]: 'EM%',
+      };
+    } else if (req.query.carrier == 'other') {
+      query.where['carrier'] = {
+        [Op.not]: 'DHL',
+      };
+      query.where['tracking'] = {
+        [Op.notLike]: 'EM%',
+      };
+    }
+    const sdate = req.query.start.split('-');
+    const edate = req.query.end.split('-');
+    req.query.start = new Date(parseInt(sdate[0]), parseInt(sdate[1]) - 1, parseInt(sdate[2]), 0, 0, 0, 0).getTime();
+    req.query.end = new Date(parseInt(edate[0]), parseInt(edate[1]) - 1, parseInt(edate[2]), 23, 59, 59, 999).getTime();
+    query.where['shippeddate'] = {
+      [Op.gte]: req.query.start,
+      [Op.lte]: req.query.end,
+    };
+  }
+  if (req.query.status) {
+    query.where['status'] = req.query.status;
+  }
   async.parallel(
     {
       tracking: (callback) => {
@@ -280,7 +310,7 @@ exports.undelivered = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      const rows = results.tracking.filter((row) => row.delivered == false && row.carrier != 'INVALID');
+      const rows = results.tracking.filter((row) => row.carrier != 'INVALID');
 
       const analyze = {
         dhl_count: 0,
@@ -297,7 +327,7 @@ exports.undelivered = async (req, res, next) => {
         }
       });
 
-      res.render('undelivered', { rows, analyze, filter: req.params });
+      res.render('undelivered', { rows, analyze, filter: req.params.carrier ? req.params : req.query.carrier ? req.query : {} });
     }
   );
 };
