@@ -158,7 +158,7 @@ exports.mypage = async (req, res, next) => {
         }
       });
 
-      res.render('dashboard', { rows: undelivered_rows, dhl_time, ems_time, other_time, undelivered });
+      res.render('dashboard', { dhl_time, ems_time, other_time, undelivered });
     }
   );
 };
