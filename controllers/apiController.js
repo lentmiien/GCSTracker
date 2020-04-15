@@ -52,11 +52,11 @@ exports.api_add = async (req, res) => {
 
   async.parallel(
     {
-      tracking: function(callback) {
-        Tracking.findAll({ attributes: ['tracking'] }).then(entry => callback(null, entry));
-      }
+      tracking: function (callback) {
+        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
+      },
     },
-    function(err, results) {
+    function (err, results) {
       if (err) {
         return next(err);
       }
@@ -107,13 +107,14 @@ exports.api_add = async (req, res) => {
             tracking: tracking[i],
             carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
             country: 'UNKNOWN',
+            tracking_country: 'JAPAN',
             addeddate: dts,
             lastchecked: 0,
             status: 'Shipped',
             shippeddate: dts,
             delivereddate: 0,
             delivered: '0',
-            data: ''
+            data: '',
           });
           response['added_records']++;
         }
@@ -126,6 +127,139 @@ exports.api_add = async (req, res) => {
 
       // Done!
       console.log(`---${new Date()}---[api_add]\n${JSON.stringify(response, null, 2)}`);
+      res.json(response);
+    }
+  );
+};
+
+// Includes country in post request
+exports.api_add_v2 = async (req, res) => {
+  const response = {};
+
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      console.log(`---${new Date()}---[api_add_v2]\n${JSON.stringify(response, null, 2)}`);
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      console.log(`---${new Date()}---[api_add_v2]\n${JSON.stringify(response, null, 2)}`);
+      return res.json(response);
+    }
+  }
+
+  // Get new data
+  // req.body = { records: [ {id: 'rec1', country: 'USA'}, {id: 'rec2', country: 'USA'}, {id: 'rec3', country: 'FRANCE'} ], date: date_timestamp }
+  const tracking = req.body.records.sort((a, b) => {
+    // sort by id
+    if (a.id > b.id) {
+      return -1;
+    } else if (a.id < b.id) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  const records_to_add = [];
+
+  let d = new Date();
+  d = dateToString(d);
+
+  let dts = req.body.date && req.body.date > 0 ? req.body.date : Date.now();
+
+  // Prepare OK response
+  response['status'] = 'OK';
+  response['num_records'] = tracking.length;
+  response['date'] = d;
+  response['added_records'] = 0;
+  response['sal_unreg_empty'] = 0;
+  response['domestic'] = 0;
+  response['duplicates'] = 0;
+  response['existing'] = 0;
+  response['need_check'] = [];
+
+  async.parallel(
+    {
+      tracking: function (callback) {
+        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
+      },
+    },
+    function (err, results) {
+      if (err) {
+        return next(err);
+      }
+      if (!results.tracking) {
+        // No results.
+        res.redirect('/mypage');
+      }
+
+      let lastadded = '';
+      for (let i = 0; i < tracking.length; i++) {
+        let new_entry = true;
+        if (tracking[i].id.indexOf('-') < 0 && tracking[i].id.length > 8) {
+          if (tracking[i].id.indexOf('JP') < 0 && tracking[i].id.length == 12) {
+            // Does not support domestic shipping
+            new_entry = false;
+            response['domestic']++;
+          } else if (/^\d+$/.test(tracking[i].id) == false && tracking[i].id.indexOf('JP') < 0) {
+            // A package shipped to Japan, treat as domestic shipping
+            new_entry = false;
+            response['domestic']++;
+          } else {
+            if (tracking[i].id == lastadded) {
+              new_entry = false;
+              response['duplicates']++;
+              response['status'] = 'WARNING';
+              response['message'] = 'Duplicate records exist';
+              response['need_check'].push(tracking[i].id);
+            } else {
+              for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
+                if (results.tracking[row_i].tracking == tracking[i].id) {
+                  new_entry = false;
+                  response['existing']++;
+                  response['status'] = 'WARNING';
+                  response['message'] = 'Existing records exist';
+                  response['need_check'].push(tracking[i].id);
+                }
+              }
+            }
+          }
+        } else {
+          // Can not track SAL Unregistered
+          new_entry = false;
+          response['sal_unreg_empty']++;
+        }
+        if (new_entry) {
+          lastadded = tracking[i].id;
+          records_to_add.push({
+            tracking: tracking[i].id,
+            carrier: tracking[i].id.indexOf('JP') > 0 ? 'JP' : 'DHL',
+            country: tracking[i].country,
+            tracking_country: 'JAPAN',
+            addeddate: dts,
+            lastchecked: 0,
+            status: 'Shipped',
+            shippeddate: dts,
+            delivereddate: 0,
+            delivered: '0',
+            data: '',
+          });
+          response['added_records']++;
+        }
+      }
+
+      // Start adding
+      if (records_to_add.length > 0) {
+        Tracking.bulkCreate(records_to_add);
+      }
+
+      // Done!
+      console.log(`---${new Date()}---[api_add_v2]\n${JSON.stringify(response, null, 2)}`);
       res.json(response);
     }
   );
@@ -162,48 +296,48 @@ exports.api_report = async (req, res) => {
   const returned = req.body.returned;
 
   // Update all lost records
-  lost.forEach(r => {
+  lost.forEach((r) => {
     if (r.length > 0) {
       Tracking.update(
         {
           status: 'lost',
           delivereddate: 0,
-          delivered: true
+          delivered: true,
         },
         {
-          where: { tracking: r }
+          where: { tracking: r },
         }
       );
     }
   });
 
   // Update all delivered records
-  delivered.forEach(r => {
+  delivered.forEach((r) => {
     if (r.length > 0) {
       Tracking.update(
         {
           status: 'delivered',
           delivereddate: 1,
-          delivered: true
+          delivered: true,
         },
         {
-          where: { tracking: r, delivered: false }
+          where: { tracking: r, delivered: false },
         }
       );
     }
   });
 
   // Update all returned records
-  returned.forEach(r => {
+  returned.forEach((r) => {
     if (r.length > 0) {
       Tracking.update(
         {
           status: 'returned',
           delivereddate: 0,
-          delivered: true
+          delivered: true,
         },
         {
-          where: { tracking: r }
+          where: { tracking: r },
         }
       );
     }
@@ -258,19 +392,19 @@ exports.api_get = async (req, res) => {
 
   async.parallel(
     {
-      tracking: function(callback) {
+      tracking: function (callback) {
         Tracking.findAll({
           where: {
             lastchecked: {
               [Op.gte]: start_date,
-              [Op.lte]: end_date
+              [Op.lte]: end_date,
             },
-            delivered: true
-          }
-        }).then(entry => callback(null, entry));
-      }
+            delivered: true,
+          },
+        }).then((entry) => callback(null, entry));
+      },
     },
-    function(err, results) {
+    function (err, results) {
       if (err) {
         response['status'] = 'ERROR';
         response['message'] = 'Database error';
@@ -292,12 +426,12 @@ exports.api_get = async (req, res) => {
       response['records'] = [];
 
       // tracking	delivereddate	delivered
-      results.tracking.forEach(r => {
+      results.tracking.forEach((r) => {
         if (r.delivereddate > 0) {
           response['records'].push({
             tracking: r.tracking,
             delivereddate: dateToString(new Date(r.delivereddate)),
-            delivered: r.delivered
+            delivered: r.delivered,
           });
         }
       });
@@ -331,7 +465,7 @@ exports.api_csv = async (req, res) => {
   // labels=Tracking&columns=tracking&carrier=INVALID
   const keys = Object.keys(req.query);
   const where = {};
-  keys.forEach(key => {
+  keys.forEach((key) => {
     if (!(key == 'labels' || key == 'columns')) {
       where[key] = req.query[key];
     }
@@ -339,11 +473,11 @@ exports.api_csv = async (req, res) => {
 
   async.parallel(
     {
-      tracking: function(callback) {
-        Tracking.findAll({ where }).then(entry => callback(null, entry));
-      }
+      tracking: function (callback) {
+        Tracking.findAll({ where }).then((entry) => callback(null, entry));
+      },
     },
-    function(err, results) {
+    function (err, results) {
       if (err) {
         return next(err);
       }
@@ -355,7 +489,7 @@ exports.api_csv = async (req, res) => {
       // labels=Tracking&columns=tracking&carrier=INVALID
       const cols = req.query.columns.split(',');
       let outdata = req.query.labels;
-      results.tracking.forEach(r => {
+      results.tracking.forEach((r) => {
         outdata += `\n${r[cols[0]]}`;
         for (let i = 1; i < cols.length; i++) {
           outdata += `,${r[cols[i]]}`;
