@@ -288,7 +288,7 @@ exports.api_report = async (req, res) => {
   // Get new data
   // req.body = {
   //   lost: [ 'rec1', 'rec2', 'rec3' ],
-  //   delivered: [ {id:'rec4', timestamp:'12315646546'} ],
+  //   delivered: [ id:'rec4' ],
   //   returned: [ 'rec5', 'rec6', 'rec7' ]
   // }
   const lost = req.body.lost;

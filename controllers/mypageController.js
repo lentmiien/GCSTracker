@@ -1036,6 +1036,7 @@ const JP_scraping_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
   done: 100,
+  nowtracking: '',
   html: {
     status: HTTP_OK_CODE,
     text: 'OK',
@@ -1045,6 +1046,7 @@ const DHL_scraping_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
   done: 100,
+  nowtracking: '',
   html: {
     status: HTTP_OK_CODE,
     text: 'OK',
@@ -1054,6 +1056,7 @@ const DHL_API_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
   done: 100,
+  nowtracking: '',
   html: {
     status: HTTP_OK_CODE,
     text: 'OK',
@@ -1063,6 +1066,7 @@ const USPS_API_counter = {
   current_date: DEFAULT_DATE,
   count: 0,
   done: 100,
+  nowtracking: '',
   html: {
     status: HTTP_OK_CODE,
     text: 'OK',
@@ -1205,6 +1209,7 @@ async function JP_tracker(tracking) {
   // Loop through tracking
   for (let i = 0; i < total; i++) {
     const item = tracking[i];
+    JP_scraping_counter.nowtracking = item.tracking;
 
     // Delay if previous request to close
     const timer_check = Date.now() - JP_timer;
@@ -1248,6 +1253,7 @@ async function JP_tracker(tracking) {
     // Update progress
     JP_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
   }
+  JP_scraping_counter.nowtracking = '';
 }
 
 // USPS tracking function
@@ -1258,6 +1264,7 @@ async function USPS_tracker(tracking) {
   // Loop through tracking
   for (let i = 0; i < total; i++) {
     const item = tracking[i];
+    USPS_API_counter.nowtracking = item.tracking;
 
     // Delay if previous request to close
     const timer_check = Date.now() - USPS_timer;
@@ -1301,6 +1308,7 @@ async function USPS_tracker(tracking) {
     // Update progress
     USPS_API_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
   }
+  USPS_API_counter.nowtracking = '';
 }
 
 // DHL tracking function
@@ -1311,6 +1319,8 @@ async function DHL_tracker(tracking) {
   // Loop through tracking
   for (let i = 0; i < total; i++) {
     const item = tracking[i];
+    DHL_API_counter.nowtracking = item.tracking;
+    DHL_scraping_counter.nowtracking = item.tracking;
 
     // Delay if previous request to close
     const timer_check = Date.now() - DHL_timer;
@@ -1386,6 +1396,8 @@ async function DHL_tracker(tracking) {
     DHL_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
     DHL_API_counter.done = DHL_scraping_counter.done;
   }
+  DHL_API_counter.nowtracking = '';
+  DHL_scraping_counter.nowtracking = '';
 }
 
 // Automate tracker
