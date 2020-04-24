@@ -10,7 +10,7 @@ block content
         - let index = 0
         each entry in logdata.entries
           - index++
-          .card
+          .card.text-white.bg-dark
             .card-header(id=`heading${index}`)
               h2.mb-0
                 - const d = new Date(entry.timestamp)
