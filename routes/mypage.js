@@ -52,5 +52,8 @@ router.post('/old_set_status/:id/:request', controller.old_set_status);
 // Report Lost/Delivered/Returned
 router.get('/report', controller.report);
 
+// Runtime logger
+router.get('/log', controller.log);
+
 // Export router
 module.exports = router;

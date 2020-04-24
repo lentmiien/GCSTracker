@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  .row
+    .col-12
+      h1 Runtime Log
+      p *Resets everytime server is restarted.
+      p= `Started ${new Date(logdata.start)}`
+      #accordion.accordion
+        - let index = 0
+        each entry in logdata.entries
+          - index++
+          .card
+            .card-header(id=`heading${index}`)
+              h2.mb-0
+                - const d = new Date(entry.timestamp)
+                button.btn.btn-link(type="button", data-toggle="collapse", data-target=`#collapse${index}`, aria-expanded="false", aria-controls=`collapse${index}`)= `${entry.status} (${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()})`
+            .collapse(id=`collapse${index}`, aria-labelledby=`heading${index}`, data-parent="#accordion")
+              .card-body
+                p= `Timestamp ${new Date(entry.timestamp)}`
+                pre= entry.text

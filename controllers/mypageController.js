@@ -6,6 +6,9 @@ const getResultsAPI = require('../tracker');
 const async = require('async');
 const { Tracking, Op } = require('../sequelize');
 
+// Runtime logger
+const { Log, GetLog } = require('../runlog');
+
 /*******************
  *
  *  MAGIC NUMBERS
@@ -1176,6 +1179,14 @@ async function TrackAll() {
           results.tracking_dhl.length
         }`
       );
+      Log(
+        'Start tracking',
+        JSON.stringify(
+          { records: { JP: results.tracking_jp.length, USPS: results.tracking_usps.length, DHL: results.tracking_dhl.length } },
+          null,
+          2
+        )
+      );
       // Successful, so start tracking
       async.parallel(
         {
@@ -1227,6 +1238,7 @@ async function JP_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        Log('Failed tracking', `[JP_scraping] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
         console.error(`---${new Date()}---[JP_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         JP_scraping_counter.html.status = result.HTML_status;
         JP_scraping_counter.html.text = result.HTML_statusText;
@@ -1282,6 +1294,7 @@ async function USPS_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        Log('Failed tracking', `[USPS_API] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
         console.error(`---${new Date()}---[USPS_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         USPS_API_counter.html.status = result.HTML_status;
         USPS_API_counter.html.text = result.HTML_statusText;
@@ -1338,6 +1351,7 @@ async function DHL_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        Log('Failed tracking', `[DHL_API] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
         console.error(`---${new Date()}---[DHL_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         DHL_API_counter.html.status = result.HTML_status;
         DHL_API_counter.html.text = result.HTML_statusText;
@@ -1369,6 +1383,7 @@ async function DHL_tracker(tracking) {
 
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
+        Log('Failed tracking', `[DHL_scraping] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
         console.error(`---${new Date()}---[DHL_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         DHL_scraping_counter.html.status = result.HTML_status;
         DHL_scraping_counter.html.text = result.HTML_statusText;
@@ -1616,6 +1631,10 @@ exports.old_set_status = (req, res) => {
 
 exports.report = (req, res) => {
   res.render('report');
+};
+
+exports.log = (req, res) => {
+  res.render('log', { logdata: GetLog() });
 };
 
 // Helper function
