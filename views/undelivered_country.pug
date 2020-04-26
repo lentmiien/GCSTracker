@@ -10,6 +10,7 @@ block content
         th(scope="col") DHL
         th(scope="col") EMS
         th(scope="col") Air/SAL
+        th(scope="col")
     tbody
       each country in analyze.countries
         tr
@@ -33,6 +34,8 @@ block content
               i= `（${Math.round(10000 * country.other_count / analyze.overall.all_other_count) / 100}%）`
           else
             td
+          td
+            a.download(href=`/api/csv?columns=tracking,country&done=0&country=${country.country}`) Download
       tr
         td 合計
         td= `${analyze.overall.all_dhl_count}件`

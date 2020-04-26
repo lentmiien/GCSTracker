@@ -1531,7 +1531,7 @@ exports.details = async (req, res, next) => {
       }
       // Successful, so render.
       const tracking_raw = JSON.parse(results.tracking.data);
-      res.render('tracking', { id: tracking_id, tracking: tracking_raw.shipments[0].events, back_link });
+      res.render('tracking', { id: tracking_id, db_data: results.tracking, tracking: tracking_raw.shipments[0].events, back_link });
     }
   );
 };

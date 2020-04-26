@@ -558,7 +558,11 @@ exports.api_csv = async (req, res) => {
       results.tracking.forEach((r) => {
         outdata += `\n${r[cols[0]]}`;
         for (let i = 1; i < cols.length; i++) {
-          outdata += `,${r[cols[i]]}`;
+          if (cols[i] == 'shippeddate' || cols[i] == 'delivereddate') {
+            outdata += `,${dateToString(new Date(r[cols[i]]))}`;
+          } else {
+            outdata += `,${r[cols[i]]}`;
+          }
         }
       });
 

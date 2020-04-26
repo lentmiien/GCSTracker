@@ -4,6 +4,8 @@ block content
   h1= `国別未着情報　【${country}】　（`
     a(href="/mypage/undelivered_country") すべての国
     | ）
+  a.btn.btn-link(href=`/mypage/countrytrend/${country}`) Check current trends
+  br
   i ※対象外：DHL発送から3日以内、EMS発送から7日以内、Air/SAL発送から7日以内
   table.table.table-dark.table-striped
     thead
@@ -12,9 +14,10 @@ block content
         th(scope="col") DHL
         th(scope="col") EMS
         th(scope="col") Air/SAL
+        th(scope="col")
     tbody
       tr
-        td(colspan="4", style="background-color:black;")
+        td(colspan="5", style="background-color:black;")
       each val in [1, 2, 3, 4]
         tr
           td= analyze[val].label
@@ -36,8 +39,10 @@ block content
               i= `（${Math.round(10000 * analyze[val].other_count.notdone / analyze[val].other_count.all) / 100}%）`
           else
             td
+          td
+            a.download(href=`/api/csv?columns=tracking,country,shippeddate&done=0&country=${country}&shippedfrom=${analyze[val].start}&shippedto=${analyze[val].end}`) Download
       tr
-        td(colspan="4", style="background-color:black;")
+        td(colspan="5", style="background-color:black;")
       each val in [5, 6, 7]
         tr
           td= analyze[val].label
@@ -59,8 +64,10 @@ block content
               i= `（${Math.round(10000 * analyze[val].other_count.notdone / analyze[val].other_count.all) / 100}%）`
           else
             td
+          td
+            a.download(href=`/api/csv?columns=tracking,country,shippeddate&done=0&country=${country}&shippedfrom=${analyze[val].start}&shippedto=${analyze[val].end}`) Download
       tr
-        td(colspan="4", style="background-color:black;")
+        td(colspan="5", style="background-color:black;")
       tr
         td= analyze[0].label
         if analyze[0].dhl_count.all > 0
@@ -81,6 +88,8 @@ block content
             i= `（${Math.round(10000 * analyze[0].other_count.notdone / analyze[0].other_count.all) / 100}%）`
         else
           td
+        td
+            a.download(href=`/api/csv?columns=tracking,country,shippeddate&done=0&country=${country}`) Download
   svg#chart
     rect(x="20", width="12", height="12", style="fill:orange;")
     text(x="37", y="12", fill="white") DHL

@@ -1,8 +1,36 @@
 extends layout
 
 block content
-  h1= `${id}の追跡情報`
   a.btn.btn-link(href=back_link) 戻る
+  h2 状況
+  table.table.table-dark.table-striped
+    tbody
+      tr
+        th(scope='row') tracking
+        td= db_data.tracking
+        th(scope='row') carrier
+        td= db_data.carrier
+      tr
+        th(scope='row') country
+        td= db_data.country
+        th(scope='row') tracking_country
+        td= db_data.tracking_country
+      tr
+        th(scope='row') addeddate
+        td= new Date(db_data.addeddate)
+        th(scope='row') lastchecked
+        td= new Date(db_data.lastchecked)
+      tr
+        th(scope='row') status
+        td= db_data.status
+        th(scope='row') shippeddate
+        td= new Date(db_data.shippeddate)
+      tr
+        th(scope='row') delivereddate
+        td= new Date(db_data.delivereddate)
+        th(scope='row') delivered
+        td= db_data.delivered
+  h2 追跡履歴
   table.table.table-dark.table-striped
     thead
       tr

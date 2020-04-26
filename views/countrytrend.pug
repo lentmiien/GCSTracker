@@ -2,7 +2,8 @@ extends layout
 
 block content
   h1= `国別到着情報　【${country}】`
-  a.btn.btn-link(href=`/mypage/country/${country}`) Back
+  a.btn.btn-link(href=`/mypage/country/${country}`) Delivered
+  a.btn.btn-link(href=`/mypage/ucountry/${country}`) Undelivered
   h2 DHL
   svg#chart_dhl
     rect(x="20", width="12", height="6", style="fill:#ffbbaa;")
