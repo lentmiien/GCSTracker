@@ -442,9 +442,10 @@ exports.api_get = async (req, res) => {
   );
 };
 
-///api/csv?labels=Tracking&columns=tracking&carrier=INVALID
+///api/csv?getcolumns=tracking,status&s_carrier=INVALID&s_shippedfrom=12345678912
 exports.api_csv = async (req, res) => {
   // If you are a logged in user, then no need to check API key
+  const response = {};
   if (res.locals.role != 'admin') {
     const api_key = req.header('api-key');
     if (api_key == undefined) {
@@ -461,15 +462,80 @@ exports.api_csv = async (req, res) => {
     }
   }
 
-  // Generate database search query
-  // labels=Tracking&columns=tracking&carrier=INVALID
-  const keys = Object.keys(req.query);
+  // Create search query
   const where = {};
-  keys.forEach((key) => {
-    if (!(key == 'labels' || key == 'columns')) {
-      where[key] = req.query[key];
+  // tracking
+  if (req.query.tracking) {
+    where['tracking'] = req.query.tracking;
+  }
+  // carrier
+  if (req.query.carrier) {
+    if (req.query.carrier == 'ems') {
+      where['tracking'] = {
+        [Op.like]: 'EM%',
+      };
+    } else if (req.query.carrier == 'other') {
+      where['carrier'] = {
+        [Op.not]: 'DHL',
+      };
+      where['tracking'] = {
+        [Op.notLike]: 'EM%',
+      };
+    } else if (req.query.carrier != 'all') {
+      where['carrier'] = req.query.carrier;
     }
-  });
+  }
+  // country
+  if (req.query.country) {
+    where['country'] = req.query.country;
+  }
+  // tracking_country
+  if (req.query.tracking_country) {
+    where['tracking_country'] = req.query.tracking_country;
+  }
+  // status
+  if (req.query.status) {
+    where['status'] = req.query.status;
+  }
+  // delivered ("done")
+  if (req.query.done) {
+    where['delivered'] = req.query.done == 1 ? true : false;
+  }
+  // Time query
+  // shippeddate
+  if (req.query.shippedfrom) {
+    if (req.query.shippedto) {
+      where['shippeddate'] = {
+        [Op.gte]: parseInt(req.query.shippedfrom),
+        [Op.lte]: parseInt(req.query.shippedto),
+      };
+    } else {
+      where['shippeddate'] = {
+        [Op.gte]: parseInt(req.query.shippedfrom),
+      };
+    }
+  } else if (req.query.shippedto) {
+    where['shippeddate'] = {
+      [Op.lte]: parseInt(req.query.shippedto),
+    };
+  }
+  // delivereddate
+  if (req.query.deliveredfrom) {
+    if (req.query.deliveredto) {
+      where['delivereddate'] = {
+        [Op.gte]: parseInt(req.query.deliveredfrom),
+        [Op.lte]: parseInt(req.query.deliveredto),
+      };
+    } else {
+      where['delivereddate'] = {
+        [Op.gte]: parseInt(req.query.deliveredfrom),
+      };
+    }
+  } else if (req.query.deliveredto) {
+    where['delivereddate'] = {
+      [Op.lte]: parseInt(req.query.deliveredto),
+    };
+  }
 
   async.parallel(
     {
@@ -488,7 +554,7 @@ exports.api_csv = async (req, res) => {
 
       // labels=Tracking&columns=tracking&carrier=INVALID
       const cols = req.query.columns.split(',');
-      let outdata = req.query.labels;
+      let outdata = req.query.columns;
       results.tracking.forEach((r) => {
         outdata += `\n${r[cols[0]]}`;
         for (let i = 1; i < cols.length; i++) {
@@ -498,7 +564,7 @@ exports.api_csv = async (req, res) => {
 
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="Download_${Date.now()}.csv"`);
-      console.log(`---${new Date()}---[api_csv]\n${JSON.stringify(response, null, 2)}`);
+      console.log(`---${new Date()}---[api_csv]\n${results.tracking.length} records downloaded.`);
       res.send(outdata);
     }
   );

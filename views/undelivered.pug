@@ -51,7 +51,14 @@ block content
   table.table.table-dark.table-striped
     thead
       tr
-        th(scope="col") 追跡番号
+        th(scope="col")
+          if d_link == undefined
+            | 追跡番号
+          else
+            - let query_str = ''
+            each query_term in d_link.query_terms
+              - query_str += `&${query_term.key}=${query_term.value}`
+            a.download(href=`/api/csv?columns=${d_link.columns}${query_str}`) Download
         th(scope="col") 国名（
           a(href="/mypage/undelivered_country") すべての国
           | ）

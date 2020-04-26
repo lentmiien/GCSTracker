@@ -31,3 +31,12 @@ pre {
   padding: 20px;
   border-radius: 20px;
 }
+
+.download {
+  background-color: rgba(241, 245, 0, 0.603);
+  color: black;
+  font-weight: 150%;
+  border-radius: 25%;
+  border: 3px double black;
+  padding: 3px;
+}

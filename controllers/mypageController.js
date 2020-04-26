@@ -249,6 +249,15 @@ exports.process_valid = (req, res, next) => {
 // Show all undelivered packages
 // /:carrier/:start/:end
 exports.undelivered = async (req, res, next) => {
+  const d_link = {
+    columns: 'tracking,country,status,shippeddate',
+    query_terms: [
+      {
+        key: 'done',
+        value: '0',
+      },
+    ],
+  };
   const query = {
     order: [['shippeddate', 'ASC']],
     where: {
@@ -275,6 +284,19 @@ exports.undelivered = async (req, res, next) => {
       [Op.gte]: parseInt(req.params.start),
       [Op.lt]: parseInt(req.params.end),
     };
+    // Download link
+    d_link.query_terms.push({
+      key: 'carrier',
+      value: req.params.carrier,
+    });
+    d_link.query_terms.push({
+      key: 'shippedfrom',
+      value: parseInt(req.params.start),
+    });
+    d_link.query_terms.push({
+      key: 'shippedto',
+      value: parseInt(req.params.end),
+    });
   }
   if (req.query.carrier && req.query.start && req.query.end) {
     if (req.query.carrier == 'dhl') {
@@ -299,9 +321,26 @@ exports.undelivered = async (req, res, next) => {
       [Op.gte]: req.query.start,
       [Op.lte]: req.query.end,
     };
+    // Download link
+    d_link.query_terms.push({
+      key: 'carrier',
+      value: req.query.carrier,
+    });
+    d_link.query_terms.push({
+      key: 'shippedfrom',
+      value: parseInt(req.query.start),
+    });
+    d_link.query_terms.push({
+      key: 'shippedto',
+      value: parseInt(req.query.end),
+    });
   }
   if (req.query.status) {
     query.where['status'] = req.query.status;
+    d_link.query_terms.push({
+      key: 'status',
+      value: req.query.status,
+    });
   }
   async.parallel(
     {
@@ -330,7 +369,7 @@ exports.undelivered = async (req, res, next) => {
         }
       });
 
-      res.render('undelivered', { rows, analyze, filter: req.params.carrier ? req.params : req.query.carrier ? req.query : {} });
+      res.render('undelivered', { rows, analyze, filter: req.params.carrier ? req.params : req.query.carrier ? req.query : {}, d_link });
     }
   );
 };

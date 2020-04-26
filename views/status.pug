@@ -12,6 +12,7 @@ block content
           tr
             th(scope="col") 状況
             th(scope="col") レコード件数
+            th(scope="col")
         tbody
           - let other = 0
           each row in undelivered.status_counter
@@ -20,6 +21,8 @@ block content
                 td
                   a(href=`/mypage/undelivered?status=${row.status}`)= row.status.length > 30 ? row.status.slice(0, 30) + "..." : row.status
                 td= row.count
+                td
+                  a.download(href=`/api/csv?columns=tracking,status&status=${row.status}`) Download
             else
               - other++
           tr
