@@ -55,5 +55,9 @@ router.get('/report', controller.report);
 // Runtime logger
 router.get('/log', controller.log);
 
+// Data maintenance
+router.get('/maintenance', controller.maintenance);
+router.post('/update', controller.update);
+
 // Export router
 module.exports = router;

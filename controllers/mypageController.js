@@ -1676,6 +1676,58 @@ exports.log = (req, res) => {
   res.render('log', { logdata: GetLog() });
 };
 
+// Data maintenance
+exports.maintenance = (req, res) => {
+  const query = {
+    where: {
+      [Op.or]: [
+        {
+          shippeddate: {
+            [Op.lt]: new Date(2020, 0, 1).getTime(),
+          },
+        },
+        {
+          delivered: false,
+          delivereddate: {
+            [Op.not]: 0,
+          },
+        },
+        {
+          delivered: true,
+          status: {
+            [Op.not]: 'Returned',
+            [Op.not]: 'Lost',
+          },
+          delivereddate: {
+            [Op.not]: 1,
+            [Op.lt]: new Date(2020, 0, 1).getTime(),
+          },
+        },
+      ],
+    },
+  };
+
+  Tracking.findAll(query).then((result) => {
+    res.render('maintenance', { result });
+  });
+};
+exports.update = (req, res) => {
+  const s_date = req.body.shippeddate.split('-');
+  const d_date = req.body.delivereddate.split('-');
+  const update_data = {
+    carrier: req.body.carrier,
+    country: req.body.country,
+    status: req.body.status,
+    shippeddate: new Date(parseInt(s_date[0]), parseInt(s_date[1]) - 1, parseInt(s_date[2]), 12, 0, 0).getTime(),
+    delivereddate: new Date(parseInt(d_date[0]), parseInt(d_date[1]) - 1, parseInt(d_date[2]), 12, 0, 0).getTime(),
+    done: req.body.delivered == '1' ? true : false,
+  };
+
+  Tracking.update(update_data, { where: { tracking: req.body.tracking } });
+
+  res.redirect(`/mypage/details/${req.body.tracking}`);
+};
+
 // Helper function
 function sleep(time) {
   return new Promise((resolve, reject) => {

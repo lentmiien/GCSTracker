@@ -1,0 +1,19 @@
+extends layout
+
+block content
+  h1 不正レコード
+  table.table.table-dark.table-striped
+    thead
+      tr
+        th(scope="col") 追跡番号
+        th(scope="col") 発送方法
+        th(scope="col") 国
+        th(scope="col") 状況
+    tbody
+      each data in result
+        tr
+          td
+            a(href=`/mypage/details/${data.tracking}`)= data.tracking
+          td= `${data.carrier}`
+          td= `${data.country}`
+          td= `${data.status}`
