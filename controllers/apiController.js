@@ -107,7 +107,7 @@ exports.api_add = async (req, res) => {
             tracking: tracking[i],
             carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
             country: 'UNKNOWN',
-            tracking_country: 'JAPAN',
+            //tracking_country: 'JAPAN',
             addeddate: dts,
             lastchecked: 0,
             status: 'Shipped',
@@ -240,7 +240,7 @@ exports.api_add_v2 = async (req, res) => {
             tracking: tracking[i].id,
             carrier: tracking[i].id.indexOf('JP') > 0 ? 'JP' : 'DHL',
             country: tracking[i].country,
-            tracking_country: 'JAPAN',
+            //tracking_country: 'JAPAN',
             addeddate: dts,
             lastchecked: 0,
             status: 'Shipped',
@@ -491,7 +491,7 @@ exports.api_csv = async (req, res) => {
   }
   // tracking_country
   if (req.query.tracking_country) {
-    where['tracking_country'] = req.query.tracking_country;
+    //where['tracking_country'] = req.query.tracking_country;
   }
   // status
   if (req.query.status) {

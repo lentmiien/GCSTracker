@@ -3,7 +3,7 @@ module.exports = (sequelize, type) => {
     tracking: type.STRING,
     carrier: type.STRING,
     country: type.STRING,
-    tracking_country: type.STRING,
+    //tracking_country: type.STRING,
     addeddate: type.BIGINT,
     lastchecked: type.BIGINT,
     status: type.STRING,
