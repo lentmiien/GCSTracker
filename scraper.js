@@ -61,6 +61,11 @@ const getResults = async (siteUrl, carrier) => {
         if (index - date_index == 1) {
           status = content;
         }
+        if (index - date_index == 2) {
+          if (content.length > 0 && content.indexOf(' ') != 0) {
+            status += `＞${content}`;
+          }
+        }
         if (index - date_index == 4) {
           const country_data = content.split('  ');
           tracking_data.push({
