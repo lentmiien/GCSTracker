@@ -1,5 +1,6 @@
 const axios = require('axios');
 var parseString = require('xml2js').parseString;
+const { Log } = require('./runlog');
 
 const fetchData = async (siteUrl) => {
   let data = {};
@@ -42,7 +43,20 @@ const fetchDataUSPS = async (siteUrl) => {
           console.error(`###fetchDataUSPS###\n\n${err}\n\n${JSON.stringify(result, null, 2)}\n\n######################`);
           data = { error: true, HTML_status: 'XMLERROR', HTML_statusText: 'Failed parsing XML' };
         } else {
-          data['xml_json'] = result;
+          // Validate content of 'result'
+          if (
+            result.hasOwnProperty('TrackResponse') &&
+            result.TrackResponse.hasOwnProperty('TrackInfo') &&
+            result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackSummary') &&
+            result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackDetail')
+          ) {
+            data['xml_json'] = result;
+          } else {
+            data['error'] = true;
+            data['HTML_status'] = 'Invalid format';
+            data['HTML_statusText'] = 'Invalid format';
+            Log('Invalid format', JSON.stringify(result, null, 2));
+          }
           //data = response.data;
         }
       });
