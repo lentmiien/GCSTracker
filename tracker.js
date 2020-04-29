@@ -1,5 +1,7 @@
 const axios = require('axios');
 var parseString = require('xml2js').parseString;
+
+// Runtime logger
 const { Log } = require('./runlog');
 
 const fetchData = async (siteUrl) => {
@@ -26,6 +28,7 @@ const fetchData = async (siteUrl) => {
         data.HTML_status = error.response.status;
         data.HTML_statusText = error.response.statusText;
       }
+      Log('DHL api error', JSON.stringify(error, null, 2));
     });
   return data;
 };
@@ -39,9 +42,9 @@ const fetchDataUSPS = async (siteUrl) => {
       data['HTML_status'] = response.status;
       data['HTML_statusText'] = response.statusText;
       parseString(response.data, (err, result) => {
-        if (err || result.Error) {
-          console.error(`###fetchDataUSPS###\n\n${err}\n\n${JSON.stringify(result, null, 2)}\n\n######################`);
+        if (err) {
           data = { error: true, HTML_status: 'XMLERROR', HTML_statusText: 'Failed parsing XML' };
+          Log('USPS parse error', JSON.stringify({ err, result }, null, 2));
         } else {
           // Validate content of 'result'
           if (
@@ -55,14 +58,13 @@ const fetchDataUSPS = async (siteUrl) => {
             data['error'] = true;
             data['HTML_status'] = 'Invalid format';
             data['HTML_statusText'] = 'Invalid format';
-            Log('Invalid format', JSON.stringify(result, null, 2));
+            Log('USPS Invalid format error', JSON.stringify(result, null, 2));
           }
           //data = response.data;
         }
       });
     })
     .catch((error) => {
-      console.log(error);
       data = { error: true, HTML_status: '', HTML_statusText: '' };
       if (error.response == undefined) {
         data.HTML_status = error.errno;
@@ -71,6 +73,7 @@ const fetchDataUSPS = async (siteUrl) => {
         data.HTML_status = error.response.status;
         data.HTML_statusText = error.response.statusText;
       }
+      Log('USPS API error', JSON.stringify(error, null, 2));
     });
   return data;
 };

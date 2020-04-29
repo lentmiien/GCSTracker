@@ -21,7 +21,7 @@ const AUTO_RETRY = 3600000;
 const AUTO_SCHEDULE = 16;
 const DEFAULT_DATE = '2020-01-01';
 const JP_MIN_DELAY_TIME = 1100;
-const DHL_MIN_DELAY_TIME = 1100;
+const DHL_MIN_DELAY_TIME = 2000;
 const USPS_MIN_DELAY_TIME = 150;
 const limit_date = new Date(2020, 0, 2, 12, 0, 0); // Just after 2020-01-01 12:00
 
@@ -1213,11 +1213,6 @@ async function TrackAll() {
         console.error(`---${new Date()}---[TrackAll]\n${err}`);
         return next(err);
       }
-      console.log(
-        `---${new Date()}---[TrackAll]\nJP: ${results.tracking_jp.length}\nUSPS: ${results.tracking_usps.length}\nDHL: ${
-          results.tracking_dhl.length
-        }`
-      );
       Log(
         'Start tracking',
         JSON.stringify(
@@ -1278,7 +1273,6 @@ async function JP_tracker(tracking) {
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
         Log('Failed tracking', `[JP_scraping] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
-        console.error(`---${new Date()}---[JP_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         JP_scraping_counter.html.status = result.HTML_status;
         JP_scraping_counter.html.text = result.HTML_statusText;
       } else {
@@ -1334,7 +1328,6 @@ async function USPS_tracker(tracking) {
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
         Log('Failed tracking', `[USPS_API] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
-        console.error(`---${new Date()}---[USPS_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         USPS_API_counter.html.status = result.HTML_status;
         USPS_API_counter.html.text = result.HTML_statusText;
       } else {
@@ -1391,7 +1384,6 @@ async function DHL_tracker(tracking) {
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
         Log('Failed tracking', `[DHL_API] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
-        console.error(`---${new Date()}---[DHL_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         DHL_API_counter.html.status = result.HTML_status;
         DHL_API_counter.html.text = result.HTML_statusText;
       } else {
@@ -1423,7 +1415,6 @@ async function DHL_tracker(tracking) {
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
         Log('Failed tracking', `[DHL_scraping] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
-        console.error(`---${new Date()}---[DHL_tracker]\n${item.tracking}\n${JSON.stringify(result, null, 2)}`);
         DHL_scraping_counter.html.status = result.HTML_status;
         DHL_scraping_counter.html.text = result.HTML_statusText;
       } else {
@@ -1530,7 +1521,7 @@ exports.details = async (req, res, next) => {
         res.redirect('/mypage');
       }
       // Successful, so render.
-      const tracking_raw = JSON.parse(results.tracking.data);
+      const tracking_raw = JSON.parse(results.tracking.data.length > 0 ? results.tracking.data : '{"shipments":[{"events":[]}]}');
       res.render('tracking', { id: tracking_id, db_data: results.tracking, tracking: tracking_raw.shipments[0].events, back_link });
     }
   );

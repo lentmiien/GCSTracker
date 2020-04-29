@@ -1,6 +1,9 @@
 const cheerio = require('cheerio');
 const axios = require('axios');
 
+// Runtime logger
+const { Log } = require('./runlog');
+
 let HTML_status;
 let HTML_statusText;
 
@@ -22,6 +25,7 @@ const fetchData = async (siteUrl) => {
         HTML_statusText = error.response.statusText;
       }
       data = undefined;
+      Log('Scraping error', JSON.stringify({ url: siteUrl, error }, null, 2));
     });
   return data;
   // const result = await axios.get(siteUrl);

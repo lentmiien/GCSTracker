@@ -2,6 +2,9 @@
 const async = require('async');
 const { Tracking, Op } = require('../sequelize');
 
+// Runtime logger
+const { Log } = require('../runlog');
+
 //---------------------------------------------//
 // exports.endpoints = (req, res, next) => {}; //
 //---------------------------------------------//
@@ -18,13 +21,11 @@ exports.api_add = async (req, res) => {
     if (api_key == undefined) {
       response['status'] = 'ERROR';
       response['message'] = 'No API key';
-      console.log(`---${new Date()}---[api_add]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
     if (api_key != process.env.THIS_API_KEY) {
       response['status'] = 'ERROR';
       response['message'] = 'Invalid API key';
-      console.log(`---${new Date()}---[api_add]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
   }
@@ -126,7 +127,7 @@ exports.api_add = async (req, res) => {
       }
 
       // Done!
-      console.log(`---${new Date()}---[api_add]\n${JSON.stringify(response, null, 2)}`);
+      Log('Add API', JSON.stringify(response, null, 2));
       res.json(response);
     }
   );
@@ -142,13 +143,11 @@ exports.api_add_v2 = async (req, res) => {
     if (api_key == undefined) {
       response['status'] = 'ERROR';
       response['message'] = 'No API key';
-      console.log(`---${new Date()}---[api_add_v2]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
     if (api_key != process.env.THIS_API_KEY) {
       response['status'] = 'ERROR';
       response['message'] = 'Invalid API key';
-      console.log(`---${new Date()}---[api_add_v2]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
   }
@@ -259,7 +258,7 @@ exports.api_add_v2 = async (req, res) => {
       }
 
       // Done!
-      console.log(`---${new Date()}---[api_add_v2]\n${JSON.stringify(response, null, 2)}`);
+      Log('Add API v2', JSON.stringify(response, null, 2));
       res.json(response);
     }
   );
@@ -274,13 +273,11 @@ exports.api_report = async (req, res) => {
     if (api_key == undefined) {
       response['status'] = 'ERROR';
       response['message'] = 'No API key';
-      console.log(`---${new Date()}---\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
     if (api_key != process.env.THIS_API_KEY) {
       response['status'] = 'ERROR';
       response['message'] = 'Invalid API key';
-      console.log(`---${new Date()}---\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
   }
@@ -344,7 +341,7 @@ exports.api_report = async (req, res) => {
   });
 
   // Done!
-  console.log(`---${new Date()}---\n${JSON.stringify(response, null, 2)}`);
+  Log('Report API', JSON.stringify(response, null, 2));
   res.json(response);
 };
 
@@ -359,13 +356,11 @@ exports.api_get = async (req, res) => {
     if (api_key == undefined) {
       response['status'] = 'ERROR';
       response['message'] = 'No API key';
-      console.log(`---${new Date()}---[api_get]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
     if (api_key != process.env.THIS_API_KEY) {
       response['status'] = 'ERROR';
       response['message'] = 'Invalid API key';
-      console.log(`---${new Date()}---[api_get]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
   }
@@ -382,7 +377,6 @@ exports.api_get = async (req, res) => {
   if (start.indexOf('-') != 4 || end.indexOf('-') != 4 || start.length != 10 || end.length != 10) {
     response['status'] = 'ERROR';
     response['message'] = 'Invalid date range';
-    console.log(`---${new Date()}---[api_get]\n${JSON.stringify(response, null, 2)}`);
     return res.json(response);
   }
   const start_split = start.split('-');
@@ -408,14 +402,12 @@ exports.api_get = async (req, res) => {
       if (err) {
         response['status'] = 'ERROR';
         response['message'] = 'Database error';
-        console.log(`---${new Date()}---[api_get]\n${JSON.stringify(response, null, 2)}`);
         return res.json(response);
       }
       if (!results.tracking) {
         // No results.
         response['status'] = 'WARNING';
         response['message'] = 'No records';
-        console.log(`---${new Date()}---[api_get]\n${JSON.stringify(response, null, 2)}`);
         return res.json(response);
       }
 
@@ -436,7 +428,6 @@ exports.api_get = async (req, res) => {
         }
       });
 
-      console.log(`---${new Date()}---[api_get]\n${JSON.stringify(response, null, 2)}`);
       res.json(response);
     }
   );
@@ -451,13 +442,11 @@ exports.api_csv = async (req, res) => {
     if (api_key == undefined) {
       response['status'] = 'ERROR';
       response['message'] = 'No API key';
-      console.log(`---${new Date()}---[api_csv]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
     if (api_key != process.env.THIS_API_KEY) {
       response['status'] = 'ERROR';
       response['message'] = 'Invalid API key';
-      console.log(`---${new Date()}---[api_csv]\n${JSON.stringify(response, null, 2)}`);
       return res.json(response);
     }
   }
@@ -568,7 +557,6 @@ exports.api_csv = async (req, res) => {
 
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="Download_${Date.now()}.csv"`);
-      console.log(`---${new Date()}---[api_csv]\n${results.tracking.length} records downloaded.`);
       res.send(outdata);
     }
   );
