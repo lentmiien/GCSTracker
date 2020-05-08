@@ -1332,21 +1332,22 @@ async function USPS_tracker(tracking) {
         USPS_API_counter.html.text = result.HTML_statusText;
       } else {
         // Update entry if successful
-        Tracking.update(
-          {
-            carrier: result.carrier ? result.carrier : item.carrier,
-            country: result.country,
-            lastchecked: Date.now(),
-            status: result.status,
-            shippeddate: result.shippeddate,
-            delivereddate: result.delivered,
-            delivered: result.delivered > limit_date.getTime() ? true : false,
-            data: result.rawdata,
-          },
-          {
-            where: { id: item.id },
-          }
-        );
+        const data_to_update = {
+          lastchecked: Date.now(),
+          status: result.status,
+          delivered: false,
+          data: result.rawdata,
+        };
+        if (result.shippeddate) {
+          data_to_update['shippeddate'] = result.shippeddate;
+        }
+        if (result.delivered > Date.now() - 8640000000) {
+          data_to_update['delivereddate'] = result.delivered;
+          data_to_update['delivered'] = true;
+        }
+        Tracking.update(data_to_update, {
+          where: { id: item.id },
+        });
         last_tracked.count++;
       }
     }

@@ -50,8 +50,7 @@ const fetchDataUSPS = async (siteUrl) => {
           if (
             result.hasOwnProperty('TrackResponse') &&
             result.TrackResponse.hasOwnProperty('TrackInfo') &&
-            result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackSummary') &&
-            result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackDetail')
+            result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackSummary')
           ) {
             data['xml_json'] = result;
           } else {
@@ -60,7 +59,6 @@ const fetchDataUSPS = async (siteUrl) => {
             data['HTML_statusText'] = 'Invalid format';
             Log('USPS Invalid format error', JSON.stringify(result, null, 2));
           }
-          //data = response.data;
         }
       });
     })
@@ -108,13 +106,15 @@ const getResultsAPI = async (siteUrl, carrier) => {
       // Acquire last tracking update
       output['status'] = data.xml_json.TrackResponse.TrackInfo[0].TrackSummary[0];
       // Acquire shipped date
-      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
-        if (event.indexOf('Acceptance,') == 0) {
-          const data_parts = event.split(', ');
-          const d = DateFormatter(`${data_parts[1]}, ${data_parts[2]}`).split('-');
-          output['shippeddate'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), 12, 0).getTime();
-        }
-      });
+      if (data.xml_json.TrackResponse.TrackInfo[0].TrackDetail) {
+        data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
+          if (event.indexOf('Acceptance,') == 0) {
+            const data_parts = event.split(', ');
+            const d = DateFormatter(`${data_parts[1]}, ${data_parts[2]}`).split('-');
+            output['shippeddate'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), 12, 0).getTime();
+          }
+        });
+      }
       // Try to acquire delivered date
       output['delivered'] = 0;
       if (output['status'].indexOf('Your item was delivered') == 0 || output['status'].indexOf('Your item has been delivered') == 0) {
@@ -134,13 +134,15 @@ const getResultsAPI = async (siteUrl, carrier) => {
           location: 'USA',
         },
       ];
-      data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
-        tracking_data.push({
-          timestamp: Date.now(),
-          description: event,
-          location: '---',
+      if (data.xml_json.TrackResponse.TrackInfo[0].TrackDetail) {
+        data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
+          tracking_data.push({
+            timestamp: Date.now(),
+            description: event,
+            location: '---',
+          });
         });
-      });
+      }
       output['rawdata'] = JSON.stringify({ shipments: [{ events: tracking_data }] });
     } else {
       // DHL tracking
