@@ -1328,8 +1328,11 @@ async function USPS_tracker(tracking) {
       // Update tracking progress if there was any errors
       if (result.HTML_status != 200) {
         Log('Failed tracking', `[USPS_API] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
-        USPS_API_counter.html.status = result.HTML_status;
-        USPS_API_counter.html.text = result.HTML_statusText;
+        // For "Tracking unavailable", just skip and continue (tracking was successful, just no data)
+        if(result.HTML_status != 'Tracking unavailable') {
+          USPS_API_counter.html.status = result.HTML_status;
+          USPS_API_counter.html.text = result.HTML_statusText;
+        }
       } else {
         // Update entry if successful
         const data_to_update = {

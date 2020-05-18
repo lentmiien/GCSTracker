@@ -49,10 +49,21 @@ const fetchDataUSPS = async (siteUrl) => {
           // Validate content of 'result'
           if (
             result.hasOwnProperty('TrackResponse') &&
-            result.TrackResponse.hasOwnProperty('TrackInfo') &&
-            result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackSummary')
+            result.TrackResponse.hasOwnProperty('TrackInfo')
           ) {
-            data['xml_json'] = result;
+            if (result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackSummary')) {
+              data['xml_json'] = result;
+            } else if (result.TrackResponse.TrackInfo[0].hasOwnProperty('Error')) {
+              data['error'] = true;
+              data['HTML_status'] = 'Tracking unavailable';
+              data['HTML_statusText'] = 'Tracking unavailable';
+              Log('USPS Tracking unavailable error', JSON.stringify(result, null, 2));
+            } else {
+              data['error'] = true;
+              data['HTML_status'] = 'Invalid format';
+              data['HTML_statusText'] = 'Invalid format';
+              Log('USPS Invalid format error', JSON.stringify(result, null, 2));
+            }
           } else {
             data['error'] = true;
             data['HTML_status'] = 'Invalid format';
@@ -177,7 +188,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
     // Return an 'INVALID' result
     output['country'] = 'JAPAN';
     output['carrier'] = 'INVALID';
-    output['status'] = 'No tracking';
+    output['status'] = output.HTML_status;
     output['shippeddate'] = 0;
     output['delivered'] = 0;
     output.HTML_status = 200; // One 404 is OK, so change to 200 in return
@@ -187,7 +198,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
     // Return an 'INVALID' result
     output['country'] = 'JAPAN';
     output['carrier'] = 'INVALID';
-    output['status'] = 'No tracking';
+    output['status'] = output.HTML_status;
     output['shippeddate'] = 0;
     output['delivered'] = 0;
   }
