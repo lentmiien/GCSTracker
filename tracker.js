@@ -28,6 +28,7 @@ const fetchData = async (siteUrl) => {
         data.HTML_status = error.response.status;
         data.HTML_statusText = error.response.statusText;
       }
+      error.config.headers['DHL-API-Key'] = '**********************';
       Log('DHL api error', JSON.stringify(error, null, 2));
     });
   return data;
