@@ -1205,6 +1205,9 @@ async function TrackAll() {
               [Op.lte]: dhlnc,
             },
           },
+          order: [
+            ['lastchecked', 'ASC']
+          ],
         }).then((entry) => callback(null, entry));
       },
     },
