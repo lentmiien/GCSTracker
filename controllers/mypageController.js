@@ -1741,9 +1741,6 @@ exports.search_reporting_result = async (req, res) => {
   // Records to check
   const rtc = req.body.searchcontent;
 
-  console.log(req.body);
-  console.log(rtc);
-
   // Aquire Database data
   const DB_data = (await Tracking.findAll()).filter((d) => rtc.indexOf(d.tracking) >= 0);
 

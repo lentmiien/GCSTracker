@@ -14,6 +14,50 @@ async function Search() {
   });
   const json_report = await response.json();
 
+  // Sort countries
+  let sort_data = [];
+  for (let i = 0; i < json_report.country_distribution.namelist.length; i++) {
+    sort_data.push({
+      name: json_report.country_distribution.namelist[i],
+      val: json_report.country_distribution.countlist[i],
+    });
+  }
+  sort_data.sort((a, b) => {
+    if (a.val > b.val) {
+      return -1;
+    } else if (a.val < b.val) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  for (let i = 0; i < json_report.country_distribution.namelist.length; i++) {
+    json_report.country_distribution.namelist[i] = sort_data[i].name;
+    json_report.country_distribution.countlist[i] = sort_data[i].val;
+  }
+
+  // Sort statuses
+  sort_data = [];
+  for (let i = 0; i < json_report.status_distribution.namelist.length; i++) {
+    sort_data.push({
+      name: json_report.status_distribution.namelist[i],
+      val: json_report.status_distribution.countlist[i],
+    });
+  }
+  sort_data.sort((a, b) => {
+    if (a.val > b.val) {
+      return -1;
+    } else if (a.val < b.val) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  for (let i = 0; i < json_report.status_distribution.namelist.length; i++) {
+    json_report.status_distribution.namelist[i] = sort_data[i].name;
+    json_report.status_distribution.countlist[i] = sort_data[i].val;
+  }
+
   GenerateReport(json_report);
 
   document.getElementById('data_output').innerText = JSON.stringify(json_report, null, 2);
@@ -182,7 +226,9 @@ function GenerateReport(data) {
     .attr('height', 20)
     .attr('fill', 'steelblue')
     .attr('stroke', 'white')
-    .style('stroke-width', '1px');
+    .style('stroke-width', '1px')
+    .append('title')
+    .text((d, i) => data.status_distribution.namelist[i]);
 
   // Labels
   svg
@@ -192,7 +238,7 @@ function GenerateReport(data) {
     .append('text')
     .attr('x', 10 - margin.left)
     .attr('y', (d, i) => i * 20 + 15)
-    .text((d) => d)
+    .text((d) => d.slice(0, 9))
     .attr('stroke', 'white')
     .style('stroke-width', '1px');
   // Labels2
