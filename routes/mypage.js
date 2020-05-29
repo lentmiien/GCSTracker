@@ -59,5 +59,9 @@ router.get('/log', controller.log);
 router.get('/maintenance', controller.maintenance);
 router.post('/update', controller.update);
 
+// Search reporting
+router.get('/sreporting', controller.search_reporting);
+router.post('/sreporting', controller.search_reporting_result);
+
 // Export router
 module.exports = router;

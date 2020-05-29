@@ -1726,6 +1726,51 @@ exports.update = (req, res) => {
   res.redirect(`/mypage/details/${req.body.tracking}`);
 };
 
+exports.search_reporting = (req, res) => {
+  res.render('search_reporting');
+};
+exports.search_reporting_result = async (req, res) => {
+  /*
+  req.body.searchcontent = [
+    tracking_1,
+    tracking_2,
+    tracking_3,
+    .
+    .
+    tracking_n,
+  ]
+  */
+  // Records to check
+  const rtc = req.body.searchcontent;
+
+  // Aquire Database data
+  const DB_data = (await Tracking.findAll()).filter(d => rtc.indexOf(d.tracking) >= 0);
+
+  // Check that status of the records and put together a simple JSON report, which is returned to user
+  const report = {
+    total_records: DB_data.length,
+    delivered_status: {
+      delivered: 0,
+      inprogressindestination: 0,
+      delayedinjapan: 0,
+    }
+  };
+
+  // SAMPLE
+  DB_data.forEach(data => {
+    if (data.delivereddate > 0) {
+      report.delivered_status.delivered++;
+    } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
+      report.delivered_status.inprogressindestination++;
+    } else {
+      report.delivered_status.delayedinjapan++;
+    }
+  });
+
+  // Done
+  res.json(report);
+};
+
 // Helper function
 function sleep(time) {
   return new Promise((resolve, reject) => {

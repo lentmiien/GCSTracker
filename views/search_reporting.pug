@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  .row
+    .col
+      h1 Search reporting
+  .row
+    .col
+      h3 Search box
+      textarea#tracking.form-control(name="tracking", cols="30", rows="10")
+      button.btn.btn-primary(onclick="Search()") Search
+  .row
+    .col
+      h3 Report
+      pre#report_output
+
+  script(src="/javascripts/sreport.js")
