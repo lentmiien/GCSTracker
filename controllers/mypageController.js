@@ -1205,9 +1205,7 @@ async function TrackAll() {
               [Op.lte]: dhlnc,
             },
           },
-          order: [
-            ['lastchecked', 'ASC']
-          ],
+          order: [['lastchecked', 'ASC']],
         }).then((entry) => callback(null, entry));
       },
     },
@@ -1332,7 +1330,7 @@ async function USPS_tracker(tracking) {
       if (result.HTML_status != 200) {
         Log('Failed tracking', `[USPS_API] Tracking number "${item.tracking}" returned:\n${JSON.stringify(result, null, 2)}`);
         // For "Tracking unavailable", just skip and continue (tracking was successful, just no data)
-        if(result.HTML_status != 'Tracking unavailable') {
+        if (result.HTML_status != 'Tracking unavailable') {
           USPS_API_counter.html.status = result.HTML_status;
           USPS_API_counter.html.text = result.HTML_statusText;
         }
@@ -1743,8 +1741,11 @@ exports.search_reporting_result = async (req, res) => {
   // Records to check
   const rtc = req.body.searchcontent;
 
+  console.log(req.body);
+  console.log(rtc);
+
   // Aquire Database data
-  const DB_data = (await Tracking.findAll()).filter(d => rtc.indexOf(d.tracking) >= 0);
+  const DB_data = (await Tracking.findAll()).filter((d) => rtc.indexOf(d.tracking) >= 0);
 
   // Check that status of the records and put together a simple JSON report, which is returned to user
   const report = {
@@ -1753,17 +1754,44 @@ exports.search_reporting_result = async (req, res) => {
       delivered: 0,
       inprogressindestination: 0,
       delayedinjapan: 0,
-    }
+    },
+    country_distribution: {
+      namelist: [],
+      countlist: [],
+    },
+    status_distribution: {
+      namelist: [],
+      countlist: [],
+    },
   };
 
   // SAMPLE
-  DB_data.forEach(data => {
+  DB_data.forEach((data) => {
+    // Delivered status
     if (data.delivereddate > 0) {
       report.delivered_status.delivered++;
     } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
       report.delivered_status.inprogressindestination++;
     } else {
       report.delivered_status.delayedinjapan++;
+    }
+
+    // Country
+    let index = report.country_distribution.namelist.indexOf(data.country);
+    if (index == -1) {
+      report.country_distribution.namelist.push(data.country);
+      report.country_distribution.countlist.push(1);
+    } else {
+      report.country_distribution.countlist[index]++;
+    }
+
+    // Status
+    index = report.status_distribution.namelist.indexOf(data.status);
+    if (index == -1) {
+      report.status_distribution.namelist.push(data.status);
+      report.status_distribution.countlist.push(1);
+    } else {
+      report.status_distribution.countlist[index]++;
     }
   });
 
