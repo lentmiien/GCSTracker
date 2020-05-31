@@ -63,43 +63,20 @@ async function Search() {
   document.getElementById('data_output').innerText = JSON.stringify(json_report, null, 2);
 }
 
-function GenerateReport(data) {
-  const report_output = d3.select('#report_output');
-  const rect = document.getElementById('report_output').getBoundingClientRect();
-
-  // Draw area values
-  const margin = {
-    top: 10,
-    right: 10,
-    bottom: 50,
-    left: 50,
-  };
-  const width = rect.width - margin.left - margin.right;
-  const height = 300;
-  const radius = Math.min(width, height) / 2 - 60;
-
-  // Title
-  report_output.append('h3').text(`Total records: ${data.total_records}`);
-
-  // Delivery pie chart
-  let svg = report_output
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${radius + margin.left},${(height + margin.top + margin.bottom) / 2})`);
+function PieChart(svg, margin, radius, delivered_status, total_records) {
+  const graph = svg.append('g').attr('transform', `translate(${radius + margin.left},${radius + margin.top})`);
 
   // set the color scale
-  const color = d3.scaleOrdinal().domain(data.delivered_status).range(['#75CC75', '#CCCC75', '#CC7575']);
+  const color = d3.scaleOrdinal().domain(delivered_status).range(['#75CC75', '#CCCC75', '#CC7575']);
 
   // Compute the position of each group on the pie:
   const pie = d3.pie().value(function (d) {
     return d.value;
   });
-  const data_ready = pie(d3.entries(data.delivered_status));
+  const data_ready = pie(d3.entries(delivered_status));
 
   // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-  svg
+  graph
     .selectAll('whatever')
     .data(data_ready)
     .enter()
@@ -113,10 +90,7 @@ function GenerateReport(data) {
     .style('opacity', 0.7);
 
   // Legends
-  let legends = report_output
-    .select('svg')
-    .append('g')
-    .attr('transform', `translate(${2 * (radius + margin.left)},${(height + margin.top + margin.bottom) / 2 - 40})`);
+  let legends = svg.append('g').attr('transform', `translate(${2 * (radius + margin.left)},${radius + margin.top - 40})`);
   legends
     .selectAll('rect')
     .data(data_ready)
@@ -138,48 +112,29 @@ function GenerateReport(data) {
     .append('text')
     .text(
       (d, index) =>
-        `${legend_labels[index]} (${data.delivered_status[d.data.key]}: ${
-          Math.round((1000 * data.delivered_status[d.data.key]) / data.total_records) / 10
+        `${legend_labels[index]} (${delivered_status[d.data.key]}: ${
+          Math.round((1000 * delivered_status[d.data.key]) / total_records) / 10
         }%)`
     )
     .attr('x', 30)
     .attr('y', (d, index) => index * 30 + 15)
     .attr('stroke', 'white')
     .style('stroke-width', '1px');
+}
 
-  // Country
-  report_output.append('h3').text(`Countries: ${data.country_distribution.namelist.length}`);
-  svg = report_output
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', 20 * data.country_distribution.namelist.length + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${margin.left},${margin.top})`);
+function HBarGraph(svg, margin, width, distribution) {
+  const graph = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
   // X scaler
-  let x = d3
+  const x = d3
     .scaleLinear()
-    .domain([0, d3.max(data.country_distribution.countlist)])
-    .range([0, width - 150]);
+    .domain([0, d3.max(distribution.countlist)])
+    .range([0, width - 200]);
 
-  // Bars
-  svg
-    .selectAll('rect')
-    .data(data.country_distribution.countlist)
-    .enter()
-    .append('rect')
-    .attr('x', 100)
-    .attr('y', (d, i) => i * 20)
-    .attr('width', (d) => x(d))
-    .attr('height', 20)
-    .attr('fill', 'steelblue')
-    .attr('stroke', 'white')
-    .style('stroke-width', '1px');
-
-  // Labels
-  svg
-    .selectAll('text')
-    .data(data.country_distribution.namelist)
+  // Name labels
+  graph
+    .selectAll('.textlabel')
+    .data(distribution.namelist)
     .enter()
     .append('text')
     .attr('x', 10 - margin.left)
@@ -187,40 +142,23 @@ function GenerateReport(data) {
     .text((d) => d)
     .attr('stroke', 'white')
     .style('stroke-width', '1px');
-  // Labels2
-  svg
-    .selectAll('.nlabel')
-    .data(data.country_distribution.countlist)
-    .enter()
-    .append('text')
-    .attr('x', (d) => x(d) + 110)
-    .attr('y', (d, i) => i * 20 + 15)
-    .text((d) => d)
-    .attr('stroke', 'white')
-    .style('stroke-width', '1px');
 
-  // Statuses
-  report_output.append('h3').text(`Statuses: ${data.status_distribution.namelist.length}`);
-  svg = report_output
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', 20 * data.status_distribution.namelist.length + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${margin.left},${margin.top})`);
-
-  // X scaler
-  x = d3
-    .scaleLinear()
-    .domain([0, d3.max(data.status_distribution.countlist)])
-    .range([0, width - 150]);
+  // Graph background
+  graph
+    .append('rect')
+    .attr('x', 150)
+    .attr('y', 0)
+    .attr('width', width - 150)
+    .attr('height', distribution.countlist.length * 20)
+    .attr('fill', '#222222');
 
   // Bars
-  svg
-    .selectAll('rect')
-    .data(data.status_distribution.countlist)
+  graph
+    .selectAll('.bars')
+    .data(distribution.countlist)
     .enter()
     .append('rect')
-    .attr('x', 100)
+    .attr('x', 150)
     .attr('y', (d, i) => i * 20)
     .attr('width', (d) => x(d))
     .attr('height', 20)
@@ -228,28 +166,57 @@ function GenerateReport(data) {
     .attr('stroke', 'white')
     .style('stroke-width', '1px')
     .append('title')
-    .text((d, i) => data.status_distribution.namelist[i]);
+    .text((d, i) => distribution.namelist[i]);
 
-  // Labels
-  svg
-    .selectAll('text')
-    .data(data.status_distribution.namelist)
+  // Value labels
+  graph
+    .selectAll('.countlabel')
+    .data(distribution.countlist)
     .enter()
     .append('text')
-    .attr('x', 10 - margin.left)
-    .attr('y', (d, i) => i * 20 + 15)
-    .text((d) => d.slice(0, 9))
-    .attr('stroke', 'white')
-    .style('stroke-width', '1px');
-  // Labels2
-  svg
-    .selectAll('.nlabel')
-    .data(data.status_distribution.countlist)
-    .enter()
-    .append('text')
-    .attr('x', (d) => x(d) + 110)
+    .attr('x', (d) => x(d) + 160)
     .attr('y', (d, i) => i * 20 + 15)
     .text((d) => d)
     .attr('stroke', 'white')
     .style('stroke-width', '1px');
+}
+
+function GenerateReport(data) {
+  const report_output = d3.select('#report_output');
+  const rect = document.getElementById('report_output').getBoundingClientRect();
+
+  // Draw area values
+  const margin = {
+    top: 10,
+    right: 10,
+    bottom: 10,
+    left: 10,
+  };
+  const width = rect.width - margin.left - margin.right;
+  const height = 300;
+  const radius = height / 2;
+
+  // Delivery pie chart
+  report_output.append('h3').text(`Total records: ${data.total_records}`);
+  let svg = report_output
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom);
+  PieChart(svg, margin, radius, data.delivered_status, data.total_records);
+
+  // Country
+  report_output.append('h3').text(`Countries: ${data.country_distribution.namelist.length}`);
+  svg = report_output
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', 20 * data.country_distribution.namelist.length + margin.top + margin.bottom);
+  HBarGraph(svg, margin, width, data.country_distribution);
+
+  // Statuses
+  report_output.append('h3').text(`Statuses: ${data.status_distribution.namelist.length}`);
+  svg = report_output
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', 20 * data.status_distribution.namelist.length + margin.top + margin.bottom);
+  HBarGraph(svg, margin, width, data.status_distribution);
 }
