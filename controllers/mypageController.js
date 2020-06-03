@@ -1693,6 +1693,7 @@ exports.maintenance = (req, res) => {
           status: {
             [Op.not]: 'Returned',
             [Op.not]: 'Lost',
+            [Op.not]: 'returned',
           },
           delivereddate: {
             [Op.not]: 1,
