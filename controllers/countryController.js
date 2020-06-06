@@ -96,6 +96,107 @@ exports.update_value = (req, res) => {
     });
 };
 
+exports.bulkupdate = (req, res) => {
+  if (req.method == 'GET') {
+    return res.render('bulkupdate');
+  } else {
+    const content = req.body.content.split('\n');
+    content.forEach((row) => {
+      if (row.length > 1) {
+        const cols = row.split('\t');
+        const update_data = {
+          ems_available: 1,
+          airsp_available: 1,
+          salspr_available: 1,
+          salspu_available: 1,
+          salp_available: 1,
+          dhl_available: 1,
+          airp_available: 1,
+        };
+
+        // Zones
+        if (cols[4].indexOf('SAL不可地域') == 0) {
+          update_data.salspr_available = 0;
+          update_data.salspu_available = 0;
+        }
+        if (cols[5].indexOf('SAL不可地域') == 0) {
+          update_data.salp_available = 0;
+        }
+        if (cols[6].indexOf('AIR不可地域') == 0) {
+          update_data.airsp_available = 0;
+        }
+        if (cols[7].indexOf('AirParcel不可地域') == 0) {
+          update_data.airp_available = 0;
+        }
+        if (cols[8].indexOf('EMS不可地域') == 0) {
+          update_data.ems_available = 0;
+        }
+        if (cols[9].indexOf('DHL不可地域') == 0) {
+          update_data.dhl_available = 0;
+        }
+
+        // Exceptions
+        if (cols[1] == 1) {
+          // EMS/Air temporarily suspended
+          if (update_data.ems_available == 1) {
+            update_data.ems_available = 2;
+          }
+          if (update_data.airsp_available == 1) {
+            update_data.airsp_available = 2;
+          }
+          if (update_data.airp_available == 1) {
+            update_data.airp_available = 2;
+          }
+        }
+        if (cols[2] == 1) {
+          // DHL temporarily suspended
+          if (update_data.dhl_available == 1) {
+            update_data.dhl_available = 2;
+          }
+        }
+        if (cols[3] == 1) {
+          // SAL Reg. unavailable
+          update_data.salspr_available = 0;
+        }
+
+        // SAL suspended
+        if (update_data.salspr_available == 1) {
+          update_data.salspr_available = 2;
+        }
+        if (update_data.salspu_available == 1) {
+          update_data.salspu_available = 2;
+        }
+        if (update_data.salp_available == 1) {
+          update_data.salp_available = 2;
+        }
+
+        // Clear space at end
+        let countryname = cols[0];
+        if (countryname.charAt(countryname.length - 1) == ' ') {
+          countryname = countryname.slice(0, countryname.length - 1);
+        }
+
+        // Update database
+        Country.update(update_data, { where: { country_name: countryname } });
+      }
+    });
+
+    /*
+英語略称                  Country name
+一時引受停止_日本郵便      EMS/Air temporarily suspended   [1 = suspended]
+一時引受停止_DHL           DHL temporarily suspended       [1 = suspended]
+SalRegistered不可国       SAL Reg. unavailable             [1 = unavailable]
+SmallPacket地域帯         SAL Reg./Unreg. zone             [SAL不可地域 = unavailable, or zone id (ex. SAL_ZONE1)]
+SALParcel地域帯           SAL Parcel zone                  [SAL不可地域 = unavailable, or zone id (ex. Parcel_ZONE3)]
+AIR地域帯                 ASP zone                         [AIR不可地域 = unavailable, or zone id (ex. AIR_ZONE2)]
+AirParcel地域帯           Air Parcel zone                  [AirParcel不可地域 = unavailable, or zone id (ex. Parcel_ZONE1)]
+EMS地域帯                 EMS zone                         [EMS不可地域 = unavailable, or zone id (ex. 2-1オセアニア・北米・中米・中近東)]
+DHL地域帯                 DHL zone                         [DHL不可地域 = unavailable, or zone id (ex. DHL9_アフリカ・中東)]
+    */
+    return res.redirect('/country');
+  }
+};
+
 // Calculate average shipping times
 exports.recalculate = async (req, res) => {
   //const countries = await Country.findAll();

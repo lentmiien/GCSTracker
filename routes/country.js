@@ -13,6 +13,8 @@ router.get('/', controller.rank);
 
 router.get('/update', controller.update_page);
 router.post('/update', controller.update_value);
+router.get('/bulk_update', controller.bulkupdate);
+router.post('/bulk_update', controller.bulkupdate);
 
 router.get('/recalculate', controller.recalculate);
 

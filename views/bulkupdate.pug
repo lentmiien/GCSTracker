@@ -1,0 +1,8 @@
+extends layout
+
+block content
+  h1 Bulk update available shipping methods
+  form(action="/country/bulk_update", method="post")
+    label(for="content") Content
+    textarea#content.form-control(name="content", cols="30", rows="10")
+    button.btn.btn-success.mt-3(type="submit") Submit
