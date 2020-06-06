@@ -20,12 +20,18 @@ html
                 a.nav-link(href="/mypage/undelivered") 配送中
               li.nav-item
                 a.nav-link(href="/mypage/delivered") 到着
-              li.nav-item
-                a.nav-link(href="/mypage/log") Runtime Log
-              li.nav-item
-                a.nav-link(href="/mypage/maintenance") Maintenance
-              li.nav-item
-                a.nav-link(href="/mypage/sreporting") Reporting
+              li.nav-item.dropdown
+                a#countryDropdown.nav-link.dropdown-toggle(href="#", role="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false") 国
+                .dropdown-menu(aria-labelledby="countryDropdown")
+                  a.dropdown-item(href="/country") ランク
+                  a.dropdown-item(href="/country/update") 設定変更
+                  a.dropdown-item(href="/country/recalculate") 再計算
+              li.nav-item.dropdown
+                a#toolsDropdown.nav-link.dropdown-toggle(href="#", role="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false") ツール
+                .dropdown-menu(aria-labelledby="toolsDropdown")
+                  a.dropdown-item(href="/mypage/log") Runtime Log
+                  a.dropdown-item(href="/mypage/maintenance") Maintenance
+                  a.dropdown-item(href="/mypage/sreporting") Reporting
           if role == "guest"
             .form-inline.my-2.my-lg-0
               a.btn.btn-outline-info.my-2.my-sm-0(href="/login") Login

@@ -1,0 +1,148 @@
+extends layout
+
+block content
+  h3 Update status
+  #countrylist
+    table.table.table-dark.table-striped
+      thead
+        tr
+          th(span="col") Country
+          th(span="col") EMS
+          th(span="col") ASP
+          th(span="col") SAL Reg.
+          th(span="col") SAL Unreg.
+          th(span="col") SAL Parcel
+          th(span="col") DHL
+          th(span="col") Air Parcel
+      tbody
+        each c in countries
+          tr
+            td= c.country_name
+            td
+              select(class=`type${c.ems_available}` onchange=`Update(this,"${c.country_code}","ems")`, title="EMS")
+                if c.ems_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.ems_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.ems_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.ems_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+            td
+              select(class=`type${c.airsp_available}` onchange=`Update(this,"${c.country_code}","airsp")`, title="ASP")
+                if c.airsp_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.airsp_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.airsp_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.airsp_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+            td
+              select(class=`type${c.salspr_available}` onchange=`Update(this,"${c.country_code}","salspr")`, title="SAL Reg.")
+                if c.salspr_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.salspr_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.salspr_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.salspr_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+            td
+              select(class=`type${c.salspu_available}` onchange=`Update(this,"${c.country_code}","salspu")`, title="SAL Unreg.")
+                if c.salspu_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.salspu_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.salspu_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.salspu_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+            td
+              select(class=`type${c.salp_available}` onchange=`Update(this,"${c.country_code}","salp")`, title="SAL Parcel")
+                if c.salp_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.salp_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.salp_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.salp_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+            td
+              select(class=`type${c.dhl_available}` onchange=`Update(this,"${c.country_code}","dhl")`, title="DHL")
+                if c.dhl_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.dhl_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.dhl_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.dhl_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+            td
+              select(class=`type${c.airp_available}` onchange=`Update(this,"${c.country_code}","airp")`, title="Air Parcel")
+                if c.airp_available == 0
+                  option(value="0", selected) Unavailable
+                else
+                  option(value="0") Unavailable
+                if c.airp_available == 1
+                  option(value="1", selected) Available
+                else
+                  option(value="1") Available
+                if c.airp_available == 2
+                  option(value="2", selected) Suspended
+                else
+                  option(value="2") Suspended
+                if c.airp_available == 3
+                  option(value="3", selected) Blocked
+                else
+                  option(value="3") Blocked
+
+  script(src="/javascripts/cupdate.js")

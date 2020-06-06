@@ -10,6 +10,7 @@ const pp = require('./passport_init');
 var indexRouter = require('./routes/index');
 var mypageRouter = require('./routes/mypage');
 var apiRouter = require('./routes/api');
+var countryRouter = require('./routes/country');
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use(pp.passport.session());
 app.use('/', indexRouter);
 app.use('/login', requireNotAuthenticated, pp.router);
 app.use('/mypage', requireAuthenticated, mypageRouter);
+app.use('/country', requireAuthenticated, countryRouter);
 app.use('/api', apiRouter);
 
 app.post('/logout', (req, res) => {
@@ -37,12 +39,12 @@ app.post('/logout', (req, res) => {
 });
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

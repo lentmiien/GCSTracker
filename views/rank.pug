@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  h1 Country tool
+  if delay_ranking.length > 0
+    h2 Delay ranking
+    table.table.table-dark.table-striped
+      thead
+        tr
+          th(span="col") Country
+          th(span="col") Method
+          th(span="col") Recent delay
+      tbody
+        each entry in delay_ranking
+          tr
+            td= entry.country
+            td= entry.method
+            td
+              if entry.delay > 2
+                span.suspended= `${entry.delay}x`
+              else if entry.delay > 1
+                span.delays= `${entry.delay}x`
+              else
+                span.available= `${entry.delay}x`
+              if entry.small_sample
+                b(style="color:red;") △
