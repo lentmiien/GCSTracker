@@ -16,11 +16,12 @@ block content
             td= entry.country
             td= entry.method
             td
+              - titlestr = `Current: ${entry.cur_avg}days, Total: ${entry.tot_avg}days`;
               if entry.delay > 2
-                span.suspended= `${entry.delay}x`
+                span.suspended(title=titlestr)= `${entry.delay}x`
               else if entry.delay > 1
-                span.delays= `${entry.delay}x`
+                span.delays(title=titlestr)= `${entry.delay}x`
               else
-                span.available= `${entry.delay}x`
+                span.available(title=titlestr)= `${entry.delay}x`
               if entry.small_sample
                 b(style="color:red;") △

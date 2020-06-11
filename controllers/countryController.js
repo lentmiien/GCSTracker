@@ -19,6 +19,8 @@ exports.rank = async (req, res, next) => {
           country: data.country_name,
           method: 'EMS',
           delay: Math.round((100 * data.ems_averagetime) / data.ems_totalaveragetime) / 100,
+          cur_avg: data.ems_averagetime,
+          tot_avg: data.ems_totalaveragetime,
           small_sample: data.ems_small_sample,
         });
       }
@@ -27,6 +29,8 @@ exports.rank = async (req, res, next) => {
           country: data.country_name,
           method: 'ASP',
           delay: Math.round((100 * data.airsp_averagetime) / data.airsp_totalaveragetime) / 100,
+          cur_avg: data.airsp_averagetime,
+          tot_avg: data.airsp_totalaveragetime,
           small_sample: data.airsp_small_sample,
         });
       }
@@ -35,6 +39,8 @@ exports.rank = async (req, res, next) => {
           country: data.country_name,
           method: 'SAL Reg.',
           delay: Math.round((100 * data.salspr_averagetime) / data.salspr_totalaveragetime) / 100,
+          cur_avg: data.salspr_averagetime,
+          tot_avg: data.salspr_totalaveragetime,
           small_sample: data.salspr_small_sample,
         });
       }
@@ -43,6 +49,8 @@ exports.rank = async (req, res, next) => {
           country: data.country_name,
           method: 'SAL Parcel',
           delay: Math.round((100 * data.salp_averagetime) / data.salp_totalaveragetime) / 100,
+          cur_avg: data.salp_averagetime,
+          tot_avg: data.salp_totalaveragetime,
           small_sample: data.salp_small_sample,
         });
       }
@@ -51,6 +59,8 @@ exports.rank = async (req, res, next) => {
           country: data.country_name,
           method: 'DHL',
           delay: Math.round((100 * data.dhl_averagetime) / data.dhl_totalaveragetime) / 100,
+          cur_avg: data.dhl_averagetime,
+          tot_avg: data.dhl_totalaveragetime,
           small_sample: data.dhl_small_sample,
         });
       }
@@ -59,6 +69,8 @@ exports.rank = async (req, res, next) => {
           country: data.country_name,
           method: 'Air Parcel',
           delay: Math.round((100 * data.airp_averagetime) / data.airp_totalaveragetime) / 100,
+          cur_avg: data.airp_averagetime,
+          tot_avg: data.airp_totalaveragetime,
           small_sample: data.airp_small_sample,
         });
       }
