@@ -1761,17 +1761,22 @@ exports.search_reporting_result = async (req, res) => {
       namelist: [],
       countlist: [],
     },
+    tracking_details: [],
   };
 
   // SAMPLE
   DB_data.forEach((data) => {
     // Delivered status
+    let progress;
     if (data.delivereddate > 0) {
       report.delivered_status.delivered++;
+      progress = 'delivered';
     } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
       report.delivered_status.inprogressindestination++;
+      progress = 'inprogressindestination';
     } else {
       report.delivered_status.delayedinjapan++;
+      progress = 'delayedinjapan';
     }
 
     // Country
@@ -1791,6 +1796,14 @@ exports.search_reporting_result = async (req, res) => {
     } else {
       report.status_distribution.countlist[index]++;
     }
+
+    // Tracking details
+    report.tracking_details.push({
+      tracking: data.tracking,
+      progress,
+      country: data.country,
+      status: data.status,
+    });
   });
 
   // Done

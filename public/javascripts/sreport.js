@@ -1,3 +1,6 @@
+// GLOBALS
+let gdata;
+
 // Search reporting functions
 
 // Fetch - POST
@@ -58,6 +61,9 @@ async function Search() {
     json_report.status_distribution.countlist[i] = sort_data[i].val;
   }
 
+  // Save globally
+  gdata = json_report;
+
   GenerateReport(json_report);
 
   document.getElementById('data_output').innerText = JSON.stringify(json_report, null, 2);
@@ -87,7 +93,8 @@ function PieChart(svg, margin, radius, delivered_status, total_records) {
     })
     .attr('stroke', 'black')
     .style('stroke-width', '2px')
-    .style('opacity', 0.7);
+    .style('opacity', 0.7)
+    .on("click", function(d) { aquirerecords_progress(d.data.key); });
 
   // Legends
   let legends = svg.append('g').attr('transform', `translate(${2 * (radius + margin.left)},${radius + margin.top - 40})`);
@@ -166,7 +173,8 @@ function HBarGraph(svg, margin, width, distribution) {
     .attr('stroke', 'white')
     .style('stroke-width', '1px')
     .append('title')
-    .text((d, i) => distribution.namelist[i]);
+    .text((d, i) => distribution.namelist[i])
+    .on("click", function(d, i) { aquirerecords_country_status(distribution.namelist[i]); });
 
   // Value labels
   graph
@@ -219,4 +227,29 @@ function GenerateReport(data) {
     .attr('width', width + margin.left + margin.right)
     .attr('height', 20 * data.status_distribution.namelist.length + margin.top + margin.bottom);
   HBarGraph(svg, margin, width, data.status_distribution);
+}
+
+// Aquire records functions
+function aquirerecords_progress(progress) {
+  let odata = [];
+  gdata.tracking_details.forEach(tr => {
+    if (tr.progress == progress) {
+      odata.push(tr.tracking);
+    }
+  });
+
+  // Output
+  document.getElementById('tracking').value = odata.join('\n');
+}
+
+function aquirerecords_country_status(value) {
+  let odata = [];
+  gdata.tracking_details.forEach(tr => {
+    if (tr.country == value || tr.status == value) {
+      odata.push(tr.tracking);
+    }
+  });
+
+  // Output
+  document.getElementById('tracking').value = odata.join('\n');
 }

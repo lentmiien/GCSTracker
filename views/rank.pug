@@ -16,7 +16,7 @@ block content
             td= entry.country
             td= entry.method
             td
-              - titlestr = `Current: ${entry.cur_avg}days, Total: ${entry.tot_avg}days`;
+              - titlestr = `Current: ${entry.cur_avg} days, Total: ${entry.tot_avg} days`;
               if entry.delay > 2
                 span.suspended(title=titlestr)= `${entry.delay}x`
               else if entry.delay > 1
