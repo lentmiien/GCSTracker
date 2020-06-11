@@ -190,6 +190,9 @@ function HBarGraph(svg, margin, width, distribution) {
 }
 
 function GenerateReport(data) {
+  document.getElementById('report_output').innerHTML = '';
+  document.getElementById('search_button').style.display = 'none';
+
   const report_output = d3.select('#report_output');
   const rect = document.getElementById('report_output').getBoundingClientRect();
 
@@ -240,6 +243,7 @@ function aquirerecords_progress(progress) {
 
   // Output
   document.getElementById('tracking').value = odata.join('\n');
+  document.getElementById('search_button').style.display = 'block';
 }
 
 function aquirerecords_country_status(value) {
@@ -252,4 +256,5 @@ function aquirerecords_country_status(value) {
 
   // Output
   document.getElementById('tracking').value = odata.join('\n');
+  document.getElementById('search_button').style.display = 'block';
 }
