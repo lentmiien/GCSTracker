@@ -172,9 +172,9 @@ function HBarGraph(svg, margin, width, distribution) {
     .attr('fill', 'steelblue')
     .attr('stroke', 'white')
     .style('stroke-width', '1px')
+    .on("click", function(d, i) { aquirerecords_country_status(distribution.namelist[i]); })
     .append('title')
-    .text((d, i) => distribution.namelist[i])
-    .on("click", function(d, i) { aquirerecords_country_status(distribution.namelist[i]); });
+    .text((d, i) => distribution.namelist[i]);
 
   // Value labels
   graph
