@@ -1803,6 +1803,8 @@ exports.search_reporting_result = async (req, res) => {
       progress,
       country: data.country,
       status: data.status,
+      shippeddate: data.shippeddate,
+      delivereddate: data.delivereddate,
     });
   });
 

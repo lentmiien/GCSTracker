@@ -94,7 +94,9 @@ function PieChart(svg, margin, radius, delivered_status, total_records) {
     .attr('stroke', 'black')
     .style('stroke-width', '2px')
     .style('opacity', 0.7)
-    .on("click", function(d) { aquirerecords_progress(d.data.key); });
+    .on('click', function (d) {
+      aquirerecords_progress(d.data.key);
+    });
 
   // Legends
   let legends = svg.append('g').attr('transform', `translate(${2 * (radius + margin.left)},${radius + margin.top - 40})`);
@@ -172,7 +174,9 @@ function HBarGraph(svg, margin, width, distribution) {
     .attr('fill', 'steelblue')
     .attr('stroke', 'white')
     .style('stroke-width', '1px')
-    .on("click", function(d, i) { aquirerecords_country_status(distribution.namelist[i]); })
+    .on('click', function (d, i) {
+      aquirerecords_country_status(distribution.namelist[i]);
+    })
     .append('title')
     .text((d, i) => distribution.namelist[i]);
 
@@ -187,6 +191,132 @@ function HBarGraph(svg, margin, width, distribution) {
     .text((d) => d)
     .attr('stroke', 'white')
     .style('stroke-width', '1px');
+}
+
+function ProgressGraph(svg, margin, width, height, data) {
+  const graph = svg.append('g').attr('transform', `translate(${margin.left + margin.right},${0})`);
+
+  // Pre-process data
+  let start_date = data[0].shippeddate;
+  let end_date = data[0].shippeddate;
+  let displaydata = [];
+  let datelookup = [];
+  data.forEach((d) => {
+    // Check edge cases
+    if (d.shippeddate < start_date) {
+      start_date = d.shippeddate;
+    }
+    if (d.shippeddate > end_date) {
+      end_date = d.shippeddate;
+    }
+
+    // Generate date
+    let date = new Date(d.shippeddate);
+    let datestr = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    let index = datelookup.indexOf(datestr);
+    if (index == -1) {
+      index = datelookup.length;
+      datelookup.push(datestr);
+      displaydata.push({
+        date: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+        all: 0,
+        notdone: 0,
+        onhold: 0,
+      });
+    }
+    displaydata[index].all++;
+    if (d.progress != 'delivered') {
+      displaydata[index].notdone++;
+      if (d.progress == 'delayedinjapan') {
+        displaydata[index].onhold++;
+      }
+    }
+  });
+  // Sort
+  displaydata.sort((a, b) => {
+    if (a.date < b.date) {
+      return -1;
+    } else {
+      return 1;
+    }
+  });
+
+  // X scaler
+  let X = d3
+    .scaleTime()
+    .domain([new Date(start_date), new Date(end_date)])
+    .range([0, width]);
+
+  // X axis
+  graph
+    .append('g')
+    .attr('transform', 'translate(0,' + height + ')')
+    .call(d3.axisBottom(X).ticks(5).tickSizeOuter(0));
+
+  // Y scaler
+  let Y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
+
+  // Graph
+  graph
+    .append('path')
+    .datum(displaydata)
+    .attr('fill', '#75CC75')
+    .attr('fill-opacity', 0.7)
+    .attr('stroke', 'none')
+    .attr(
+      'd',
+      d3
+        .area()
+        .x(function (d) {
+          return X(d.date);
+        })
+        .y0(function (d) {
+          return Y(d.notdone / d.all);
+        })
+        .y1(function (d) {
+          return Y(1);
+        })
+    );
+  graph
+    .append('path')
+    .datum(displaydata)
+    .attr('fill', '#CCCC75')
+    .attr('fill-opacity', 0.7)
+    .attr('stroke', 'none')
+    .attr(
+      'd',
+      d3
+        .area()
+        .x(function (d) {
+          return X(d.date);
+        })
+        .y0(function (d) {
+          return Y(d.onhold / d.all);
+        })
+        .y1(function (d) {
+          return Y(d.notdone / d.all);
+        })
+    );
+  graph
+    .append('path')
+    .datum(displaydata)
+    .attr('fill', '#CC7575')
+    .attr('fill-opacity', 0.7)
+    .attr('stroke', 'none')
+    .attr(
+      'd',
+      d3
+        .area()
+        .x(function (d) {
+          return X(d.date);
+        })
+        .y0(function (d) {
+          return Y(0);
+        })
+        .y1(function (d) {
+          return Y(d.onhold / d.all);
+        })
+    );
 }
 
 function GenerateReport(data) {
@@ -215,6 +345,14 @@ function GenerateReport(data) {
     .attr('height', height + margin.top + margin.bottom);
   PieChart(svg, margin, radius, data.delivered_status, data.total_records);
 
+  // Progress report
+  report_output.append('h3').text(`Progress report (based on shipping date)`);
+  svg = report_output
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom);
+  ProgressGraph(svg, margin, width, height, data.tracking_details);
+
   // Country
   report_output.append('h3').text(`Countries: ${data.country_distribution.namelist.length}`);
   svg = report_output
@@ -235,7 +373,7 @@ function GenerateReport(data) {
 // Aquire records functions
 function aquirerecords_progress(progress) {
   let odata = [];
-  gdata.tracking_details.forEach(tr => {
+  gdata.tracking_details.forEach((tr) => {
     if (tr.progress == progress) {
       odata.push(tr.tracking);
     }
@@ -248,7 +386,7 @@ function aquirerecords_progress(progress) {
 
 function aquirerecords_country_status(value) {
   let odata = [];
-  gdata.tracking_details.forEach(tr => {
+  gdata.tracking_details.forEach((tr) => {
     if (tr.country == value || tr.status == value) {
       odata.push(tr.tracking);
     }
