@@ -1768,7 +1768,7 @@ exports.search_reporting_result = async (req, res) => {
   DB_data.forEach((data) => {
     // Delivered status
     let progress;
-    if (data.delivereddate > 0) {
+    if (data.delivereddate > 0 || data.status == 'returned') {
       report.delivered_status.delivered++;
       progress = 'delivered';
     } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
