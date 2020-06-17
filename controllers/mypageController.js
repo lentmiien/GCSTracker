@@ -1811,6 +1811,91 @@ exports.search_reporting_result = async (req, res) => {
   // Done
   res.json(report);
 };
+exports.search_reporting_result_cat = async (req, res) => {
+  /*
+  req.body.range = {
+    start_ts,
+    end_ts,
+  }
+  req.body.ccode = ""
+  */
+
+  // Aquire Database data
+  const DB_data = await Tracking.findAll({
+    where: {
+      shippeddate: {
+        [Op.gte]: req.body.range.start_ts,
+        [Op.lte]: req.body.range.end_ts,
+      },
+    },
+  });
+
+  // Check that status of the records and put together a simple JSON report, which is returned to user
+  const report = {
+    total_records: DB_data.length,
+    delivered_status: {
+      delivered: 0,
+      inprogressindestination: 0,
+      delayedinjapan: 0,
+    },
+    country_distribution: {
+      namelist: [],
+      countlist: [],
+    },
+    status_distribution: {
+      namelist: [],
+      countlist: [],
+    },
+    tracking_details: [],
+  };
+
+  // SAMPLE
+  DB_data.forEach((data) => {
+    // Delivered status
+    let progress;
+    if (data.delivereddate > 0 || data.status == 'returned') {
+      report.delivered_status.delivered++;
+      progress = 'delivered';
+    } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
+      report.delivered_status.inprogressindestination++;
+      progress = 'inprogressindestination';
+    } else {
+      report.delivered_status.delayedinjapan++;
+      progress = 'delayedinjapan';
+    }
+
+    // Country
+    let index = report.country_distribution.namelist.indexOf(data.country);
+    if (index == -1) {
+      report.country_distribution.namelist.push(data.country);
+      report.country_distribution.countlist.push(1);
+    } else {
+      report.country_distribution.countlist[index]++;
+    }
+
+    // Status
+    index = report.status_distribution.namelist.indexOf(data.status);
+    if (index == -1) {
+      report.status_distribution.namelist.push(data.status);
+      report.status_distribution.countlist.push(1);
+    } else {
+      report.status_distribution.countlist[index]++;
+    }
+
+    // Tracking details
+    report.tracking_details.push({
+      tracking: data.tracking,
+      progress,
+      country: data.country,
+      status: data.status,
+      shippeddate: data.shippeddate,
+      delivereddate: data.delivereddate,
+    });
+  });
+
+  // Done
+  res.json(report);
+};
 
 // Helper function
 function sleep(time) {
