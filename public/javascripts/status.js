@@ -1,7 +1,7 @@
 async function AddToCountryList(element, country_name) {
   const country_code = element.parentNode.getElementsByTagName('select')[0].value;
 
-  fetch('/mypage/addcl', {
+  fetch('/country/addcl', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
