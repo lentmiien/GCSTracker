@@ -16,7 +16,62 @@ async function Search() {
     body: JSON.stringify({ searchcontent: data }),
   });
   const json_report = await response.json();
+  ProcessData(json_report);
+}
 
+async function CatSearch() {
+  const date = document.getElementById('date').value.split('-');
+  const day = document.getElementById('day').checked;
+  const week = document.getElementById('week').checked;
+  const month = document.getElementById('month').checked;
+  const year = document.getElementById('year').checked;
+  const ccode = document.getElementById('ccode').value;
+
+  const year_v = parseInt(date[0]);
+  const month_v = parseInt(date[1]) - 1;
+  const date_v = parseInt(date[2]);
+  const day_v = new Date(year_v, month_v, date_v).getDay();
+
+  let start_ts;
+  let end_ts;
+
+  if (day) {
+    start_ts = new Date(year_v, month_v, date_v, 0, 0, 0, 0).getTime();
+    end_ts = new Date(year_v, month_v, date_v, 23, 59, 59, 999).getTime();
+  } else if (week) {
+    start_ts = new Date(year_v, month_v, date_v - day_v, 0, 0, 0, 0).getTime();
+    end_ts = new Date(year_v, month_v, date_v + 7 - day_v, 23, 59, 59, 999).getTime();
+  } else if (month) {
+    start_ts = new Date(year_v, month_v, 1, 0, 0, 0, 0).getTime();
+    end_ts = new Date(year_v, month_v + 1, 0, 23, 59, 59, 999).getTime();
+  } else if (year) {
+    start_ts = new Date(year_v, 0, 1, 0, 0, 0, 0).getTime();
+    end_ts = new Date(year_v + 1, 0, 0, 23, 59, 59, 999).getTime();
+  } else {
+    console.log('No date range selected...');
+    return;
+  }
+
+  const response = await fetch('/mypage/csreporting', {
+    method: 'POST',
+    cache: 'no-cache',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      range: {
+        start_ts,
+        end_ts,
+      },
+      ccode,
+    }),
+  });
+  const json_report = await response.json();
+  ProcessData(json_report);
+}
+
+function ProcessData(json_report) {
   // Sort countries
   let sort_data = [];
   for (let i = 0; i < json_report.country_distribution.namelist.length; i++) {

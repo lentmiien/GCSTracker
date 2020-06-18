@@ -62,6 +62,7 @@ router.post('/update', controller.update);
 // Search reporting
 router.get('/sreporting', controller.search_reporting);
 router.post('/sreporting', controller.search_reporting_result);
+router.post('/csreporting', controller.search_reporting_result_cat);
 
 // Export router
 module.exports = router;
