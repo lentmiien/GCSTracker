@@ -15,7 +15,7 @@ function StatusColor(status) {
 async function Update(element, country_code, method) {
   const status = element.value;
   element.style.backgroundColor = 'yellow';
-  fetch('/mypage/update', {
+  fetch('/country/update', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
