@@ -4,7 +4,7 @@ block content
   h3 Update status
   #countrylist
     table.table.table-dark.table-striped
-      thead
+      thead(style="position:sticky;top:0;background-color:#888888;")
         tr
           th(span="col") Country
           th(span="col") EMS
@@ -19,7 +19,7 @@ block content
           tr
             td= c.country_name
             td
-              select(class=`type${c.ems_available}` onchange=`Update(this,"${c.country_code}","ems")`, title="EMS")
+              select(class=`type${c.ems_available}` onchange=`Update(this,"${c.country_code}","ems")`)
                 if c.ems_available == 0
                   option(value="0", selected) Unavailable
                 else
@@ -37,7 +37,7 @@ block content
                 else
                   option(value="3") Blocked
             td
-              select(class=`type${c.airsp_available}` onchange=`Update(this,"${c.country_code}","airsp")`, title="ASP")
+              select(class=`type${c.airsp_available}` onchange=`Update(this,"${c.country_code}","airsp")`)
                 if c.airsp_available == 0
                   option(value="0", selected) Unavailable
                 else
@@ -55,7 +55,7 @@ block content
                 else
                   option(value="3") Blocked
             td
-              select(class=`type${c.salspr_available}` onchange=`Update(this,"${c.country_code}","salspr")`, title="SAL Reg.")
+              select(class=`type${c.salspr_available}` onchange=`Update(this,"${c.country_code}","salspr")`)
                 if c.salspr_available == 0
                   option(value="0", selected) Unavailable
                 else
@@ -73,7 +73,7 @@ block content
                 else
                   option(value="3") Blocked
             td
-              select(class=`type${c.salspu_available}` onchange=`Update(this,"${c.country_code}","salspu")`, title="SAL Unreg.")
+              select(class=`type${c.salspu_available}` onchange=`Update(this,"${c.country_code}","salspu")`)
                 if c.salspu_available == 0
                   option(value="0", selected) Unavailable
                 else
@@ -91,7 +91,7 @@ block content
                 else
                   option(value="3") Blocked
             td
-              select(class=`type${c.salp_available}` onchange=`Update(this,"${c.country_code}","salp")`, title="SAL Parcel")
+              select(class=`type${c.salp_available}` onchange=`Update(this,"${c.country_code}","salp")`)
                 if c.salp_available == 0
                   option(value="0", selected) Unavailable
                 else
@@ -109,7 +109,7 @@ block content
                 else
                   option(value="3") Blocked
             td
-              select(class=`type${c.dhl_available}` onchange=`Update(this,"${c.country_code}","dhl")`, title="DHL")
+              select(class=`type${c.dhl_available}` onchange=`Update(this,"${c.country_code}","dhl")`)
                 if c.dhl_available == 0
                   option(value="0", selected) Unavailable
                 else
@@ -127,7 +127,7 @@ block content
                 else
                   option(value="3") Blocked
             td
-              select(class=`type${c.airp_available}` onchange=`Update(this,"${c.country_code}","airp")`, title="Air Parcel")
+              select(class=`type${c.airp_available}` onchange=`Update(this,"${c.country_code}","airp")`)
                 if c.airp_available == 0
                   option(value="0", selected) Unavailable
                 else
