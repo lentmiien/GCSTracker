@@ -1267,7 +1267,7 @@ async function JP_tracker(tracking) {
     if (JP_scraping_counter.html.status == HTTP_OK_CODE) {
       // Scraping is enabled and good for use
       JP_scraping_counter.count++; // About to do an API request so increase counter
-      const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${item.tracking}&searchKind=S002&locale=ja`;
+      const url = `https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=${item.tracking}&searchKind=S002&locale=en`;
       const result = await getResults(url, item.carrier);
       JP_timer = Date.now();
 
