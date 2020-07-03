@@ -48,15 +48,17 @@ const getResults = async (siteUrl, carrier) => {
       let date_index = -9;
       let date = '';
       let status = '';
+      let debug = []; // TODO: remove after debugging
       $('td').each((index, element) => {
         const content = $(element).text();
-        if (content.indexOf('/') == 4) {
+        debug.push(content); // TODO: remove after debugging
+        if (content.indexOf('/') == 2) {
           date_index = index;
           date = content.split(' ').join(':').split('/').join(':').split(':');
           date = new Date(
-            parseInt(date[0]),
-            parseInt(date[1]) - 1,
             parseInt(date[2]),
+            parseInt(date[0]) - 1,
+            parseInt(date[1]),
             date[3] ? parseInt(date[3]) : 12,
             date[4] ? parseInt(date[4]) : 0
           );
@@ -79,6 +81,7 @@ const getResults = async (siteUrl, carrier) => {
           });
         }
       });
+      Log('Debug', JSON.stringify(debug, null, 2)); // TODO: remove after debugging
       if (tracking_data.length > 0) {
         // Try to acquire destination country
         output['country'] = '';
@@ -93,7 +96,7 @@ const getResults = async (siteUrl, carrier) => {
         // Acquire shipped date
         output['shippeddate'] = tracking_data[0].timestamp;
         // Try to acquire delivered date
-        if (output['status'] == 'お届け済み') {
+        if (output['status'] == 'Final delivery') {
           output['delivered'] = tracking_data[tracking_data.length - 1].timestamp;
         } else {
           output['delivered'] = 0;
