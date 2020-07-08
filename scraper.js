@@ -48,10 +48,10 @@ const getResults = async (siteUrl, carrier) => {
       let date_index = -9;
       let date = '';
       let status = '';
-      let debug = []; // TODO: remove after debugging
+      //let debug = []; // debugging#1
       $('td').each((index, element) => {
         const content = $(element).text();
-        debug.push(content); // TODO: remove after debugging
+        //debug.push(content); // debugging#1
         if (content.indexOf('/') == 2) {
           date_index = index;
           date = content.split(' ').join(':').split('/').join(':').split(':');
@@ -81,7 +81,7 @@ const getResults = async (siteUrl, carrier) => {
           });
         }
       });
-      Log('Debug', JSON.stringify(debug, null, 2)); // TODO: remove after debugging
+      //Log('Debug', JSON.stringify(debug, null, 2)); // debugging#1
       if (tracking_data.length > 0) {
         // Try to acquire destination country
         output['country'] = '';
