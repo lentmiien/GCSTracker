@@ -237,7 +237,7 @@ exports.process_invalid = (req, res, next) => {
     });
 };
 exports.process_valid = (req, res, next) => {
-  Tracking.update({ carrier: req.params.carrier }, { where: { id: req.params.id } })
+  Tracking.update({ carrier: req.params.carrier, shippeddate: Date.now() - 604800000 }, { where: { id: req.params.id } })
     .then(() => {
       res.json({ status: 'OK' });
     })
