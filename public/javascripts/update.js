@@ -33,7 +33,7 @@ async function Updatedata() {
   }%) <i style="color:${data.USPS_API_counter.html.status == 200 ? 'green' : 'red'};">[${data.USPS_API_counter.html.status}:${
     data.USPS_API_counter.html.text
   }]</i>`;
-  dhl_a_records.innerHTML = `<b title="${data.DHL_API_counter.nowtracking}">${data.DHL_API_counter.count}/250</b>(${
+  dhl_a_records.innerHTML = `<b title="${data.DHL_API_counter.nowtracking}">${data.DHL_API_counter.count}/2500</b>(${
     data.DHL_API_counter.done
   }%) <i style="color:${data.DHL_API_counter.html.status == 200 ? 'green' : 'red'};">[${data.DHL_API_counter.html.status}:${
     data.DHL_API_counter.html.text
