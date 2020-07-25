@@ -14,7 +14,7 @@ const { Log, GetLog } = require('../runlog');
  *  MAGIC NUMBERS
  *
  *******************/
-const DHL_API_MAX_REQUESTS = 250;
+const DHL_API_MAX_REQUESTS = 2500;
 const HTTP_OK_CODE = 200;
 const HTTP_DEFAULT_DISABLE_CODE = 555;
 const AUTO_RETRY = 3600000;
