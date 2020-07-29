@@ -1771,7 +1771,7 @@ exports.search_reporting_result = async (req, res) => {
     if (data.delivereddate > 0 || data.status == 'returned') {
       report.delivered_status.delivered++;
       progress = 'delivered';
-    } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
+    } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN' && data.country != 'TOKYO') {
       report.delivered_status.inprogressindestination++;
       progress = 'inprogressindestination';
     } else {
