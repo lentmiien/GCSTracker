@@ -21,7 +21,7 @@ const AUTO_RETRY = 3600000;
 const AUTO_SCHEDULE = 16;
 const DEFAULT_DATE = '2020-01-01';
 const JP_MIN_DELAY_TIME = 1100;
-const DHL_MIN_DELAY_TIME = 2000;
+const DHL_MIN_DELAY_TIME = 1100;
 const USPS_MIN_DELAY_TIME = 150;
 const limit_date = new Date(2020, 0, 2, 12, 0, 0); // Just after 2020-01-01 12:00
 
