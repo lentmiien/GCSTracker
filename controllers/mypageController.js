@@ -1717,7 +1717,7 @@ exports.update = (req, res) => {
     status: req.body.status,
     shippeddate: new Date(parseInt(s_date[0]), parseInt(s_date[1]) - 1, parseInt(s_date[2]), 12, 0, 0).getTime(),
     delivereddate: new Date(parseInt(d_date[0]), parseInt(d_date[1]) - 1, parseInt(d_date[2]), 12, 0, 0).getTime(),
-    done: req.body.delivered == '1' ? true : false,
+    delivered: req.body.delivered == '1' ? true : false,
   };
 
   Tracking.update(update_data, { where: { tracking: req.body.tracking } });
