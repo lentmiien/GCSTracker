@@ -14,14 +14,14 @@ const { Log, GetLog } = require('../runlog');
  *  MAGIC NUMBERS
  *
  *******************/
-const DHL_API_MAX_REQUESTS = 250;
+const DHL_API_MAX_REQUESTS = 2500;
 const HTTP_OK_CODE = 200;
 const HTTP_DEFAULT_DISABLE_CODE = 555;
 const AUTO_RETRY = 3600000;
 const AUTO_SCHEDULE = 16;
 const DEFAULT_DATE = '2020-01-01';
 const JP_MIN_DELAY_TIME = 1100;
-const DHL_MIN_DELAY_TIME = 2000;
+const DHL_MIN_DELAY_TIME = 1100;
 const USPS_MIN_DELAY_TIME = 150;
 const limit_date = new Date(2020, 0, 2, 12, 0, 0); // Just after 2020-01-01 12:00
 
@@ -237,7 +237,7 @@ exports.process_invalid = (req, res, next) => {
     });
 };
 exports.process_valid = (req, res, next) => {
-  Tracking.update({ carrier: req.params.carrier }, { where: { id: req.params.id } })
+  Tracking.update({ carrier: req.params.carrier, shippeddate: Date.now() - 604800000 }, { where: { id: req.params.id } })
     .then(() => {
       res.json({ status: 'OK' });
     })
@@ -1717,7 +1717,7 @@ exports.update = (req, res) => {
     status: req.body.status,
     shippeddate: new Date(parseInt(s_date[0]), parseInt(s_date[1]) - 1, parseInt(s_date[2]), 12, 0, 0).getTime(),
     delivereddate: new Date(parseInt(d_date[0]), parseInt(d_date[1]) - 1, parseInt(d_date[2]), 12, 0, 0).getTime(),
-    done: req.body.delivered == '1' ? true : false,
+    delivered: req.body.delivered == '1' ? true : false,
   };
 
   Tracking.update(update_data, { where: { tracking: req.body.tracking } });
@@ -1771,7 +1771,7 @@ exports.search_reporting_result = async (req, res) => {
     if (data.delivereddate > 0 || data.status == 'returned') {
       report.delivered_status.delivered++;
       progress = 'delivered';
-    } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN') {
+    } else if (data.country != 'JAPAN' && data.country != 'UNKNOWN' && data.country != 'TOKYO') {
       report.delivered_status.inprogressindestination++;
       progress = 'inprogressindestination';
     } else {
