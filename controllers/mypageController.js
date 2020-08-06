@@ -1897,6 +1897,19 @@ exports.search_reporting_result_cat = async (req, res) => {
   res.json(report);
 };
 
+// Stuck packages list
+exports.stuck_list = async (req, res) => {
+  // Show all packages that has been stuck in the same tracking status for:
+  // DHL 5 days // Newer history at top
+  // EMS 10 days   // JP: Newer history at bottom
+  // Other 30 days // USPS: Newer history at top (dates needs to be fixed)
+  Tracking.findAll({where: { delivered: false }}).then((all_not_done) => {
+    const display_list = [];
+    all_not_done.forEach(entry => {});
+    res.render('stuck_list', { display_list });
+  });
+}
+
 // Helper function
 function sleep(time) {
   return new Promise((resolve, reject) => {

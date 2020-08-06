@@ -147,9 +147,11 @@ const getResultsAPI = async (siteUrl, carrier) => {
         },
       ];
       if (data.xml_json.TrackResponse.TrackInfo[0].TrackDetail) {
+        let last_ts = Date.now();
         data.xml_json.TrackResponse.TrackInfo[0].TrackDetail.forEach((event) => {
+          last_ts = AquireTimestamp(event, last_ts);
           tracking_data.push({
-            timestamp: Date.now(),
+            timestamp: last_ts,
             description: event,
             location: '---',
           });
@@ -250,6 +252,27 @@ function CountryNormalize(in_name) {
     return country_mapper[out_name];
   }
   return out_name;
+}
+
+function AquireTimestamp(event, last_ts) {
+  // return millisecond timestamp for date in event text string
+  // Valid string formats:
+  //    ...at 11:27 am on June 16, 2020 in...
+  //    ..., June 15, 2020, 3:38 pm, ...
+  //    ..., 06/10/2020, 4:30 pm, ...  // month/date/year
+  //    << no data >> -> use date from previous entry
+
+  // if   Check for index of '/' -> date format 3
+  if(event.indexOf('/') > 0) {
+    const index1 = event.indexOf('/');
+    const index2 = index1 + 3;
+  }
+  // else Check for index of 'am' or 'pm' -> date format 1 or 2
+  else if(event.indexOf('am') > 0 || event.indexOf('pm') > 0) {}
+  // else << no data >>
+  else {
+    return last_ts;
+  }
 }
 
 module.exports = getResultsAPI;
