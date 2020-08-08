@@ -64,5 +64,7 @@ router.get('/sreporting', controller.search_reporting);
 router.post('/sreporting', controller.search_reporting_result);
 router.post('/csreporting', controller.search_reporting_result_cat);
 
+router.get('/stuck', controller.stuck_list);
+
 // Export router
 module.exports = router;
