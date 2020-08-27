@@ -48,10 +48,7 @@ const fetchDataUSPS = async (siteUrl) => {
           Log('USPS parse error', JSON.stringify({ err, result }, null, 2));
         } else {
           // Validate content of 'result'
-          if (
-            result.hasOwnProperty('TrackResponse') &&
-            result.TrackResponse.hasOwnProperty('TrackInfo')
-          ) {
+          if (result.hasOwnProperty('TrackResponse') && result.TrackResponse.hasOwnProperty('TrackInfo')) {
             if (result.TrackResponse.TrackInfo[0].hasOwnProperty('TrackSummary')) {
               data['xml_json'] = result;
             } else if (result.TrackResponse.TrackInfo[0].hasOwnProperty('Error')) {
@@ -261,18 +258,53 @@ function AquireTimestamp(event, last_ts) {
   //    ..., June 15, 2020, 3:38 pm, ...
   //    ..., 06/10/2020, 4:30 pm, ...  // month/date/year
   //    << no data >> -> use date from previous entry
+  let year = 0,
+    month,
+    date,
+    hour = 0,
+    minute = 0;
 
-  // if   Check for index of '/' -> date format 3
-  if(event.indexOf('/') > 0) {
-    const index1 = event.indexOf('/');
-    const index2 = index1 + 3;
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  // Aquire date
+  const short_date_index = event.indexOf('/');
+  if (short_date_index > 0) {
+    // 06/10/2020 // month/date/year
+    year = parseInt(event.substring(short_date_index + 4, short_date_index + 8));
+    month = parseInt(event.substring(short_date_index - 2, short_date_index));
+    date = parseInt(event.substring(short_date_index + 1, short_date_index + 3));
+  } else {
+    months.forEach((m, i) => {
+      const long_date_index = event.indexOf(m);
+      if (long_date_index > 0) {
+        // June 15, 2020
+        year = parseInt(event.substring(long_date_index + m.length + 5, long_date_index + m.length + 9));
+        year = year < 2000 ? year + 2000 : year;
+        month = i;
+        date = parseInt(event.substring(long_date_index + m.length + 1, long_date_index + m.length + 3));
+      }
+    });
+
+    // If no valid date return last date
+    if (year == 0) {
+      return last_ts;
+    }
   }
-  // else Check for index of 'am' or 'pm' -> date format 1 or 2
-  else if(event.indexOf('am') > 0 || event.indexOf('pm') > 0) {}
-  // else << no data >>
-  else {
-    return last_ts;
+
+  // Aquire time
+  let time_index = event.indexOf('am');
+  let time_modifier = time_index == -1 ? 12 : 0;
+  time_index = time_index == -1 ? event.indexOf('pm') : time_index;
+  if (time_index > 0) {
+    // 11:27 am
+    const substrings = event.substring(time_index - 6, time_index - 1).split(':');
+    const h_index = substrings[0].indexOf(' ');
+    hour = h_index == -1 ? parseInt(substrings[0]) : parseInt(substrings[0].substring(h_index + 1, substrings[0].length));
+    minute = parseInt(substrings[1]);
   }
+
+  // Create and return timestamp
+  return new Date(year, month, date, hour + time_modifier, minute).getTime();
 }
 
 module.exports = getResultsAPI;

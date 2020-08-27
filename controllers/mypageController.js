@@ -1901,14 +1901,66 @@ exports.search_reporting_result_cat = async (req, res) => {
 exports.stuck_list = async (req, res) => {
   // Show all packages that has been stuck in the same tracking status for:
   // DHL 5 days // Newer history at top
-  // EMS 10 days   // JP: Newer history at bottom
-  // Other 30 days // USPS: Newer history at top (dates needs to be fixed)
-  Tracking.findAll({where: { delivered: false }}).then((all_not_done) => {
+  // JP 14 days   // JP: Newer history at bottom
+  // USPS 14 days // USPS: Newer history at top
+  Tracking.findAll({ where: { delivered: false } }).then(async (all_not_done) => {
     const display_list = [];
-    all_not_done.forEach(entry => {});
+    await all_not_done.forEach(async (entry) => {
+      const tracking_data = entry.data.length > 0 ? await JSON.parse(entry.data) : { shipments: [{ events: [] }] };
+      let onhold_status = '';
+      let onhold_ts = 0;
+      if (tracking_data.shipments[0].events.length > 0) {
+        if (entry.carrier == 'DHL' || entry.carrier == 'USPS') {
+          let start_index = 0;
+          onhold_status = tracking_data.shipments[0].events[start_index].description;
+          for (
+            ;
+            start_index < tracking_data.shipments[0].events.length &&
+            onhold_status == tracking_data.shipments[0].events[start_index].description;
+            start_index++
+          ) {
+            onhold_ts = tracking_data.shipments[0].events[start_index].timestamp;
+          }
+          if (onhold_ts < Date.now() - 1000 * 60 * 60 * 24 * 7) {
+            display_list.push({
+              tracking: entry.tracking,
+              status: onhold_status,
+              timestamp: onhold_ts,
+            });
+          }
+        } else if (entry.carrier == 'JP') {
+          let start_index = tracking_data.shipments[0].events.length - 1;
+          onhold_status = tracking_data.shipments[0].events[start_index].description;
+          for (; start_index >= 0 && onhold_status == tracking_data.shipments[0].events[start_index].description; start_index--) {
+            onhold_ts = tracking_data.shipments[0].events[start_index].timestamp;
+          }
+          if (onhold_ts < Date.now() - 1000 * 60 * 60 * 24 * 7) {
+            display_list.push({
+              tracking: entry.tracking,
+              status: onhold_status,
+              timestamp: onhold_ts,
+            });
+          }
+        }
+      }
+    });
     res.render('stuck_list', { display_list });
   });
-}
+};
+
+let tmp = {
+  shipments: [
+    {
+      events: [
+        { timestamp: 1583367720000, description: '引受', location: '東京都' },
+        { timestamp: 1583701140000, description: '国際交換局に到着', location: '東京都' },
+        { timestamp: 1583701200000, description: '国際交換局から発送', location: '東京都' },
+        { timestamp: 1583831460000, description: '国際交換局に到着', location: 'MEXICO' },
+        { timestamp: 1583904720000, description: '国際交換局から発送', location: 'MEXICO' },
+      ],
+    },
+  ],
+};
 
 // Helper function
 function sleep(time) {
