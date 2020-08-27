@@ -93,9 +93,19 @@ exports.rank = async (req, res, next) => {
 
 exports.update_page = (req, res) => {
   Country.findAll().then((results) => {
+    results.sort((a, b) => {
+      if(a.country_name < b.country_name) {
+        return -1;
+      } else if (a.country_name > b.country_name) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
     res.render('update', { countries: results });
   });
 };
+
 exports.update_value = (req, res) => {
   let update_data = {};
   update_data[`${req.body.method}_available`] = req.body.status;
