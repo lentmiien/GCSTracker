@@ -158,29 +158,39 @@ const getResultsAPI = async (siteUrl, carrier) => {
     } else {
       // DHL tracking
       // Try to acquire destination country
-      const ad = data.shipments[0].destination.address.addressLocality.split(' - ');
-      output['country'] = CountryNormalize(ad[ad.length - 1]);
-      // Acquire last tracking update
-      output['status'] = data.shipments[0].status.statusCode;
-      // Acquire shipped date
-      data.shipments[0].events.forEach((event) => {
-        if (event.description == 'Shipment picked up' || event.description == 'Shipment scheduled to be picked up') {
-          const sdt = event.timestamp.split('T');
+      if (data.shipments[0].destination) {
+        const ad = data.shipments[0].destination.address.addressLocality.split(' - ');
+        output['country'] = CountryNormalize(ad[ad.length - 1]);
+        // Acquire last tracking update
+        output['status'] = data.shipments[0].status.statusCode;
+        // Acquire shipped date
+        data.shipments[0].events.forEach((event) => {
+          if (event.description == 'Shipment picked up' || event.description == 'Shipment scheduled to be picked up') {
+            const sdt = event.timestamp.split('T');
+            const d = sdt[0].split('-');
+            const t = sdt[1].split(':');
+            output['shippeddate'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(d[1])).getTime();
+          }
+        });
+        // Try to acquire delivered date
+        output['delivered'] = 0;
+        if (data.shipments[0].status.statusCode == 'delivered') {
+          const sdt = data.shipments[0].status.timestamp.split('T');
           const d = sdt[0].split('-');
           const t = sdt[1].split(':');
-          output['shippeddate'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(d[1])).getTime();
+          output['delivered'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(d[1])).getTime();
         }
-      });
-      // Try to acquire delivered date
-      output['delivered'] = 0;
-      if (data.shipments[0].status.statusCode == 'delivered') {
-        const sdt = data.shipments[0].status.timestamp.split('T');
-        const d = sdt[0].split('-');
-        const t = sdt[1].split(':');
-        output['delivered'] = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]), parseInt(t[0]), parseInt(d[1])).getTime();
+        // Save raw data
+        output['rawdata'] = JSON.stringify(data);
       }
-      // Save raw data
-      output['rawdata'] = JSON.stringify(data);
+    } else {
+      // Return an 'INVALID' result
+      output['country'] = 'JAPAN';
+      output['carrier'] = 'INVALID';
+      output['status'] = output.HTML_status;
+      output['shippeddate'] = 0;
+      output['delivered'] = 0;
+      output.HTML_status = 200; // One 404 is OK, so change to 200 in return
     }
   } else if (output.HTML_status == 404 && last_error == false) {
     last_error = true;
