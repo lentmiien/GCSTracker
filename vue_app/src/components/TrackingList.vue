@@ -26,10 +26,10 @@ export default {
   name: "TrackingList",
   props: ["data"],
   methods: {
-    detailslink: function (tracking) {
+    detailslink: function(tracking) {
       return `/trackingdetails?tracking=${tracking}`;
-    },
-  },
+    }
+  }
 };
 </script>
 

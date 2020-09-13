@@ -1,0 +1,132 @@
+<template>
+  <div class="container-fluid">
+    <div class="row mt-3">
+      <div class="col">
+        <h2>Tracking details for {{ thisdata.tracking }}</h2>
+        <table class="table table-dark table-striped">
+          <tbody>
+            <tr>
+              <th>Added</th>
+              <td>{{ (new Date(thisdata.addeddate)).toDateString() }}</td>
+              <th>Last checked</th>
+              <td>{{ thisdata.lastchecked > 0 ? (new Date(thisdata.lastchecked)).toDateString() : "Not checked..." }}</td>
+            </tr>
+            <tr>
+              <th>Country</th>
+              <td>{{ thisdata.country }}</td>
+              <th>Carrier</th>
+              <td>{{ thisdata.carrier }}</td>
+            </tr>
+            <tr>
+              <th>Shipped</th>
+              <td>{{ (new Date(thisdata.shippeddate)).toDateString() }}</td>
+              <th>Delivered</th>
+              <td>{{ thisdata.delivereddate > 1 ? (new Date(thisdata.delivereddate)).toDateString() : thisdata.delivereddate == 1 ? "Delivered" : "Not delivered..." }}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>{{ thisdata.status }}</td>
+              <th>Done</th>
+              <td>{{ thisdata.done }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div
+          class="alert alert-dark d-flex justify-content-around"
+          role="alert"
+          v-if="thisdata.tracking != 'DELETED'"
+        >
+          <button @click="delivered()" class="btn btn-primary">Set delivered</button>
+          <button @click="returned()" class="btn btn-primary">Set returned</button>
+          <button @click="lost()" class="btn btn-primary">Set lost</button>
+          <button @click="reset()" class="btn btn-secondary">Reset</button>
+          <button @click="remove()" class="btn btn-danger">Delete</button>
+        </div>
+        <table class="table table-dark table-striped mt-3" v-if="thisdata.data.length > 0">
+          <thead>
+            <tr>
+              <th span="col">Time stamp</th>
+              <th span="col">Status</th>
+              <th span="col">Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              :key="index"
+              v-for="(datapoint, index) in JSON.parse(thisdata.data).shipments[0].events"
+            >
+              <td>{{ (new Date(datapoint.timestamp)).toDateString() }}</td>
+              <td>{{ datapoint.description }}</td>
+              <td>{{ typeof datapoint.location === 'string' ? datapoint.location : datapoint.location.address.addressLocality }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre v-else>No data...</pre>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { mapGetters, mapActions } from "vuex";
+
+export default {
+  name: "TrackingDetails",
+  data() {
+    return {
+      thisdata: null
+    };
+  },
+  computed: mapGetters(["allTrackingData"]),
+  methods: {
+    ...mapActions(["updateRecord", "deleteRecord"]),
+    updatedata: function() {
+      this.thisdata = this.allTrackingData.filter(
+        d => d.tracking == this.$route.query.tracking
+      )[0];
+    },
+    delivered: function() {
+      this.updateRecord({
+        action: "delivered",
+        tracking: this.thisdata.tracking
+      });
+      setTimeout(this.updatedata, 1500);
+    },
+    returned: function() {
+      this.updateRecord({
+        action: "returned",
+        tracking: this.thisdata.tracking
+      });
+      setTimeout(this.updatedata, 1500);
+    },
+    lost: function() {
+      this.updateRecord({ action: "lost", tracking: this.thisdata.tracking });
+      setTimeout(this.updatedata, 1500);
+    },
+    reset: function() {
+      this.updateRecord({ action: "reset", tracking: this.thisdata.tracking });
+      setTimeout(this.updatedata, 1500);
+    },
+    remove: function() {
+      this.deleteRecord({ action: "delete", tracking: this.thisdata.tracking });
+      this.thisdata = {
+        tracking: "DELETED",
+        addeddate: 0,
+        lastchecked: 0,
+        country: "DELETED",
+        carrier: "DELETED",
+        shippeddate: 0,
+        delivereddate: 0,
+        status: "DELETED",
+        done: true,
+        data: ""
+      };
+    }
+  },
+  created() {
+    this.updatedata();
+  }
+};
+</script>
+
+<style></style>
