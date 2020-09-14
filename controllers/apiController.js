@@ -362,7 +362,15 @@ exports.get_all = (req, res) => {
   //   }
   // }
 
-  Tracking.findAll()
+  Tracking.findAll({attributes: ['tracking',
+    'carrier',
+    'country',
+    'addeddate',
+    'lastchecked',
+    'status',
+    'shippeddate',
+    'delivereddate',
+    'delivered']})
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
 };
