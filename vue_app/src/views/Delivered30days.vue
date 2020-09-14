@@ -16,19 +16,19 @@ import TrackingList from "../components/TrackingList.vue";
 export default {
   name: "Delivered30days",
   components: {
-    TrackingList
+    TrackingList,
   },
   computed: mapGetters(["allTrackingData"]),
   methods: {
-    doneTrackings30: function() {
+    doneTrackings30: function () {
       return this.allTrackingData.filter(
-        d =>
+        (d) =>
           d.carrier != "INVALID" &&
-          d.done &&
+          d.delivered &&
           d.delivereddate > Date.now() - 2592000000
       );
-    }
-  }
+    },
+  },
 };
 </script>
 

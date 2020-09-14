@@ -51,18 +51,18 @@ export default {
   computed: mapGetters(["allTrackingData"]),
   data() {
     return {
-      countries: []
+      countries: [],
     };
   },
   created() {
     const oneday = 86400000;
     const doneTrackings90 = this.allTrackingData.filter(
-      d =>
+      (d) =>
         d.carrier != "INVALID" &&
-        d.done &&
+        d.delivered &&
         d.delivereddate > Date.now() - 7776000000
     );
-    doneTrackings90.forEach(d => {
+    doneTrackings90.forEach((d) => {
       let index = -1;
       for (let i = 0; i < this.countries.length; i++) {
         if (this.countries[i].country == d.country) {
@@ -81,22 +81,22 @@ export default {
             totaldays: 0,
             averagedays: 0,
             shortest: 9999,
-            longest: 0
+            longest: 0,
           },
           ems: {
             count: 0,
             totaldays: 0,
             averagedays: 0,
             shortest: 9999,
-            longest: 0
+            longest: 0,
           },
           other: {
             count: 0,
             totaldays: 0,
             averagedays: 0,
             shortest: 9999,
-            longest: 0
-          }
+            longest: 0,
+          },
         });
       }
       const shipping_days = (d.delivereddate - d.shippeddate) / oneday;
@@ -160,7 +160,7 @@ export default {
         return 0;
       }
     });
-  }
+  },
 };
 </script>
 

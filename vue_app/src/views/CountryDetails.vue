@@ -125,9 +125,7 @@
           <span style="color: black; background-color: red; padding: 5px; margin-left:2px">Lost</span>
           <span style="color: white; border: 3px solid orange; padding: 5px; margin-left:10px">DHL</span>
           <span style="color: white; border: 3px solid red; padding: 5px; margin-left:2px">EMS</span>
-          <span
-            style="color: white; border: 3px solid steelblue; padding: 5px; margin-left:2px"
-          >Air/SAL</span>
+          <span style="color: white; border: 3px solid white; padding: 5px; margin-left:2px">Air/SAL</span>
         </div>
         <div id="graph_area"></div>
       </div>
@@ -174,7 +172,7 @@ export default {
         0,
         0,
         0
-      ).getTime()
+      ).getTime(),
     };
 
     return {
@@ -190,13 +188,14 @@ export default {
         "September",
         "October",
         "November",
-        "December"
+        "December",
       ],
       data_count: [
         {
           label: "Last 7 days",
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${now -
-            oneday * 7}&shippedto=${now}&country=${country}`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${
+            now - oneday * 7
+          }&shippedto=${now}&country=${country}`,
           start: now - oneday * 7,
           end: now,
           dhl: {
@@ -204,27 +203,28 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "7-30 days ago",
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${now -
-            oneday * 30}&shippedto=${now - oneday * 7}&country=${country}`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${
+            now - oneday * 30
+          }&shippedto=${now - oneday * 7}&country=${country}`,
           start: now - oneday * 30,
           end: now - oneday * 7,
           dhl: {
@@ -232,27 +232,28 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "30-90 days ago",
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${now -
-            oneday * 90}&shippedto=${now - oneday * 30}&country=${country}`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${
+            now - oneday * 90
+          }&shippedto=${now - oneday * 30}&country=${country}`,
           start: now - oneday * 90,
           end: now - oneday * 30,
           dhl: {
@@ -260,27 +261,28 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "More than 90 days ago",
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${0}&shippedto=${now -
-            oneday * 90}&country=${country}`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate,delivereddate,done&shippedfrom=${0}&shippedto=${
+            now - oneday * 90
+          }&country=${country}`,
           start: 0,
           end: now - oneday * 90,
           dhl: {
@@ -288,22 +290,22 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "This month",
@@ -316,22 +318,22 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "Last month",
@@ -344,22 +346,22 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "Last last month",
@@ -372,22 +374,22 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
+            lost: 0,
+          },
         },
         {
           label: "All",
@@ -399,42 +401,45 @@ export default {
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           ems: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
+            lost: 0,
           },
           other: {
             count: 0,
             delivered: 0,
             delayed: 0,
             returned: 0,
-            lost: 0
-          }
-        }
+            lost: 0,
+          },
+        },
       ],
       graph_data: [],
-      countrydata: []
+      countrydata: [],
     };
   },
   methods: {
-    updater: function() {
+    updater: function () {
       this.countrydata = this.allTrackingData.filter(
-        d => d.carrier != "INVALID" && d.country == this.$route.query.country
+        (d) => d.carrier != "INVALID" && d.country == this.$route.query.country
       );
 
-      this.data_count.forEach(uc => {
-        this.countrydata.forEach(d => {
+      this.data_count.forEach((uc) => {
+        this.countrydata.forEach((d) => {
           const update_values = {
-            delivered: d.done && d.delivereddate > 0 ? 1 : 0,
-            delayed: !d.done ? 1 : 0,
+            delivered: d.delivered && d.delivereddate > 0 ? 1 : 0,
+            delayed: !d.delivered ? 1 : 0,
             returned:
-              d.done && d.delivereddate == 0 && d.status == "Returned" ? 1 : 0,
-            lost: d.done && d.delivereddate == 0 && d.status == "Lost" ? 1 : 0
+              d.delivered && d.delivereddate == 0 && d.status == "Returned"
+                ? 1
+                : 0,
+            lost:
+              d.delivered && d.delivereddate == 0 && d.status == "Lost" ? 1 : 0,
           };
           if (d.shippeddate > uc.start && uc.end >= d.shippeddate) {
             if (d.carrier == "DHL") {
@@ -479,7 +484,7 @@ export default {
         uc.other.lost = Math.round(uc.other.lost / denom) / 10;
       });
     },
-    drawgraph: function() {
+    drawgraph: function () {
       // SVG stuff
       let data = this.graph_data;
       // set the dimensions and margins of the graph
@@ -488,10 +493,7 @@ export default {
         height = 500 - margin.top - margin.bottom;
 
       // set the ranges
-      var x = d3
-        .scaleBand()
-        .range([0, width])
-        .padding(0.1);
+      var x = d3.scaleBand().range([0, width]).padding(0.1);
       var y = d3.scaleLinear().range([height, 0]);
 
       // append the svg object to the body of the page
@@ -507,15 +509,15 @@ export default {
 
       // Scale the range of the data in the domains
       x.domain(
-        data.map(function(d, i) {
+        data.map(function (d, i) {
           return i;
         })
       );
       y.domain([
         0,
-        d3.max(data, function(d) {
+        d3.max(data, function (d) {
           return d.shipped + d.shipping + d.delivered + d.returned + d.lost;
-        })
+        }),
       ]);
 
       // append the rectangles for the bar chart
@@ -526,14 +528,14 @@ export default {
         .append("rect")
         .attr("class", "lost")
         .attr("fill", "red")
-        .attr("x", function(d, i) {
+        .attr("x", function (d, i) {
           return x(i);
         })
         .attr("width", x.bandwidth())
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return y(d.shipped + d.shipping + d.delivered + d.returned + d.lost);
         })
-        .attr("height", function(d) {
+        .attr("height", function (d) {
           return (
             height -
             y(d.shipped + d.shipping + d.delivered + d.returned + d.lost)
@@ -547,14 +549,14 @@ export default {
         .append("rect")
         .attr("class", "returned")
         .attr("fill", "orange")
-        .attr("x", function(d, i) {
+        .attr("x", function (d, i) {
           return x(i);
         })
         .attr("width", x.bandwidth())
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return y(d.shipped + d.shipping + d.delivered + d.returned);
         })
-        .attr("height", function(d) {
+        .attr("height", function (d) {
           return height - y(d.shipped + d.shipping + d.delivered + d.returned);
         });
       // append the rectangles for the bar chart
@@ -565,14 +567,14 @@ export default {
         .append("rect")
         .attr("class", "shipped")
         .attr("fill", "steelblue")
-        .attr("x", function(d, i) {
+        .attr("x", function (d, i) {
           return x(i);
         })
         .attr("width", x.bandwidth())
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return y(d.shipped + d.shipping + d.delivered);
         })
-        .attr("height", function(d) {
+        .attr("height", function (d) {
           return height - y(d.shipped + d.shipping + d.delivered);
         });
       // append the rectangles for the bar chart
@@ -583,14 +585,14 @@ export default {
         .append("rect")
         .attr("class", "shipping")
         .attr("fill", "grey")
-        .attr("x", function(d, i) {
+        .attr("x", function (d, i) {
           return x(i);
         })
         .attr("width", x.bandwidth())
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return y(d.shipping + d.delivered);
         })
-        .attr("height", function(d) {
+        .attr("height", function (d) {
           return height - y(d.shipping + d.delivered);
         });
       // append the rectangles for the bar chart
@@ -601,14 +603,14 @@ export default {
         .append("rect")
         .attr("class", "delivered")
         .attr("fill", "green")
-        .attr("x", function(d, i) {
+        .attr("x", function (d, i) {
           return x(i);
         })
         .attr("width", x.bandwidth())
-        .attr("y", function(d) {
+        .attr("y", function (d) {
           return y(d.delivered);
         })
-        .attr("height", function(d) {
+        .attr("height", function (d) {
           return height - y(d.delivered);
         });
 
@@ -624,13 +626,13 @@ export default {
       // Average lines
       y.domain([
         0,
-        d3.max(data, function(d) {
+        d3.max(data, function (d) {
           return d3.max([
             d.shipping_time.dhl.averagedays,
             d.shipping_time.ems.averagedays,
-            d.shipping_time.other.averagedays
+            d.shipping_time.other.averagedays,
           ]);
-        })
+        }),
       ]);
 
       // Add the line
@@ -644,10 +646,10 @@ export default {
           "d",
           d3
             .line()
-            .x(function(d, i) {
+            .x(function (d, i) {
               return x(i);
             })
-            .y(function(d) {
+            .y(function (d) {
               return y(d.shipping_time.dhl.averagedays);
             })
         );
@@ -662,10 +664,10 @@ export default {
           "d",
           d3
             .line()
-            .x(function(d, i) {
+            .x(function (d, i) {
               return x(i);
             })
-            .y(function(d) {
+            .y(function (d) {
               return y(d.shipping_time.ems.averagedays);
             })
         );
@@ -674,16 +676,16 @@ export default {
         .append("path")
         .datum(data)
         .attr("fill", "none")
-        .attr("stroke", "steelblue")
+        .attr("stroke", "white")
         .attr("stroke-width", 3)
         .attr(
           "d",
           d3
             .line()
-            .x(function(d, i) {
+            .x(function (d, i) {
               return x(i);
             })
-            .y(function(d) {
+            .y(function (d) {
               return y(d.shipping_time.other.averagedays);
             })
         );
@@ -691,7 +693,7 @@ export default {
       // add the y Axis
       svg.append("g").call(d3.axisRight(y));
     },
-    grapher: function() {
+    grapher: function () {
       const oneday = 1000 * 60 * 60 * 24;
       const one_week = oneday * 7;
       const today = new Date();
@@ -704,7 +706,7 @@ export default {
         0,
         0
       ).getTime();
-      this.countrydata.forEach(d => {
+      this.countrydata.forEach((d) => {
         let week_start = start_week0;
         let week_end = start_week0 + one_week;
         let counter = 0;
@@ -720,19 +722,19 @@ export default {
                 dhl: {
                   count: 0,
                   totaldays: 0,
-                  averagedays: 0
+                  averagedays: 0,
                 },
                 ems: {
                   count: 0,
                   totaldays: 0,
-                  averagedays: 0
+                  averagedays: 0,
                 },
                 other: {
                   count: 0,
                   totaldays: 0,
-                  averagedays: 0
-                }
-              }
+                  averagedays: 0,
+                },
+              },
             });
           }
 
@@ -796,12 +798,12 @@ export default {
       });
 
       setTimeout(this.drawgraph, 1000);
-    }
+    },
   },
   created() {
     this.updater();
     this.grapher();
-  }
+  },
 };
 </script>
 

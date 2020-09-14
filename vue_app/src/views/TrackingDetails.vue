@@ -27,7 +27,7 @@
               <th>Status</th>
               <td>{{ thisdata.status }}</td>
               <th>Done</th>
-              <td>{{ thisdata.done }}</td>
+              <td>{{ thisdata.delivered }}</td>
             </tr>
           </tbody>
         </table>
@@ -74,40 +74,40 @@ export default {
   name: "TrackingDetails",
   data() {
     return {
-      thisdata: null
+      thisdata: null,
     };
   },
   computed: mapGetters(["allTrackingData"]),
   methods: {
     ...mapActions(["updateRecord", "deleteRecord"]),
-    updatedata: function() {
+    updatedata: function () {
       this.thisdata = this.allTrackingData.filter(
-        d => d.tracking == this.$route.query.tracking
+        (d) => d.tracking == this.$route.query.tracking
       )[0];
     },
-    delivered: function() {
+    delivered: function () {
       this.updateRecord({
         action: "delivered",
-        tracking: this.thisdata.tracking
+        tracking: this.thisdata.tracking,
       });
       setTimeout(this.updatedata, 1500);
     },
-    returned: function() {
+    returned: function () {
       this.updateRecord({
         action: "returned",
-        tracking: this.thisdata.tracking
+        tracking: this.thisdata.tracking,
       });
       setTimeout(this.updatedata, 1500);
     },
-    lost: function() {
+    lost: function () {
       this.updateRecord({ action: "lost", tracking: this.thisdata.tracking });
       setTimeout(this.updatedata, 1500);
     },
-    reset: function() {
+    reset: function () {
       this.updateRecord({ action: "reset", tracking: this.thisdata.tracking });
       setTimeout(this.updatedata, 1500);
     },
-    remove: function() {
+    remove: function () {
       this.deleteRecord({ action: "delete", tracking: this.thisdata.tracking });
       this.thisdata = {
         tracking: "DELETED",
@@ -119,13 +119,13 @@ export default {
         delivereddate: 0,
         status: "DELETED",
         done: true,
-        data: ""
+        data: "",
       };
-    }
+    },
   },
   created() {
     this.updatedata();
-  }
+  },
 };
 </script>
 

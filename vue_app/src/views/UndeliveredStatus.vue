@@ -34,15 +34,15 @@ export default {
   computed: mapGetters(["allTrackingData"]),
   data() {
     return {
-      statuses: []
+      statuses: [],
     };
   },
   created() {
     // Count all statuses
     const notdoneTrackings = this.allTrackingData.filter(
-      d => d.carrier != "INVALID" && !d.done
+      (d) => d.carrier != "INVALID" && !d.delivered
     );
-    notdoneTrackings.forEach(d => {
+    notdoneTrackings.forEach((d) => {
       let index = -1;
       for (let i = 0; i < this.statuses.length; i++) {
         if (this.statuses[i].status == d.status) {
@@ -56,7 +56,7 @@ export default {
           id: index,
           status: d.status,
           downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&status=${d.status}`,
-          count: 0
+          count: 0,
         });
       }
       this.statuses[index].count++;
@@ -75,13 +75,13 @@ export default {
 
     // Replace all 1 count entries with an "other" entry
     const original_length = this.statuses.length;
-    this.statuses = this.statuses.filter(d => d.count > 1);
+    this.statuses = this.statuses.filter((d) => d.count > 1);
     this.statuses.push({
       id: original_length,
       status: "Other",
-      count: original_length - this.statuses.length
+      count: original_length - this.statuses.length,
     });
-  }
+  },
 };
 </script>
 

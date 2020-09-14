@@ -138,7 +138,7 @@ export default {
   name: "Home",
   components: {
     DataStatus,
-    TrackingStatus
+    TrackingStatus,
   },
   data() {
     const now = Date.now();
@@ -171,7 +171,7 @@ export default {
         0,
         0,
         0
-      ).getTime()
+      ).getTime(),
     };
 
     return {
@@ -187,90 +187,96 @@ export default {
         "September",
         "October",
         "November",
-        "December"
+        "December",
       ],
       undelivered_count: [
         {
           label: "Last 7 days",
           link: `/undelivered?start=${now - oneday * 7}&end=${now}`,
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${now -
-            oneday * 7}&shippedto=${now}&done=0`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${
+            now - oneday * 7
+          }&shippedto=${now}&done=0`,
           start: now - oneday * 7,
           end: now,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "7-30 days ago",
-          link: `/undelivered?start=${now - oneday * 30}&end=${now -
-            oneday * 7}`,
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${now -
-            oneday * 30}&shippedto=${now - oneday * 7}&done=0`,
+          link: `/undelivered?start=${now - oneday * 30}&end=${
+            now - oneday * 7
+          }`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${
+            now - oneday * 30
+          }&shippedto=${now - oneday * 7}&done=0`,
           start: now - oneday * 30,
           end: now - oneday * 7,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "30-90 days ago",
-          link: `/undelivered?start=${now - oneday * 90}&end=${now -
-            oneday * 30}`,
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${now -
-            oneday * 90}&shippedto=${now - oneday * 30}&done=0`,
+          link: `/undelivered?start=${now - oneday * 90}&end=${
+            now - oneday * 30
+          }`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${
+            now - oneday * 90
+          }&shippedto=${now - oneday * 30}&done=0`,
           start: now - oneday * 90,
           end: now - oneday * 30,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "More than 90 days ago",
           link: `/undelivered?start=${0}&end=${now - oneday * 90}`,
-          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${0}&shippedto=${now -
-            oneday * 90}&done=0`,
+          downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&shippedfrom=${0}&shippedto=${
+            now - oneday * 90
+          }&done=0`,
           start: 0,
           end: now - oneday * 90,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "This month",
@@ -280,16 +286,16 @@ export default {
           end: now,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "Last month",
@@ -299,16 +305,16 @@ export default {
           end: month_change.this_month_start,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "Last last month",
@@ -318,16 +324,16 @@ export default {
           end: month_change.last_month_start,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
+            rate: 0,
+          },
         },
         {
           label: "All",
@@ -337,52 +343,52 @@ export default {
           end: now,
           dhl: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           ems: {
             count: 0,
-            rate: 0
+            rate: 0,
           },
           other: {
             count: 0,
-            rate: 0
-          }
-        }
-      ]
+            rate: 0,
+          },
+        },
+      ],
     };
   },
   computed: mapGetters(["allTrackingData"]),
   methods: {
-    updater: function() {
+    updater: function () {
       const allTrackings = this.allTrackingData.filter(
-        d => d.carrier != "INVALID"
+        (d) => d.carrier != "INVALID"
       );
       if (allTrackings.length == 0) {
         setTimeout(this.updater, 1000);
       } else {
-        this.undelivered_count.forEach(uc => {
+        this.undelivered_count.forEach((uc) => {
           const total_count = {
             dhl: 0,
             ems: 0,
-            other: 0
+            other: 0,
           };
-          allTrackings.forEach(d => {
+          allTrackings.forEach((d) => {
             if (d.shippeddate > uc.start && uc.end >= d.shippeddate) {
               if (d.carrier == "DHL") {
                 total_count.dhl++;
-                if (d.done == false) {
+                if (d.delivered == false) {
                   uc.dhl.count++;
                 }
               }
               if (d.tracking.indexOf("EM") == 0) {
                 total_count.ems++;
-                if (d.done == false) {
+                if (d.delivered == false) {
                   uc.ems.count++;
                 }
               }
               if (d.tracking.indexOf("EM") != 0 && d.carrier != "DHL") {
                 total_count.other++;
-                if (d.done == false) {
+                if (d.delivered == false) {
                   uc.other.count++;
                 }
               }
@@ -406,11 +412,11 @@ export default {
             ) / 10;
         });
       }
-    }
+    },
   },
   created() {
     this.updater();
-  }
+  },
 };
 </script>
 

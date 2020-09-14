@@ -20,11 +20,11 @@ import TrackingList from "../components/TrackingList.vue";
 export default {
   name: "Undelivered",
   components: {
-    TrackingList
+    TrackingList,
   },
   computed: mapGetters(["allTrackingData"]),
   methods: {
-    filterdata: function() {
+    filterdata: function () {
       let start = 0;
       let end = Date.now();
       if (this.$route.query.start && this.$route.query.end) {
@@ -32,15 +32,15 @@ export default {
         end = parseInt(this.$route.query.end);
       }
       const use_data = this.allTrackingData.filter(
-        d =>
+        (d) =>
           d.carrier != "INVALID" &&
-          d.done == false &&
+          d.delivered == false &&
           d.shippeddate > start &&
           end > d.shippeddate
       );
       return use_data;
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -40,14 +40,14 @@ export default {
   computed: mapGetters(["allTrackingData"]),
   data() {
     return {
-      countries: []
+      countries: [],
     };
   },
   created() {
     const notdoneTrackings = this.allTrackingData.filter(
-      d => d.carrier != "INVALID" && !d.done
+      (d) => d.carrier != "INVALID" && !d.delivered
     );
-    notdoneTrackings.forEach(d => {
+    notdoneTrackings.forEach((d) => {
       let index = -1;
       for (let i = 0; i < this.countries.length; i++) {
         if (this.countries[i].country == d.country) {
@@ -64,7 +64,7 @@ export default {
           downloadlink: `/api/getcsv?columns=tracking,country,status,shippeddate&country=${d.country}&done=0`,
           dhl_count: 0,
           ems_count: 0,
-          other_count: 0
+          other_count: 0,
         });
       }
       if (d.carrier == "DHL") {
@@ -91,7 +91,7 @@ export default {
         return 0;
       }
     });
-  }
+  },
 };
 </script>
 
