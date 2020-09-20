@@ -390,6 +390,55 @@ exports.get_all_countries = (req, res) => {
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
 };
+exports.get_all_shippings = (req, res) => {
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
+  }
+
+  Country.findAll()
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+exports.update_shipping = (req, res) => {
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
+  }
+
+  const [method, country] = req.body.shipping.this_id.split('_');
+
+  const update_data = {};
+  update_data[`${method}_available`] = parseInt(req.body.shipping.value);
+
+  Country.update(update_data, { where: { country_name: country } })
+    .then(() => {
+      Country.findAll({ where: { country_name: country } })
+        .then((result) => res.json(result))
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
+};
 
 // GET get "delivered" or "not delivered" status
 // /get/:startdate/:enddate

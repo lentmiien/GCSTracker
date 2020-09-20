@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 
 import Trackings from './modules/Trackings';
 import Countries from './modules/Countries';
+import Shippings from './modules/Shippings';
 
 Vue.use(Vuex);
 
@@ -13,5 +14,6 @@ export default new Vuex.Store({
   modules: {
     Trackings,
     Countries,
+    Shippings,
   },
 });

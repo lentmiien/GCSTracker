@@ -25,7 +25,8 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Undelivered</a>
+              >Undelivered</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
               <router-link to="/undelivered" class="dropdown-item">All</router-link>
               <router-link to="/undeliveredcountries" class="dropdown-item">Country</router-link>
@@ -41,7 +42,8 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Delivered</a>
+              >Delivered</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
               <router-link to="/delivered30" class="dropdown-item">Last 30 days</router-link>
               <router-link to="/deliveredcountries90" class="dropdown-item">Country (90 days)</router-link>
@@ -56,9 +58,11 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Country</a>
+              >Shipping</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown4">
               <router-link to="/countrylist" class="dropdown-item">Country list</router-link>
+              <router-link to="/shippinglist" class="dropdown-item">Shipping method list</router-link>
             </div>
           </li>
           <li class="nav-item dropdown">
@@ -70,7 +74,8 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Tools</a>
+              >Tools</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown3">
               <router-link to="/addrecords" class="dropdown-item">Add records</router-link>
               <router-link to="/runtimelog" class="dropdown-item">Runtime log</router-link>
@@ -85,7 +90,7 @@
 
 <script>
 export default {
-  name: "Header",
+  name: 'Header',
 };
 </script>
 

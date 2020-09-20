@@ -35,18 +35,19 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-import Header from "./components/Header.vue";
+import { mapActions } from 'vuex';
+import Header from './components/Header.vue';
 
 export default {
-  name: "app",
+  name: 'app',
   components: {
     Header,
   },
-  methods: mapActions(["fetchTrackings", "fetchCountries"]),
+  methods: mapActions(['fetchTrackings', 'fetchCountries', 'fetchShippings']),
   created() {
     this.fetchTrackings();
     this.fetchCountries();
+    this.fetchShippings();
   },
 };
 </script>
