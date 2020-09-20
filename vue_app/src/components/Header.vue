@@ -51,6 +51,20 @@
             <a
               class="nav-link dropdown-toggle"
               href="#"
+              id="navbarDropdown4"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >Country</a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown4">
+              <router-link to="/countrylist" class="dropdown-item">Country list</router-link>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
               id="navbarDropdown3"
               role="button"
               data-toggle="dropdown"
@@ -71,7 +85,7 @@
 
 <script>
 export default {
-  name: "Header"
+  name: "Header",
 };
 </script>
 

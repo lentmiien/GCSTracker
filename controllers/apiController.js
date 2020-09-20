@@ -1,6 +1,6 @@
 // Require necessary database models
 const async = require('async');
-const { Tracking, Op } = require('../sequelize');
+const { Country, Countrylist, Tracking, Op } = require('../sequelize');
 
 // Runtime logger
 const { Log } = require('../runlog');
@@ -348,29 +348,45 @@ exports.api_report = async (req, res) => {
 // For frontend app to aquire all data
 exports.get_all = (req, res) => {
   // If you are a logged in user, then no need to check API key
-  // if (res.locals.role != 'admin') {
-  //   const api_key = req.header('api-key');
-  //   if (api_key == undefined) {
-  //     response['status'] = 'ERROR';
-  //     response['message'] = 'No API key';
-  //     return res.json(response);
-  //   }
-  //   if (api_key != process.env.THIS_API_KEY) {
-  //     response['status'] = 'ERROR';
-  //     response['message'] = 'Invalid API key';
-  //     return res.json(response);
-  //   }
-  // }
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
+  }
 
-  Tracking.findAll({attributes: ['tracking',
-    'carrier',
-    'country',
-    'addeddate',
-    'lastchecked',
-    'status',
-    'shippeddate',
-    'delivereddate',
-    'delivered']})
+  Tracking.findAll({
+    attributes: ['tracking', 'carrier', 'country', 'addeddate', 'lastchecked', 'status', 'shippeddate', 'delivereddate', 'delivered'],
+  })
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+exports.get_all_countries = (req, res) => {
+  // If you are a logged in user, then no need to check API key
+  if (res.locals.role != 'admin') {
+    const api_key = req.header('api-key');
+    if (api_key == undefined) {
+      response['status'] = 'ERROR';
+      response['message'] = 'No API key';
+      return res.json(response);
+    }
+    if (api_key != process.env.THIS_API_KEY) {
+      response['status'] = 'ERROR';
+      response['message'] = 'Invalid API key';
+      return res.json(response);
+    }
+  }
+
+  Countrylist.findAll({
+    attributes: ['country_name', 'country_code', 'baseentry'],
+  })
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
 };

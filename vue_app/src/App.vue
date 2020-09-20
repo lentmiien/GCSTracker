@@ -43,9 +43,10 @@ export default {
   components: {
     Header,
   },
-  methods: mapActions(["fetchTrackings"]),
+  methods: mapActions(["fetchTrackings", "fetchCountries"]),
   created() {
     this.fetchTrackings();
+    this.fetchCountries();
   },
 };
 </script>

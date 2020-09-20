@@ -11,6 +11,7 @@ import CountryDetails from '../views/CountryDetails.vue';
 import Maintenance from '../views/Maintenance.vue';
 import RuntimeLog from '../views/RuntimeLog.vue';
 import AddRecords from '../views/AddRecords.vue';
+import CountryList from '../views/CountryList.vue';
 
 Vue.use(VueRouter);
 
@@ -69,6 +70,11 @@ const routes = [
     path: '/addrecords',
     name: 'AddRecords',
     component: AddRecords,
+  },
+  {
+    path: '/countrylist',
+    name: 'CountryList',
+    component: CountryList,
   },
   {
     path: '/about',
