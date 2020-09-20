@@ -2,6 +2,19 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col">
+        <div class="section" v-if="unknown_countries.length > 0">
+          <h2>Unknown countries</h2>
+          <div class="section_entry" :key="key" v-for="(entry, key) of unknown_countries">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">{{ entry }}</span>
+              </div>
+              <select class="form-control">
+                <option value="entry.country_code + '_' + entry" :key="k" v-for="(e, k) of countryToCode">{{ e.country_name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <table class="table table-dark table-striped">
           <thead style="position:sticky;top:0;background-color:#888888;">
             <tr>
@@ -24,17 +37,39 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "CountryList",
+  name: 'CountryList',
   data() {
     return {
-      countries: [],
+      // countries: {},
+      unknown_countries: [],
     };
   },
-  computed: mapGetters(["countryToCode"]),
+  computed: mapGetters(['countryToCode', 'allTrackingData']),
+  created() {
+    const countrynames = [];
+    this.countryToCode.forEach((d) => {
+      // this.countries[d.country_name] = d.country_code;
+      countrynames.push(d.country_name);
+    });
+    this.allTrackingData.forEach((d) => {
+      if (countrynames.indexOf(d.country) == -1) {
+        this.unknown_countries.push(d.country);
+      }
+    });
+  },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.section {
+  border: 1px solid white;
+  border-radius: 5px;
+}
+.section_entry {
+  margin: 5px;
+  padding: 5px;
+}
+</style>

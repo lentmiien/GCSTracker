@@ -58,7 +58,7 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-              >Shipping</a
+              >Manage</a
             >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown4">
               <router-link to="/countrylist" class="dropdown-item">Country list</router-link>
