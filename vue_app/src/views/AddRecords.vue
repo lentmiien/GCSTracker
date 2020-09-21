@@ -28,7 +28,7 @@ export default {
   name: "AddRecords",
   data() {
     return {
-      records: ""
+      records: "",
     };
   },
   methods: {
@@ -39,17 +39,23 @@ export default {
       // Format data to send (from "records")
       const input_data = this.records.split(/[\r\n]+/); // Split on new line characters
       const send_data = { records: [], timestamp: Date.now() };
-      input_data.forEach(d => {
+      input_data.forEach((d) => {
         if (d.indexOf(",") > 0) {
           const data = d.split(",");
           send_data.records.push({
             id: data[0],
-            country: data[1]
+            country: data[1],
+          });
+        } else if (d.indexOf("\t") > 0) {
+          const data = d.split("\t");
+          send_data.records.push({
+            id: data[2],
+            country: "UNITED STATES",
           });
         } else {
           send_data.records.push({
             id: d,
-            country: "UNKNOWN"
+            country: "UNKNOWN",
           });
         }
       });
@@ -59,8 +65,8 @@ export default {
 
       // Reset input
       this.records = "";
-    }
-  }
+    },
+  },
 };
 </script>
 
