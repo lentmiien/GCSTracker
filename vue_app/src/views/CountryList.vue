@@ -9,8 +9,12 @@
               <div class="input-group-prepend">
                 <span class="input-group-text">{{ entry }}</span>
               </div>
-              <select class="form-control">
-                <option value="entry.country_code + '_' + entry" :key="k" v-for="(e, k) of countryToCode">{{ e.country_name }}</option>
+              <select :id="entry" class="form-control" v-on:change="update(entry)">
+                <option
+                  :value="e.country_code"
+                  :key="k"
+                  v-for="(e, k) of countryToCode"
+                >{{ e.country_name }}</option>
               </select>
             </div>
           </div>
@@ -37,17 +41,17 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from "vuex";
 
 export default {
-  name: 'CountryList',
+  name: "CountryList",
   data() {
     return {
       // countries: {},
       unknown_countries: [],
     };
   },
-  computed: mapGetters(['countryToCode', 'allTrackingData']),
+  computed: mapGetters(["countryToCode", "allTrackingData"]),
   created() {
     const countrynames = [];
     this.countryToCode.forEach((d) => {
@@ -59,6 +63,14 @@ export default {
         this.unknown_countries.push(d.country);
       }
     });
+  },
+  methods: {
+    ...mapActions(["addRecord"]),
+    update: function (this_id) {
+      const element = document.getElementById(this_id);
+      element.style.backgroundColor = "green";
+      this.addRecord({ country_name: this_id, country_code: element.value });
+    },
   },
 };
 </script>

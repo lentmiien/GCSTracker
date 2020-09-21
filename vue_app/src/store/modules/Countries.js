@@ -14,7 +14,7 @@ const actions = {
     const response = await axios.get('/api/getallcountries');
     commit('setCountries', response.data);
   },
-  async addRecords({ commit }, records_to_add) {
+  async addRecord({ commit }, records_to_add) {
     const response = await axios.post('/api/addcountry', records_to_add);
     commit('addCountry', response.data);
   },
