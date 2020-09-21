@@ -91,6 +91,9 @@ exports.api_add = async (req, res) => {
         if (length == 34 && isnum && tracking[i].id.indexOf('420') == 0) {
           valid_entry = true; // AIT
         }
+        if (length == 26 && isnum && tracking[i].id.indexOf('9') == 0) {
+          valid_entry = true; // AIT
+        }
         if (length == 13 && !isnum && tracking[i].id.indexOf('JP') == 11) {
           valid_entry = true; // JP
         }
@@ -124,7 +127,7 @@ exports.api_add = async (req, res) => {
           let carrier = 'DHL';
           if (tracking[i].id.indexOf('JP') == 11) {
             carrier = 'JP';
-          } else if (tracking[i].id.length == 34) {
+          } else if (tracking[i].id.length == 34 || tracking[i].id.length == 26) {
             carrier = 'USPS';
           }
 
