@@ -11,8 +11,7 @@ const { Log } = require('../runlog');
 
 // API routes
 
-// POST add new records
-exports.api_add = async (req, res) => {
+exports.login_check = (req, res, next) => {
   const response = {};
 
   // If you are a logged in user, then no need to check API key
@@ -29,6 +28,13 @@ exports.api_add = async (req, res) => {
       return res.json(response);
     }
   }
+
+  next();
+};
+
+// POST add new records
+exports.api_add = async (req, res) => {
+  const response = {};
 
   // Get new data
   // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp }
@@ -168,154 +174,8 @@ exports.api_add = async (req, res) => {
   );
 };
 
-// Includes country in post request
-exports.api_add_v2 = async (req, res) => {
-  const response = {};
-
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
-  // Get new data
-  // req.body = { records: [ {id: 'rec1', country: 'USA'}, {id: 'rec2', country: 'USA'}, {id: 'rec3', country: 'FRANCE'} ], date: date_timestamp }
-  const tracking = req.body.records.sort((a, b) => {
-    // sort by id
-    if (a.id > b.id) {
-      return -1;
-    } else if (a.id < b.id) {
-      return 1;
-    } else {
-      return 0;
-    }
-  });
-  const records_to_add = [];
-
-  let d = new Date();
-  d = dateToString(d);
-
-  let dts = req.body.date && req.body.date > 0 ? req.body.date : Date.now();
-
-  // Prepare OK response
-  response['status'] = 'OK';
-  response['num_records'] = tracking.length;
-  response['date'] = d;
-  response['added_records'] = 0;
-  response['sal_unreg_empty'] = 0;
-  response['domestic'] = 0;
-  response['duplicates'] = 0;
-  response['existing'] = 0;
-  response['need_check'] = [];
-
-  async.parallel(
-    {
-      tracking: function (callback) {
-        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
-      },
-    },
-    function (err, results) {
-      if (err) {
-        return next(err);
-      }
-      if (!results.tracking) {
-        // No results.
-        res.redirect('/mypage');
-      }
-
-      let lastadded = '';
-      for (let i = 0; i < tracking.length; i++) {
-        let new_entry = true;
-        if (tracking[i].id.indexOf('-') < 0 && tracking[i].id.length > 8) {
-          if (tracking[i].id.indexOf('JP') < 0 && tracking[i].id.length == 12) {
-            // Does not support domestic shipping
-            new_entry = false;
-            response['domestic']++;
-          } else if (/^\d+$/.test(tracking[i].id) == false && tracking[i].id.indexOf('JP') < 0) {
-            // A package shipped to Japan, treat as domestic shipping
-            new_entry = false;
-            response['domestic']++;
-          } else {
-            if (tracking[i].id == lastadded) {
-              new_entry = false;
-              response['duplicates']++;
-              response['status'] = 'WARNING';
-              response['message'] = 'Duplicate records exist';
-              response['need_check'].push(tracking[i].id);
-            } else {
-              for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
-                if (results.tracking[row_i].tracking == tracking[i].id) {
-                  new_entry = false;
-                  response['existing']++;
-                  response['status'] = 'WARNING';
-                  response['message'] = 'Existing records exist';
-                  response['need_check'].push(tracking[i].id);
-                }
-              }
-            }
-          }
-        } else {
-          // Can not track SAL Unregistered
-          new_entry = false;
-          response['sal_unreg_empty']++;
-        }
-        if (new_entry) {
-          lastadded = tracking[i].id;
-          records_to_add.push({
-            tracking: tracking[i].id,
-            carrier: tracking[i].id.indexOf('JP') > 0 ? 'JP' : 'DHL',
-            country: tracking[i].country,
-            //tracking_country: 'JAPAN',
-            addeddate: dts,
-            lastchecked: 0,
-            status: 'Shipped',
-            shippeddate: dts,
-            delivereddate: 0,
-            delivered: '0',
-            data: '',
-          });
-          response['added_records']++;
-        }
-      }
-
-      // Start adding
-      if (records_to_add.length > 0) {
-        Tracking.bulkCreate(records_to_add);
-      }
-
-      // Done!
-      Log('Add API v2', JSON.stringify(response, null, 2));
-      res.json(response);
-    }
-  );
-};
-
 exports.api_report = async (req, res) => {
   const response = { status: 'OK' };
-
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
 
   // Get new data
   // req.body = {
@@ -382,21 +242,6 @@ exports.api_report = async (req, res) => {
 
 // For frontend app to aquire all data
 exports.get_all = (req, res) => {
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
   Tracking.findAll({
     attributes: ['tracking', 'carrier', 'country', 'addeddate', 'lastchecked', 'status', 'shippeddate', 'delivereddate', 'delivered'],
   })
@@ -404,63 +249,33 @@ exports.get_all = (req, res) => {
     .catch((err) => console.log(err));
 };
 exports.get_all_countries = (req, res) => {
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
   Countrylist.findAll({
     attributes: ['country_name', 'country_code', 'baseentry'],
   })
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
 };
+exports.addcountry = (req, res) => {
+  let add_data = {
+    country_name: req.body.country_name,
+    country_code: req.body.country_code,
+    baseentry: false,
+  };
+  Countrylist.create(add_data).then(() => {
+    Countrylist.findAll({
+      where: { country_name: req.body.country_name },
+      attributes: ['country_name', 'country_code', 'baseentry'],
+    })
+      .then((result) => res.json(result))
+      .catch((err) => console.log(err));
+  });
+};
 exports.get_all_shippings = (req, res) => {
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
   Country.findAll()
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
 };
 exports.update_shipping = (req, res) => {
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
   const [method, country] = req.body.shipping.this_id.split('_');
 
   const update_data = {};
@@ -479,21 +294,6 @@ exports.update_shipping = (req, res) => {
 // /get/:startdate/:enddate
 exports.api_get = async (req, res) => {
   const response = {};
-
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
 
   // Verify dates
   let start = req.params.startdate;
@@ -565,22 +365,6 @@ exports.api_get = async (req, res) => {
 
 ///api/csv?getcolumns=tracking,status&s_carrier=INVALID&s_shippedfrom=12345678912
 exports.api_csv = async (req, res) => {
-  // If you are a logged in user, then no need to check API key
-  const response = {};
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
   // Create search query
   const where = {};
   // tracking
