@@ -32,18 +32,26 @@ exports.api_add = async (req, res) => {
 
   // Get new data
   // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp }
-  const tracking = req.body.records.sort();
+  const tracking = req.body.records.sort((a, b) => {
+    if (a.id < b.id) {
+      return -1;
+    } else if (a.id > b.id) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
   const records_to_add = [];
 
   let d = new Date();
   d = dateToString(d);
 
-  let dts = req.body.date && req.body.date > 0 ? req.body.date : Date.now();
+  let dts = req.body.timestamp && req.body.timestamp > 0 ? req.body.timestamp : Date.now();
 
   // Prepare OK response
   response['status'] = 'OK';
   response['num_records'] = tracking.length;
-  response['date'] = d;
+  response['date'] = dateToString(new Date(parseInt(dts)));
   response['added_records'] = 0;
   response['sal_unreg_empty'] = 0;
   response['domestic'] = 0;
@@ -68,47 +76,56 @@ exports.api_add = async (req, res) => {
 
       let lastadded = '';
       for (let i = 0; i < tracking.length; i++) {
+        let valid_entry = false;
         let new_entry = true;
-        if (tracking[i].indexOf('-') < 0 && tracking[i].length > 8) {
-          if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
-            // Does not support domestic shipping
+
+        // Check valid
+        const length = tracking[i].id.length;
+        const isnum = /^\d+$/.test(tracking[i].id);
+        if (length == 34 && isnum && tracking[i].id.indexOf('420') == 0) {
+          valid_entry = true; // AIT
+        }
+        if (length == 13 && !isnum && tracking[i].id.indexOf('JP') == 11) {
+          valid_entry = true; // JP
+        }
+        if (length == 10 && isnum) {
+          valid_entry = true; // DHL
+        }
+
+        // Check existing (only if valid)
+        if (valid_entry) {
+          if (tracking[i].id == lastadded) {
             new_entry = false;
-            response['domestic']++;
-          } else if (/^\d+$/.test(tracking[i]) == false && tracking[i].indexOf('JP') < 0) {
-            // A package shipped to Japan, treat as domestic shipping
-            new_entry = false;
-            response['domestic']++;
+            response['duplicates']++;
+            response['status'] = 'WARNING';
+            response['message'] = 'Duplicate records exist';
+            response['need_check'].push(tracking[i].id);
           } else {
-            if (tracking[i] == lastadded) {
-              new_entry = false;
-              response['duplicates']++;
-              response['status'] = 'WARNING';
-              response['message'] = 'Duplicate records exist';
-              response['need_check'].push(tracking[i]);
-            } else {
-              for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
-                if (results.tracking[row_i].tracking == tracking[i]) {
-                  new_entry = false;
-                  response['existing']++;
-                  response['status'] = 'WARNING';
-                  response['message'] = 'Existing records exist';
-                  response['need_check'].push(tracking[i]);
-                }
+            for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
+              if (results.tracking[row_i].tracking == tracking[i].id) {
+                new_entry = false;
+                response['existing']++;
+                response['status'] = 'WARNING';
+                response['message'] = 'Existing records exist';
+                response['need_check'].push(tracking[i].id);
               }
             }
           }
-        } else {
-          // Can not track SAL Unregistered
-          new_entry = false;
-          response['sal_unreg_empty']++;
         }
-        if (new_entry) {
-          lastadded = tracking[i];
+        if (valid_entry && new_entry) {
+          lastadded = tracking[i].id;
+
+          let carrier = 'DHL';
+          if (tracking[i].id.indexOf('JP') == 11) {
+            carrier = 'JP';
+          } else if (tracking[i].id.length == 34) {
+            carrier = 'USPS';
+          }
+
           records_to_add.push({
-            tracking: tracking[i],
-            carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
-            country: 'UNKNOWN',
-            //tracking_country: 'JAPAN',
+            tracking: tracking[i].id,
+            carrier,
+            country: tracking[i].country,
             addeddate: dts,
             lastchecked: 0,
             status: 'Shipped',
@@ -123,12 +140,30 @@ exports.api_add = async (req, res) => {
 
       // Start adding
       if (records_to_add.length > 0) {
-        Tracking.bulkCreate(records_to_add);
+        Tracking.bulkCreate(records_to_add).then(() => {
+          Tracking.findAll({
+            where: { addeddate: dts },
+            attributes: [
+              'tracking',
+              'carrier',
+              'country',
+              'addeddate',
+              'lastchecked',
+              'status',
+              'shippeddate',
+              'delivereddate',
+              'delivered',
+            ],
+          })
+            .then((result) => res.json(result))
+            .catch((err) => console.log(err));
+        });
+      } else {
+        res.json(response);
       }
 
       // Done!
       Log('Add API', JSON.stringify(response, null, 2));
-      res.json(response);
     }
   );
 };
