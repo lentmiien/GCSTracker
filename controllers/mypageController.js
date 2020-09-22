@@ -1360,6 +1360,11 @@ async function USPS_tracker(tracking) {
   }
   USPS_API_counter.nowtracking = '';
 }
+/////////////// AIT DEBUG ///////////////
+const test_url = `http://production.shippingapis.com/ShippingApi.dll?API=TrackV2&XML=<TrackRequest USERID="${process.env.USPS_API_KEY}"><TrackID ID="92612927005542000000120760"></TrackID></TrackRequest>`;
+const result = await getResultsAPI(test_url, "USPS");
+console.log(result);
+/////////////////////////////////////////
 
 // DHL tracking function
 let DHL_timer = 0;
