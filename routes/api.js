@@ -26,6 +26,7 @@ router.post('/updateshipping', controller.update_shipping);
 router.post('/report', controller.api_report);
 router.get('/get/:startdate/:enddate', controller.api_get);
 router.get('/csv', controller.api_csv);
+router.get('/getlog', controller.get_log);
 
 // Export router
 module.exports = router;

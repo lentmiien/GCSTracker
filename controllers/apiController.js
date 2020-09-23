@@ -3,7 +3,7 @@ const async = require('async');
 const { Country, Countrylist, Tracking, Op } = require('../sequelize');
 
 // Runtime logger
-const { Log } = require('../runlog');
+const { Log, GetLog } = require('../runlog');
 
 //---------------------------------------------//
 // exports.endpoints = (req, res, next) => {}; //
@@ -492,10 +492,16 @@ exports.update_shipping = (req, res) => {
     .catch((err) => console.log(err));
 };
 
+// Acquire saved tracking history
 exports.acquire_tracking_data = (req, res) => {
   Tracking.findAll({ where: { tracking: req.query.tracking } })
     .then((result) => res.json(result[0].data))
     .catch((err) => console.log(err));
+};
+
+// Runtime log
+exports.get_log = (req, res) => {
+  res.json(GetLog());
 };
 
 /********************/

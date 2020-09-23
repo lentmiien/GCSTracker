@@ -46,15 +46,15 @@ export default {
   name: "RuntimeLog",
   data() {
     return {
-      logdata: {}
+      logdata: {},
     };
   },
   created() {
     axios
-      .get("/api/getruntimelog")
-      .then(response => (this.logdata = response.data))
-      .catch(err => console.log(err));
-  }
+      .get("/api/getlog")
+      .then((response) => (this.logdata = response.data))
+      .catch((err) => console.log(err));
+  },
 };
 </script>
 
