@@ -77,6 +77,7 @@
               <router-link to="/addrecords" class="dropdown-item">Add records</router-link>
               <router-link to="/runtimelog" class="dropdown-item">Runtime log</router-link>
               <router-link to="/maintenance" class="dropdown-item">Maintenance</router-link>
+              <router-link to="/analyze" class="dropdown-item">Analyze</router-link>
             </div>
           </li>
         </ul>

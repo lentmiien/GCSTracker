@@ -14,6 +14,7 @@ import AddRecords from '../views/AddRecords.vue';
 import CountryList from '../views/CountryList.vue';
 import ShippingList from '../views/ShippingList.vue';
 import ShippingRatingList from '../views/ShippingRatingList.vue';
+import Analyze from '../views/Analyze.vue';
 
 Vue.use(VueRouter);
 
@@ -87,6 +88,11 @@ const routes = [
     path: '/shippingratinglist',
     name: 'ShippingRatingList',
     component: ShippingRatingList,
+  },
+  {
+    path: '/analyze',
+    name: 'Analyze',
+    component: Analyze,
   },
   {
     path: '/about',
