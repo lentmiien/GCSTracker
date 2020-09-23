@@ -42,7 +42,7 @@
           <button @click="reset()" class="btn btn-secondary">Reset</button>
           <button @click="remove()" class="btn btn-danger">Delete</button>
         </div>
-        <table class="table table-dark table-striped mt-3" v-if="thisdata.data.length > 0">
+        <table class="table table-dark table-striped mt-3" v-if="trackdata">
           <thead>
             <tr>
               <th span="col">Time stamp</th>
@@ -51,10 +51,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              :key="index"
-              v-for="(datapoint, index) in JSON.parse(thisdata.data).shipments[0].events"
-            >
+            <tr :key="index" v-for="(datapoint, index) in trackdata.shipments[0].events">
               <td>{{ (new Date(datapoint.timestamp)).toDateString() }}</td>
               <td>{{ datapoint.description }}</td>
               <td>{{ typeof datapoint.location === 'string' ? datapoint.location : datapoint.location.address.addressLocality }}</td>
@@ -68,6 +65,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
@@ -75,6 +73,7 @@ export default {
   data() {
     return {
       thisdata: null,
+      trackdata: null,
     };
   },
   computed: mapGetters(["allTrackingData"]),
@@ -84,6 +83,14 @@ export default {
       this.thisdata = this.allTrackingData.filter(
         (d) => d.tracking == this.$route.query.tracking
       )[0];
+      axios
+        .get(`/api/gettrackingdata?tracking=${this.$route.query.tracking}`)
+        .then((result) => {
+          if (result.data.length > 0) {
+            this.trackdata = JSON.parse(result.data);
+          }
+        })
+        .catch((err) => console.log(err));
     },
     delivered: function () {
       this.updateRecord({

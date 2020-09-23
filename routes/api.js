@@ -15,6 +15,7 @@ router.all('*', controller.login_check);
 // Tracking
 router.get('/getall', controller.get_all);
 router.post('/add', controller.api_add);
+router.get('/gettrackingdata', controller.acquire_tracking_data);
 // Country list
 router.get('/getallcountries', controller.get_all_countries);
 router.post('/addcountry', controller.addcountry);

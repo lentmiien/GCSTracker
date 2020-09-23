@@ -492,6 +492,12 @@ exports.update_shipping = (req, res) => {
     .catch((err) => console.log(err));
 };
 
+exports.acquire_tracking_data = (req, res) => {
+  Tracking.findAll({ where: { tracking: req.query.tracking } })
+    .then((result) => res.json(result[0].data))
+    .catch((err) => console.log(err));
+};
+
 /********************/
 /* Helper functions */
 /********************/

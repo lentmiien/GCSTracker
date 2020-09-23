@@ -40,26 +40,26 @@
 </template>
 
 <script>
-import axios from "axios";
+//import axios from "axios";
 
 export default {
   name: "TrackingStatus",
   data() {
     return {
-      status: {}
+      status: {},
     };
   },
   methods: {
-    updateStatus: function() {
-      axios
-        .get("/api/getstatus")
-        .then(result => (this.status = result.data))
-        .catch(err => console.log(err));
-    }
+    updateStatus: function () {
+      // axios
+      //   .get("/api/getstatus")
+      //   .then(result => (this.status = result.data))
+      //   .catch(err => console.log(err));
+    },
   },
   created() {
     this.updateStatus();
-  }
+  },
 };
 </script>
 
