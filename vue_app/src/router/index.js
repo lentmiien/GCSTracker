@@ -13,6 +13,7 @@ import RuntimeLog from '../views/RuntimeLog.vue';
 import AddRecords from '../views/AddRecords.vue';
 import CountryList from '../views/CountryList.vue';
 import ShippingList from '../views/ShippingList.vue';
+import ShippingRatingList from '../views/ShippingRatingList.vue';
 
 Vue.use(VueRouter);
 
@@ -81,6 +82,11 @@ const routes = [
     path: '/shippinglist',
     name: 'ShippingList',
     component: ShippingList,
+  },
+  {
+    path: '/shippingratinglist',
+    name: 'ShippingRatingList',
+    component: ShippingRatingList,
   },
   {
     path: '/about',
