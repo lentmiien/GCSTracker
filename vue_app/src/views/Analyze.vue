@@ -83,7 +83,24 @@
               aria-labelledby="headingTwo"
               data-parent="#accordion"
             >
-              <div class="card-body">All packages are delivered within 100 days.</div>
+              <div class="card-body">
+                <table class="table table-dark table-striped">
+                  <thead>
+                    <tr>
+                      <th>Delivered<br>Avg. days</th>
+                      <th>Overall<br>Avg. days</th>
+                      <th>In shipment<br>Avg. days</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ Math.round(display.times.delivered.totaltime_ms / display.times.delivered.number / 100 /*ms +10 after rounding */ / 60 /*sec*/ / 60 /*min*/ / 24 /*hr*/) / 10 }}</td>
+                      <td>{{ Math.round((display.times.delivered.totaltime_ms + display.times.inshipment.totaltime_ms) / (display.times.delivered.number + display.times.inshipment.number) / 100 /*ms +10 after rounding */ / 60 /*sec*/ / 60 /*min*/ / 24 /*hr*/) / 10 }}</td>
+                      <td>{{ Math.round(display.times.inshipment.totaltime_ms / display.times.inshipment.number / 100 /*ms +10 after rounding */ / 60 /*sec*/ / 60 /*min*/ / 24 /*hr*/) / 10 }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           <div class="card text-white bg-dark">
@@ -104,7 +121,26 @@
               aria-labelledby="headingThree"
               data-parent="#accordion"
             >
-              <div class="card-body">100 packages were delivered, 3 lost and 2 are still delayed.</div>
+              <div class="card-body">
+                <table class="table table-dark table-striped">
+                  <thead>
+                    <tr>
+                      <th>Front door delivery</th>
+                      <th>Post box delivery</th>
+                      <th>In person delivery</th>
+                      <th>Unknown delivery</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ display.status.delivered.door }}</td>
+                      <td>{{ display.status.delivered.post_locker }}</td>
+                      <td>{{ display.status.delivered.reception_person }}</td>
+                      <td>{{ display.status.delivered.unknown }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -144,8 +180,24 @@ export default {
         lost: 0,
         total_records: analyze_data.length,
       };
-      const times = {};
-      const status = {};
+      const times = {
+        delivered: {
+          number: 0,
+          totaltime_ms: 0,
+        },
+        inshipment: {
+          number: 0,
+          totaltime_ms: 0,
+        }
+      };
+      const status = {
+        delivered: {
+          door: 0,
+          post_locker: 0,
+          reception_person: 0,
+          unknown: 0,
+        }
+      };
 
       analyze_data.forEach((d) => {
         if (d.delivered) {
@@ -157,9 +209,27 @@ export default {
             }
           } else {
             summary.delivered++;
+            if(d.delivereddate > 1) {
+              times.delivered.number++;
+              times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
+            }
+
+            // Status check
+            if (d.status.indexOf('door') >= 0) {
+              status.delivered.door++;
+            } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0) {
+              status.delivered.post_locker++;
+            } else if (d.status.indexOf('reception') >= 0 || d.status.indexOf('individual') >= 0) {
+              status.delivered.reception_person++;
+            } else {
+              status.delivered.unknown++;
+            }
           }
         } else {
           summary.shipped++;
+          
+          times.inshipment.number++;
+          times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
         }
       });
 
