@@ -7,7 +7,7 @@ const async = require('async');
 const { Tracking, Op } = require('../sequelize');
 
 // Runtime logger
-const { Log, GetLog } = require('../runlog');
+const { SetStatus, Log, GetLog } = require('../runlog');
 
 /*******************
  *
@@ -1185,7 +1185,7 @@ async function TrackAll() {
               [Op.gte]: cutoff,
             },
             lastchecked: {
-              [Op.lte]: Date.now(),// postalnc,// Temporarilly every update (every day)
+              [Op.lte]: Date.now(), // postalnc,// Temporarilly every update (every day)
             },
           },
         }).then((entry) => callback(null, entry));
@@ -1298,6 +1298,7 @@ async function JP_tracker(tracking) {
     }
     // Update progress
     JP_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
+    SetStatus({ jp: { current: i + 1, total, last: item.tracking } });
   }
   JP_scraping_counter.nowtracking = '';
 }
@@ -1357,6 +1358,7 @@ async function USPS_tracker(tracking) {
     }
     // Update progress
     USPS_API_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
+    SetStatus({ usps: { current: i + 1, total, last: item.tracking } });
   }
   USPS_API_counter.nowtracking = '';
 }
@@ -1445,6 +1447,7 @@ async function DHL_tracker(tracking) {
     // Update progress
     DHL_scraping_counter.done = Math.round((10000 * (i + 1)) / total) / 100;
     DHL_API_counter.done = DHL_scraping_counter.done;
+    SetStatus({ dhl: { current: i + 1, total, last: item.tracking } });
   }
   DHL_API_counter.nowtracking = '';
   DHL_scraping_counter.nowtracking = '';
@@ -1454,8 +1457,9 @@ async function DHL_tracker(tracking) {
 async function Automation() {
   counter++;
 
-  // Check if previous tracking is done
-  if (JP_scraping_counter.done == 100 && DHL_scraping_counter.done == 100 && USPS_API_counter.done == 100 && DHL_API_counter.done == 100) {
+  // Check if previous tracking is done -> force tracking
+  if (true) {
+    //JP_scraping_counter.done == 100 && DHL_scraping_counter.done == 100 && USPS_API_counter.done == 100 && DHL_API_counter.done == 100) {
     // Start tracking
     await TrackAll();
     // Repeat once every day at scheduled time

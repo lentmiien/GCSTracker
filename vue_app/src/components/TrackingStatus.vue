@@ -4,34 +4,21 @@
       <h2>Tracking status</h2>
     </div>
     <div class="card-body">
-      <div class="card-text" v-if="status.last_tracked">
-        <div>
-          <b>Last tracked {{ status.last_tracked.count }} records at {{ status.last_tracked.date }}</b>
-        </div>
-        <br />
-        <p :class="{ 'done' : status.JP_scraping_counter.done == 100 }">
-          JP scraping at {{ status.JP_scraping_counter.done }}% done with {{ status.JP_scraping_counter.count }} tracked records.
-          <b
-            v-if="status.JP_scraping_counter.nowtracking.length > 0"
-          >({{ status.JP_scraping_counter.nowtracking }})</b>
+      <div class="card-text" v-if="status.jp">
+        <p :class="{ done: status.jp.current == status.jp.total }">
+          JP tracking at {{ status.jp.current }} of
+          {{ status.jp.total }} records.
+          <i>(Last: {{ status.jp.last }})</i>
         </p>
-        <p :class="{ 'done' : status.DHL_scraping_counter.done == 100 }">
-          DHL scraping at {{ status.DHL_scraping_counter.done }}% done with {{ status.DHL_scraping_counter.count }} tracked records.
-          <b
-            v-if="status.DHL_scraping_counter.nowtracking.length > 0"
-          >({{ status.DHL_scraping_counter.nowtracking }})</b>
+        <p :class="{ done: status.dhl.current == status.dhl.total }">
+          DHL tracking at {{ status.dhl.current }} of
+          {{ status.dhl.total }} records.
+          <i>(Last: {{ status.dhl.last }})</i>
         </p>
-        <p :class="{ 'done' : status.DHL_API_counter.done == 100 }">
-          DHL API at {{ status.DHL_API_counter.done }}% done with {{ status.DHL_API_counter.count }} tracked records.
-          <b
-            v-if="status.DHL_API_counter.nowtracking.length > 0"
-          >({{ status.DHL_API_counter.nowtracking }})</b>
-        </p>
-        <p :class="{ 'done' : status.USPS_API_counter.done == 100 }">
-          USPS API at {{ status.USPS_API_counter.done }}% done with {{ status.USPS_API_counter.count }} tracked records.
-          <b
-            v-if="status.USPS_API_counter.nowtracking.length > 0"
-          >({{ status.USPS_API_counter.nowtracking }})</b>
+        <p :class="{ done: status.usps.current == status.usps.total }">
+          USPS tracking at {{ status.usps.current }} of
+          {{ status.usps.total }} records.
+          <i>(Last: {{ status.usps.last }})</i>
         </p>
       </div>
       <a @click="updateStatus()" class="btn btn-link">Refresh</a>
@@ -40,7 +27,7 @@
 </template>
 
 <script>
-//import axios from "axios";
+import axios from "axios";
 
 export default {
   name: "TrackingStatus",
@@ -51,10 +38,10 @@ export default {
   },
   methods: {
     updateStatus: function () {
-      // axios
-      //   .get("/api/getstatus")
-      //   .then(result => (this.status = result.data))
-      //   .catch(err => console.log(err));
+      axios
+        .get("/api/getlog")
+        .then((response) => (this.status = response.data.tracking))
+        .catch((err) => console.log(err));
     },
   },
   created() {
