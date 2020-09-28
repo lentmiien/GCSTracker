@@ -1185,7 +1185,7 @@ async function TrackAll() {
               [Op.gte]: cutoff,
             },
             lastchecked: {
-              [Op.lte]: postalnc,
+              [Op.lte]: Date.now(),// postalnc,// Temporarilly every update (every day)
             },
           },
         }).then((entry) => callback(null, entry));
