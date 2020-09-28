@@ -6,16 +6,33 @@
         <p>*Tracking number search</p>
         <form @submit="analyze">
           <label for="records1">Records to analyze</label>
-          <textarea name="records1" id="records1" class="form-control" cols="30" rows="10" v-model="records" required></textarea>
+          <textarea
+            name="records1"
+            id="records1"
+            class="form-control"
+            cols="30"
+            rows="10"
+            v-model="records"
+            required
+          ></textarea>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
       </div>
       <div class="col">
         <h1>Label search</h1>
+        <p>*Label search</p>
         <form @submit="analyzelabel">
           <label for="records2">Label to analyze</label>
-          <select name="records2" id="records2" v-model="label" required>
-            <option :key="a.id" value="a.id" v-for="a in grouplabels">{{ a.label }}</option>
+          <select
+            name="records2"
+            id="records2"
+            class="form-control"
+            v-model="label"
+            required
+          >
+            <option :key="a.id" :value="a.id" v-for="a in grouplabels">
+              {{ a.label }}
+            </option>
           </select>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
@@ -34,7 +51,9 @@
                   data-target="#collapseOne"
                   aria-expanded="true"
                   aria-controls="collapseOne"
-                >Summary</button>
+                >
+                  Summary
+                </button>
               </h5>
             </div>
 
@@ -57,18 +76,38 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <td
-                        class="delivered"
-                      >{{ display.summary.delivered }} ({{ Math.round(10000*display.summary.delivered/display.summary.total_records)/100 }}%)</td>
-                      <td
-                        class="delayed"
-                      >{{ display.summary.shipped }} ({{ Math.round(10000*display.summary.shipped/display.summary.total_records)/100 }}%)</td>
-                      <td
-                        class="returned"
-                      >{{ display.summary.returned }} ({{ Math.round(10000*display.summary.returned/display.summary.total_records)/100 }}%)</td>
-                      <td
-                        class="lost"
-                      >{{ display.summary.lost }} ({{ Math.round(10000*display.summary.lost/display.summary.total_records)/100 }}%)</td>
+                      <td class="delivered">
+                        {{ display.summary.delivered }} ({{
+                          Math.round(
+                            (10000 * display.summary.delivered) /
+                              display.summary.total_records
+                          ) / 100
+                        }}%)
+                      </td>
+                      <td class="delayed">
+                        {{ display.summary.shipped }} ({{
+                          Math.round(
+                            (10000 * display.summary.shipped) /
+                              display.summary.total_records
+                          ) / 100
+                        }}%)
+                      </td>
+                      <td class="returned">
+                        {{ display.summary.returned }} ({{
+                          Math.round(
+                            (10000 * display.summary.returned) /
+                              display.summary.total_records
+                          ) / 100
+                        }}%)
+                      </td>
+                      <td class="lost">
+                        {{ display.summary.lost }} ({{
+                          Math.round(
+                            (10000 * display.summary.lost) /
+                              display.summary.total_records
+                          ) / 100
+                        }}%)
+                      </td>
                       <td>{{ display.summary.total_records }}</td>
                     </tr>
                   </tbody>
@@ -85,7 +124,9 @@
                   data-target="#collapseTwo"
                   aria-expanded="false"
                   aria-controls="collapseTwo"
-                >Times</button>
+                >
+                  Times
+                </button>
               </h5>
             </div>
             <div
@@ -98,16 +139,51 @@
                 <table class="table table-dark table-striped">
                   <thead>
                     <tr>
-                      <th>Delivered<br>Avg. days</th>
-                      <th>Overall<br>Avg. days</th>
-                      <th>In shipment<br>Avg. days</th>
+                      <th>Delivered<br />Avg. days</th>
+                      <th>Overall<br />Avg. days</th>
+                      <th>In shipment<br />Avg. days</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>{{ Math.round(display.times.delivered.totaltime_ms / display.times.delivered.number / 100 /*ms +10 after rounding */ / 60 /*sec*/ / 60 /*min*/ / 24 /*hr*/) / 10 }}</td>
-                      <td>{{ Math.round((display.times.delivered.totaltime_ms + display.times.inshipment.totaltime_ms) / (display.times.delivered.number + display.times.inshipment.number) / 100 /*ms +10 after rounding */ / 60 /*sec*/ / 60 /*min*/ / 24 /*hr*/) / 10 }}</td>
-                      <td>{{ Math.round(display.times.inshipment.totaltime_ms / display.times.inshipment.number / 100 /*ms +10 after rounding */ / 60 /*sec*/ / 60 /*min*/ / 24 /*hr*/) / 10 }}</td>
+                      <td>
+                        {{
+                          Math.round(
+                            display.times.delivered.totaltime_ms /
+                              display.times.delivered.number /
+                              100 /*ms +10 after rounding */ /
+                              60 /*sec*/ /
+                              60 /*min*/ /
+                              24 /*hr*/
+                          ) / 10
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          Math.round(
+                            (display.times.delivered.totaltime_ms +
+                              display.times.inshipment.totaltime_ms) /
+                              (display.times.delivered.number +
+                                display.times.inshipment.number) /
+                              100 /*ms +10 after rounding */ /
+                              60 /*sec*/ /
+                              60 /*min*/ /
+                              24 /*hr*/
+                          ) / 10
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          Math.round(
+                            display.times.inshipment.totaltime_ms /
+                              display.times.inshipment.number /
+                              100 /*ms +10 after rounding */ /
+                              60 /*sec*/ /
+                              60 /*min*/ /
+                              24 /*hr*/
+                          ) / 10
+                        }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -123,7 +199,9 @@
                   data-target="#collapseThree"
                   aria-expanded="false"
                   aria-controls="collapseThree"
-                >Status</button>
+                >
+                  Status
+                </button>
               </h5>
             </div>
             <div
@@ -200,7 +278,7 @@ export default {
         inshipment: {
           number: 0,
           totaltime_ms: 0,
-        }
+        },
       };
       const status = {
         delivered: {
@@ -208,7 +286,7 @@ export default {
           post_locker: 0,
           reception_person: 0,
           unknown: 0,
-        }
+        },
       };
 
       analyze_data.forEach((d) => {
@@ -221,17 +299,23 @@ export default {
             }
           } else {
             summary.delivered++;
-            if(d.delivereddate > 1) {
+            if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
             }
 
             // Status check
-            if (d.status.indexOf('door') >= 0) {
+            if (d.status.indexOf("door") >= 0) {
               status.delivered.door++;
-            } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0) {
+            } else if (
+              d.status.indexOf("locker") >= 0 ||
+              d.status.indexOf("mailbox") >= 0
+            ) {
               status.delivered.post_locker++;
-            } else if (d.status.indexOf('reception') >= 0 || d.status.indexOf('individual') >= 0) {
+            } else if (
+              d.status.indexOf("reception") >= 0 ||
+              d.status.indexOf("individual") >= 0
+            ) {
               status.delivered.reception_person++;
             } else {
               status.delivered.unknown++;
@@ -239,7 +323,7 @@ export default {
           }
         } else {
           summary.shipped++;
-          
+
           times.inshipment.number++;
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
         }
@@ -274,7 +358,7 @@ export default {
         inshipment: {
           number: 0,
           totaltime_ms: 0,
-        }
+        },
       };
       const status = {
         delivered: {
@@ -282,7 +366,7 @@ export default {
           post_locker: 0,
           reception_person: 0,
           unknown: 0,
-        }
+        },
       };
 
       analyze_data.forEach((d) => {
@@ -295,17 +379,23 @@ export default {
             }
           } else {
             summary.delivered++;
-            if(d.delivereddate > 1) {
+            if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
             }
 
             // Status check
-            if (d.status.indexOf('door') >= 0) {
+            if (d.status.indexOf("door") >= 0) {
               status.delivered.door++;
-            } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0) {
+            } else if (
+              d.status.indexOf("locker") >= 0 ||
+              d.status.indexOf("mailbox") >= 0
+            ) {
               status.delivered.post_locker++;
-            } else if (d.status.indexOf('reception') >= 0 || d.status.indexOf('individual') >= 0) {
+            } else if (
+              d.status.indexOf("reception") >= 0 ||
+              d.status.indexOf("individual") >= 0
+            ) {
               status.delivered.reception_person++;
             } else {
               status.delivered.unknown++;
@@ -313,7 +403,7 @@ export default {
           }
         } else {
           summary.shipped++;
-          
+
           times.inshipment.number++;
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
         }

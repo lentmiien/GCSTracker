@@ -309,7 +309,7 @@ exports.api_add = async (req, res) => {
   const records_to_add = [];
 
   // Set label
-  const grouplabel = req.body.labelid;
+  const grouplabel = req.body.label;
 
   let d = new Date();
   d = dateToString(d);
@@ -414,7 +414,7 @@ exports.api_add = async (req, res) => {
       if (records_to_add.length > 0) {
         Tracking.bulkCreate(records_to_add).then(() => {
           Tracking.findAll({
-            where: { addeddate: dts },
+            where: { addeddate: dts, lastchecked: 0 },
             attributes: [
               'tracking',
               'carrier',
@@ -425,6 +425,7 @@ exports.api_add = async (req, res) => {
               'shippeddate',
               'delivereddate',
               'delivered',
+              'grouplabel',
             ],
           })
             .then((result) => res.json(result))
@@ -443,7 +444,18 @@ exports.api_add = async (req, res) => {
 // Acquire all tracking data (exclude tracking history due to huge amount of data)
 exports.get_all = (req, res) => {
   Tracking.findAll({
-    attributes: ['tracking', 'carrier', 'country', 'addeddate', 'lastchecked', 'status', 'shippeddate', 'delivereddate', 'delivered', 'grouplabel'],
+    attributes: [
+      'tracking',
+      'carrier',
+      'country',
+      'addeddate',
+      'lastchecked',
+      'status',
+      'shippeddate',
+      'delivereddate',
+      'delivered',
+      'grouplabel',
+    ],
   })
     .then((result) => res.json(result))
     .catch((err) => console.log(err));

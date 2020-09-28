@@ -4,13 +4,29 @@
       <div class="col">
         <form @submit="processForm">
           <label for="records">Records to add</label>
-          <textarea name="records" id="records" class="form-control" cols="30" rows="10" v-model="records" required></textarea>
+          <textarea
+            name="records"
+            id="records"
+            class="form-control"
+            cols="30"
+            rows="10"
+            v-model="records"
+            required
+          ></textarea>
           <label for="date">Shipped date (default: Now)</label>
-          <input type="date" name="date" id="date" class="form-control" v-model="timestamp">
+          <input
+            type="date"
+            name="date"
+            id="date"
+            class="form-control"
+            v-model="timestamp"
+          />
           <label for="label">Group label (default: none)</label>
           <select name="label" id="label" class="form-control" v-model="label">
             <option value="-1">none</option>
-            <option :key="a.id" value="a.id" v-for="a in grouplabels">{{ a.label }}</option>
+            <option :key="a.id" :value="a.id" v-for="a in grouplabels">
+              {{ a.label }}
+            </option>
           </select>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
@@ -39,7 +55,11 @@ export default {
 
       // Format data to send (from "records")
       const input_data = this.records.split(/[\r\n]+/); // Split on new line characters
-      const send_data = { records: [], timestamp: Date.now(), label: parseInt(this.label) };
+      const send_data = {
+        records: [],
+        timestamp: Date.now(),
+        label: parseInt(this.label),
+      };
       input_data.forEach((d) => {
         if (d.indexOf(",") > 0) {
           const data = d.split(",");
@@ -63,9 +83,13 @@ export default {
 
       // Process timestamp (if provided)
       if (this.timestamp.length > 0) {
-        const datedata = this.timestamp.split('-');
-        const datedate = new Date(parseInt(datedata[0]), parseInt(datedata[1]) - 1, parseInt(datedata[2]));
-        send_data.timestamp = datedate.time();
+        const datedata = this.timestamp.split("-");
+        const datedate = new Date(
+          parseInt(datedata[0]),
+          parseInt(datedata[1]) - 1,
+          parseInt(datedata[2])
+        );
+        send_data.timestamp = datedate.getTime();
       }
 
       // Send to server, and update local data
