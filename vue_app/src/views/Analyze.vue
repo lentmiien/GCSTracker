@@ -2,10 +2,21 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col">
-        <h1>Input</h1>
+        <h1>Free search</h1>
+        <p>*Tracking number search</p>
         <form @submit="analyze">
-          <label for="records">Records to analyze</label>
-          <textarea class="form-control" cols="30" rows="10" v-model="records" required></textarea>
+          <label for="records1">Records to analyze</label>
+          <textarea name="records1" id="records1" class="form-control" cols="30" rows="10" v-model="records" required></textarea>
+          <input class="btn btn-primary" type="submit" value="Submit" />
+        </form>
+      </div>
+      <div class="col">
+        <h1>Label search</h1>
+        <form @submit="analyzelabel">
+          <label for="records2">Label to analyze</label>
+          <select name="records2" id="records2" v-model="label" required>
+            <option :key="a.id" value="a.id" v-for="a in grouplabels">{{ a.label }}</option>
+          </select>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
       </div>
@@ -157,10 +168,11 @@ export default {
   data() {
     return {
       records: "",
+      label: "",
       display: undefined,
     };
   },
-  computed: mapGetters(["allTrackingData"]),
+  computed: mapGetters(["allTrackingData", "grouplabels"]),
   methods: {
     analyze(e) {
       e.preventDefault();
@@ -171,6 +183,80 @@ export default {
       // Acquire records
       const analyze_data = this.allTrackingData.filter(
         (d) => input_data.indexOf(d.tracking) >= 0
+      );
+
+      const summary = {
+        delivered: 0,
+        shipped: 0,
+        returned: 0,
+        lost: 0,
+        total_records: analyze_data.length,
+      };
+      const times = {
+        delivered: {
+          number: 0,
+          totaltime_ms: 0,
+        },
+        inshipment: {
+          number: 0,
+          totaltime_ms: 0,
+        }
+      };
+      const status = {
+        delivered: {
+          door: 0,
+          post_locker: 0,
+          reception_person: 0,
+          unknown: 0,
+        }
+      };
+
+      analyze_data.forEach((d) => {
+        if (d.delivered) {
+          if (d.delivereddate == 0) {
+            if (d.status == "returned") {
+              summary.returned++;
+            } else {
+              summary.lost++;
+            }
+          } else {
+            summary.delivered++;
+            if(d.delivereddate > 1) {
+              times.delivered.number++;
+              times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
+            }
+
+            // Status check
+            if (d.status.indexOf('door') >= 0) {
+              status.delivered.door++;
+            } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0) {
+              status.delivered.post_locker++;
+            } else if (d.status.indexOf('reception') >= 0 || d.status.indexOf('individual') >= 0) {
+              status.delivered.reception_person++;
+            } else {
+              status.delivered.unknown++;
+            }
+          }
+        } else {
+          summary.shipped++;
+          
+          times.inshipment.number++;
+          times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
+        }
+      });
+
+      // Process analysis
+      this.display = { summary, times, status };
+    },
+    analyzelabel(e) {
+      e.preventDefault();
+
+      // Format data to send (from "label")
+      const input_data = parseInt(this.label);
+
+      // Acquire records
+      const analyze_data = this.allTrackingData.filter(
+        (d) => d.grouplabel == input_data
       );
 
       const summary = {

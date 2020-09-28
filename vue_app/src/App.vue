@@ -14,11 +14,12 @@ export default {
   components: {
     Header,
   },
-  methods: mapActions(['fetchTrackings', 'fetchCountries', 'fetchShippings']),
+  methods: mapActions(['fetchTrackings', 'fetchCountries', 'fetchShippings', 'fetchGrouplabels']),
   created() {
     this.fetchTrackings();
     this.fetchCountries();
     this.fetchShippings();
+    this.fetchGrouplabels();
   },
 };
 </script>
