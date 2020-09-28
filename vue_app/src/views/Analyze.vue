@@ -256,7 +256,7 @@ export default {
 
       // Acquire records
       const analyze_data = this.allTrackingData.filter(
-        (d) => d.grouplabel == input_data
+        (d) => d.grouplabel === input_data
       );
 
       const summary = {
