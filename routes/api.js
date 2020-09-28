@@ -22,6 +22,9 @@ router.post('/addcountry', controller.addcountry);
 // Shipping methods list
 router.get('/getallshippings', controller.get_all_shippings);
 router.post('/updateshipping', controller.update_shipping);
+// Group label
+router.get('/getallgrouplabels', controller.get_all_grouplabels);
+router.post('/addgrouplabel', controller.addgrouplabel);
 // Other
 router.post('/report', controller.api_report);
 router.get('/get/:startdate/:enddate', controller.api_get);

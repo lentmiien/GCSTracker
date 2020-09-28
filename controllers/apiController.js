@@ -1,6 +1,6 @@
 // Require necessary database models
 const async = require('async');
-const { Country, Countrylist, Tracking, Op } = require('../sequelize');
+const { Country, Countrylist, Tracking, Grouplabel, Op } = require('../sequelize');
 
 // Runtime logger
 const { Log, GetLog } = require('../runlog');
@@ -296,7 +296,7 @@ exports.api_add = async (req, res) => {
   const response = {};
 
   // Get new data
-  // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp }
+  // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp, labelid: #number }
   const tracking = req.body.records.sort((a, b) => {
     if (a.id < b.id) {
       return -1;
@@ -307,6 +307,9 @@ exports.api_add = async (req, res) => {
     }
   });
   const records_to_add = [];
+
+  // Set label
+  const grouplabel = req.body.labelid;
 
   let d = new Date();
   d = dateToString(d);
@@ -401,6 +404,7 @@ exports.api_add = async (req, res) => {
             delivereddate: 0,
             delivered: '0',
             data: '',
+            grouplabel,
           });
           response['added_records']++;
         }
@@ -439,7 +443,7 @@ exports.api_add = async (req, res) => {
 // Acquire all tracking data (exclude tracking history due to huge amount of data)
 exports.get_all = (req, res) => {
   Tracking.findAll({
-    attributes: ['tracking', 'carrier', 'country', 'addeddate', 'lastchecked', 'status', 'shippeddate', 'delivereddate', 'delivered'],
+    attributes: ['tracking', 'carrier', 'country', 'addeddate', 'lastchecked', 'status', 'shippeddate', 'delivereddate', 'delivered', 'grouplabel'],
   })
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
@@ -490,6 +494,24 @@ exports.update_shipping = (req, res) => {
         .catch((err) => console.log(err));
     })
     .catch((err) => console.log(err));
+};
+
+// Acquire all group labels
+exports.get_all_grouplabels = (req, res) => {
+  Grouplabel.findAll()
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+// Add a new group label to DB
+exports.addgrouplabel = (req, res) => {
+  let add_data = { label: req.body.label };
+  Grouplabel.create(add_data).then(() => {
+    Grouplabel.findAll({
+      where: { label: req.body.label },
+    })
+      .then((result) => res.json(result))
+      .catch((err) => console.log(err));
+  });
 };
 
 // Acquire saved tracking history
