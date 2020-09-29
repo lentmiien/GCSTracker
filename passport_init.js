@@ -11,8 +11,8 @@ const users = [
     id: 0,
     username: process.env.USER_NAME,
     role: 'admin',
-    password: process.env.PASSWORD
-  }
+    password: process.env.PASSWORD,
+  },
 ];
 
 // Export variable
@@ -50,7 +50,7 @@ passport.deserializeUser((id, done) => {
 });
 
 router.get('/', (req, res) => res.render('login', { role: 'guest' }));
-router.post('/', passport.authenticate('local', { successRedirect: '/mypage', failureRedirect: '/login' }));
+router.post('/', passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' }));
 
 // Export modules that are required elsewhere
 pp.passport = passport;

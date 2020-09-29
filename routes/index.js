@@ -11,7 +11,7 @@ var controller = require('../controllers/indexController');
 
 router.all('*', controller.checkall);
 
-router.get('/', controller.index);
+//router.get('/', controller.index);
 
 // Export router
 module.exports = router;

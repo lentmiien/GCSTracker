@@ -1,18 +1,19 @@
 // Require necessary database models
 const async = require('async');
-const { Tracking, Op } = require('../sequelize');
+const { Country, Countrylist, Tracking, Grouplabel, Op } = require('../sequelize');
 
 // Runtime logger
-const { Log } = require('../runlog');
+const { Log, GetLog } = require('../runlog');
 
 //---------------------------------------------//
 // exports.endpoints = (req, res, next) => {}; //
 //---------------------------------------------//
 
-// API routes
+/**************/
+/* API routes */
+/**************/
 
-// POST add new records
-exports.api_add = async (req, res) => {
+exports.login_check = (req, res, next) => {
   const response = {};
 
   // If you are a logged in user, then no need to check API key
@@ -30,257 +31,12 @@ exports.api_add = async (req, res) => {
     }
   }
 
-  // Get new data
-  // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp }
-  const tracking = req.body.records.sort();
-  const records_to_add = [];
-
-  let d = new Date();
-  d = dateToString(d);
-
-  let dts = req.body.date && req.body.date > 0 ? req.body.date : Date.now();
-
-  // Prepare OK response
-  response['status'] = 'OK';
-  response['num_records'] = tracking.length;
-  response['date'] = d;
-  response['added_records'] = 0;
-  response['sal_unreg_empty'] = 0;
-  response['domestic'] = 0;
-  response['duplicates'] = 0;
-  response['existing'] = 0;
-  response['need_check'] = [];
-
-  async.parallel(
-    {
-      tracking: function (callback) {
-        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
-      },
-    },
-    function (err, results) {
-      if (err) {
-        return next(err);
-      }
-      if (!results.tracking) {
-        // No results.
-        res.redirect('/mypage');
-      }
-
-      let lastadded = '';
-      for (let i = 0; i < tracking.length; i++) {
-        let new_entry = true;
-        if (tracking[i].indexOf('-') < 0 && tracking[i].length > 8) {
-          if (tracking[i].indexOf('JP') < 0 && tracking[i].length == 12) {
-            // Does not support domestic shipping
-            new_entry = false;
-            response['domestic']++;
-          } else if (/^\d+$/.test(tracking[i]) == false && tracking[i].indexOf('JP') < 0) {
-            // A package shipped to Japan, treat as domestic shipping
-            new_entry = false;
-            response['domestic']++;
-          } else {
-            if (tracking[i] == lastadded) {
-              new_entry = false;
-              response['duplicates']++;
-              response['status'] = 'WARNING';
-              response['message'] = 'Duplicate records exist';
-              response['need_check'].push(tracking[i]);
-            } else {
-              for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
-                if (results.tracking[row_i].tracking == tracking[i]) {
-                  new_entry = false;
-                  response['existing']++;
-                  response['status'] = 'WARNING';
-                  response['message'] = 'Existing records exist';
-                  response['need_check'].push(tracking[i]);
-                }
-              }
-            }
-          }
-        } else {
-          // Can not track SAL Unregistered
-          new_entry = false;
-          response['sal_unreg_empty']++;
-        }
-        if (new_entry) {
-          lastadded = tracking[i];
-          records_to_add.push({
-            tracking: tracking[i],
-            carrier: tracking[i].indexOf('JP') > 0 ? 'JP' : 'DHL',
-            country: 'UNKNOWN',
-            //tracking_country: 'JAPAN',
-            addeddate: dts,
-            lastchecked: 0,
-            status: 'Shipped',
-            shippeddate: dts,
-            delivereddate: 0,
-            delivered: '0',
-            data: '',
-          });
-          response['added_records']++;
-        }
-      }
-
-      // Start adding
-      if (records_to_add.length > 0) {
-        Tracking.bulkCreate(records_to_add);
-      }
-
-      // Done!
-      Log('Add API', JSON.stringify(response, null, 2));
-      res.json(response);
-    }
-  );
+  next();
 };
 
-// Includes country in post request
-exports.api_add_v2 = async (req, res) => {
-  const response = {};
-
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
-  // Get new data
-  // req.body = { records: [ {id: 'rec1', country: 'USA'}, {id: 'rec2', country: 'USA'}, {id: 'rec3', country: 'FRANCE'} ], date: date_timestamp }
-  const tracking = req.body.records.sort((a, b) => {
-    // sort by id
-    if (a.id > b.id) {
-      return -1;
-    } else if (a.id < b.id) {
-      return 1;
-    } else {
-      return 0;
-    }
-  });
-  const records_to_add = [];
-
-  let d = new Date();
-  d = dateToString(d);
-
-  let dts = req.body.date && req.body.date > 0 ? req.body.date : Date.now();
-
-  // Prepare OK response
-  response['status'] = 'OK';
-  response['num_records'] = tracking.length;
-  response['date'] = d;
-  response['added_records'] = 0;
-  response['sal_unreg_empty'] = 0;
-  response['domestic'] = 0;
-  response['duplicates'] = 0;
-  response['existing'] = 0;
-  response['need_check'] = [];
-
-  async.parallel(
-    {
-      tracking: function (callback) {
-        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
-      },
-    },
-    function (err, results) {
-      if (err) {
-        return next(err);
-      }
-      if (!results.tracking) {
-        // No results.
-        res.redirect('/mypage');
-      }
-
-      let lastadded = '';
-      for (let i = 0; i < tracking.length; i++) {
-        let new_entry = true;
-        if (tracking[i].id.indexOf('-') < 0 && tracking[i].id.length > 8) {
-          if (tracking[i].id.indexOf('JP') < 0 && tracking[i].id.length == 12) {
-            // Does not support domestic shipping
-            new_entry = false;
-            response['domestic']++;
-          } else if (/^\d+$/.test(tracking[i].id) == false && tracking[i].id.indexOf('JP') < 0) {
-            // A package shipped to Japan, treat as domestic shipping
-            new_entry = false;
-            response['domestic']++;
-          } else {
-            if (tracking[i].id == lastadded) {
-              new_entry = false;
-              response['duplicates']++;
-              response['status'] = 'WARNING';
-              response['message'] = 'Duplicate records exist';
-              response['need_check'].push(tracking[i].id);
-            } else {
-              for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
-                if (results.tracking[row_i].tracking == tracking[i].id) {
-                  new_entry = false;
-                  response['existing']++;
-                  response['status'] = 'WARNING';
-                  response['message'] = 'Existing records exist';
-                  response['need_check'].push(tracking[i].id);
-                }
-              }
-            }
-          }
-        } else {
-          // Can not track SAL Unregistered
-          new_entry = false;
-          response['sal_unreg_empty']++;
-        }
-        if (new_entry) {
-          lastadded = tracking[i].id;
-          records_to_add.push({
-            tracking: tracking[i].id,
-            carrier: tracking[i].id.indexOf('JP') > 0 ? 'JP' : 'DHL',
-            country: tracking[i].country,
-            //tracking_country: 'JAPAN',
-            addeddate: dts,
-            lastchecked: 0,
-            status: 'Shipped',
-            shippeddate: dts,
-            delivereddate: 0,
-            delivered: '0',
-            data: '',
-          });
-          response['added_records']++;
-        }
-      }
-
-      // Start adding
-      if (records_to_add.length > 0) {
-        Tracking.bulkCreate(records_to_add);
-      }
-
-      // Done!
-      Log('Add API v2', JSON.stringify(response, null, 2));
-      res.json(response);
-    }
-  );
-};
-
+// currently not implemented in vue
 exports.api_report = async (req, res) => {
   const response = { status: 'OK' };
-
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
 
   // Get new data
   // req.body = {
@@ -349,21 +105,6 @@ exports.api_report = async (req, res) => {
 // /get/:startdate/:enddate
 exports.api_get = async (req, res) => {
   const response = {};
-
-  // If you are a logged in user, then no need to check API key
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
 
   // Verify dates
   let start = req.params.startdate;
@@ -435,22 +176,6 @@ exports.api_get = async (req, res) => {
 
 ///api/csv?getcolumns=tracking,status&s_carrier=INVALID&s_shippedfrom=12345678912
 exports.api_csv = async (req, res) => {
-  // If you are a logged in user, then no need to check API key
-  const response = {};
-  if (res.locals.role != 'admin') {
-    const api_key = req.header('api-key');
-    if (api_key == undefined) {
-      response['status'] = 'ERROR';
-      response['message'] = 'No API key';
-      return res.json(response);
-    }
-    if (api_key != process.env.THIS_API_KEY) {
-      response['status'] = 'ERROR';
-      response['message'] = 'Invalid API key';
-      return res.json(response);
-    }
-  }
-
   // Create search query
   const where = {};
   // tracking
@@ -562,7 +287,260 @@ exports.api_csv = async (req, res) => {
   );
 };
 
-// Helper functions
+/**********************/
+/* Frontend app (vue) */
+/**********************/
+
+// POST add new records
+exports.api_add = async (req, res) => {
+  const response = {};
+
+  // Get new data
+  // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp, labelid: #number }
+  const tracking = req.body.records.sort((a, b) => {
+    if (a.id < b.id) {
+      return -1;
+    } else if (a.id > b.id) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  const records_to_add = [];
+
+  // Set label
+  const grouplabel = req.body.label;
+
+  let d = new Date();
+  d = dateToString(d);
+
+  let dts = req.body.timestamp && req.body.timestamp > 0 ? req.body.timestamp : Date.now();
+
+  // Prepare OK response
+  response['status'] = 'OK';
+  response['num_records'] = tracking.length;
+  response['date'] = dateToString(new Date(parseInt(dts)));
+  response['added_records'] = 0;
+  response['sal_unreg_empty'] = 0;
+  response['domestic'] = 0;
+  response['duplicates'] = 0;
+  response['existing'] = 0;
+  response['need_check'] = [];
+
+  async.parallel(
+    {
+      tracking: function (callback) {
+        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
+      },
+    },
+    function (err, results) {
+      if (err) {
+        return next(err);
+      }
+      if (!results.tracking) {
+        // No results.
+        res.redirect('/mypage');
+      }
+
+      let lastadded = '';
+      for (let i = 0; i < tracking.length; i++) {
+        let valid_entry = false;
+        let new_entry = true;
+
+        // Check valid
+        const length = tracking[i].id.length;
+        const isnum = /^\d+$/.test(tracking[i].id);
+        if (length == 34 && isnum && tracking[i].id.indexOf('420') == 0) {
+          valid_entry = true; // AIT
+        }
+        if (length == 26 && isnum && tracking[i].id.indexOf('9') == 0) {
+          valid_entry = true; // AIT
+        }
+        if (length == 13 && !isnum && tracking[i].id.indexOf('JP') == 11) {
+          valid_entry = true; // JP
+        }
+        if (length == 10 && isnum) {
+          valid_entry = true; // DHL
+        }
+
+        // Check existing (only if valid)
+        if (valid_entry) {
+          if (tracking[i].id == lastadded) {
+            new_entry = false;
+            response['duplicates']++;
+            response['status'] = 'WARNING';
+            response['message'] = 'Duplicate records exist';
+            response['need_check'].push(tracking[i].id);
+          } else {
+            for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
+              if (results.tracking[row_i].tracking == tracking[i].id) {
+                new_entry = false;
+                response['existing']++;
+                response['status'] = 'WARNING';
+                response['message'] = 'Existing records exist';
+                response['need_check'].push(tracking[i].id);
+              }
+            }
+          }
+        }
+        if (valid_entry && new_entry) {
+          lastadded = tracking[i].id;
+
+          let carrier = 'DHL';
+          if (tracking[i].id.indexOf('JP') == 11) {
+            carrier = 'JP';
+          } else if (tracking[i].id.length == 34 || tracking[i].id.length == 26) {
+            carrier = 'USPS';
+          }
+
+          records_to_add.push({
+            tracking: tracking[i].id,
+            carrier,
+            country: tracking[i].country,
+            addeddate: dts,
+            lastchecked: 0,
+            status: 'Shipped',
+            shippeddate: dts,
+            delivereddate: 0,
+            delivered: '0',
+            data: '',
+            grouplabel,
+          });
+          response['added_records']++;
+        }
+      }
+
+      // Start adding
+      if (records_to_add.length > 0) {
+        Tracking.bulkCreate(records_to_add).then(() => {
+          Tracking.findAll({
+            where: { addeddate: dts, lastchecked: 0 },
+            attributes: [
+              'tracking',
+              'carrier',
+              'country',
+              'addeddate',
+              'lastchecked',
+              'status',
+              'shippeddate',
+              'delivereddate',
+              'delivered',
+              'grouplabel',
+            ],
+          })
+            .then((result) => res.json(result))
+            .catch((err) => console.log(err));
+        });
+      } else {
+        res.json(response);
+      }
+
+      // Done!
+      Log('Add API', JSON.stringify(response, null, 2));
+    }
+  );
+};
+
+// Acquire all tracking data (exclude tracking history due to huge amount of data)
+exports.get_all = (req, res) => {
+  Tracking.findAll({
+    attributes: [
+      'tracking',
+      'carrier',
+      'country',
+      'addeddate',
+      'lastchecked',
+      'status',
+      'shippeddate',
+      'delivereddate',
+      'delivered',
+      'grouplabel',
+    ],
+  })
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+
+// Acquire all country names
+exports.get_all_countries = (req, res) => {
+  Countrylist.findAll({
+    attributes: ['country_name', 'country_code', 'baseentry'],
+  })
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+// Add a new country name to DB
+exports.addcountry = (req, res) => {
+  let add_data = {
+    country_name: req.body.country_name,
+    country_code: req.body.country_code,
+    baseentry: false,
+  };
+  Countrylist.create(add_data).then(() => {
+    Countrylist.findAll({
+      where: { country_name: req.body.country_name },
+      attributes: ['country_name', 'country_code', 'baseentry'],
+    })
+      .then((result) => res.json(result))
+      .catch((err) => console.log(err));
+  });
+};
+
+// Acquire all data on available shipping methods by country
+exports.get_all_shippings = (req, res) => {
+  Country.findAll()
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+// Update available shipping methods for country
+exports.update_shipping = (req, res) => {
+  const [method, country] = req.body.shipping.this_id.split('_');
+
+  const update_data = {};
+  update_data[`${method}_available`] = parseInt(req.body.shipping.value);
+
+  Country.update(update_data, { where: { country_name: country } })
+    .then(() => {
+      Country.findAll({ where: { country_name: country } })
+        .then((result) => res.json(result))
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
+};
+
+// Acquire all group labels
+exports.get_all_grouplabels = (req, res) => {
+  Grouplabel.findAll()
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
+// Add a new group label to DB
+exports.addgrouplabel = (req, res) => {
+  let add_data = { label: req.body.label };
+  Grouplabel.create(add_data).then(() => {
+    Grouplabel.findAll({
+      where: { label: req.body.label },
+    })
+      .then((result) => res.json(result))
+      .catch((err) => console.log(err));
+  });
+};
+
+// Acquire saved tracking history
+exports.acquire_tracking_data = (req, res) => {
+  Tracking.findAll({ where: { tracking: req.query.tracking } })
+    .then((result) => res.json(result[0].data))
+    .catch((err) => console.log(err));
+};
+
+// Runtime log
+exports.get_log = (req, res) => {
+  res.json(GetLog());
+};
+
+/********************/
+/* Helper functions */
+/********************/
 function dateToString(date) {
   return `${date.getFullYear()}-${date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() + 1)}-${
     date.getDate() > 9 ? date.getDate() : '0' + date.getDate()

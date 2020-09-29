@@ -8,9 +8,10 @@ var session = require('express-session');
 const pp = require('./passport_init');
 
 var indexRouter = require('./routes/index');
-var mypageRouter = require('./routes/mypage');
 var apiRouter = require('./routes/api');
-var countryRouter = require('./routes/country');
+
+// Tracker
+require('./tracking/trackerController');
 
 var app = express();
 
@@ -22,21 +23,22 @@ app.set('view engine', 'pug');
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ limit: '1mb', extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false, cookie: { maxAge: 86400000 } }));
 app.use(pp.passport.initialize());
 app.use(pp.passport.session());
 
 app.use('/', indexRouter);
 app.use('/login', requireNotAuthenticated, pp.router);
-app.use('/mypage', requireAuthenticated, mypageRouter);
-app.use('/country', requireAuthenticated, countryRouter);
+//app.use('/mypage', requireAuthenticated, mypageRouter);
+//app.use('/country', requireAuthenticated, countryRouter);
 app.use('/api', apiRouter);
 
-app.post('/logout', (req, res) => {
-  req.logOut();
-  res.redirect('/');
-});
+// app.post('/logout', (req, res) => {
+//   req.logOut();
+//   res.redirect('/');
+// });
+
+app.use(requireAuthenticated, express.static(path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -63,7 +65,7 @@ function requireAuthenticated(req, res, next) {
 }
 function requireNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-    return res.redirect('/mypage');
+    return res.redirect('/');
   }
   next();
 }
