@@ -187,6 +187,7 @@
                     </tr>
                   </tbody>
                 </table>
+                <div id="graph_area"></div>
               </div>
             </div>
           </div>
@@ -265,6 +266,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+import * as d3 from "d3";
 
 export default {
   name: "Analyze",
@@ -277,6 +279,71 @@ export default {
   },
   computed: mapGetters(["allTrackingData", "grouplabels"]),
   methods: {
+    drawgraph: function () {
+      // Clear previous graph
+      if (document.getElementById("graph_area")) {
+        document.getElementById("graph_area").innerHTML = "";
+      }
+
+      /*
+      Data source X: this.display.times.delivered.histogram.date_ts // timestamp in ms
+      Data source Y: this.display.times.delivered.histogram.count   // integer count
+      */
+      // SVG stuff
+      // set the dimensions and margins of the graph
+      var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+      // set the ranges
+      var x = d3
+        .scaleTime()
+        .domain([
+          new Date(d3.min(this.display.times.delivered.histogram.date_ts)),
+          new Date(d3.max(this.display.times.delivered.histogram.date_ts)),
+        ])
+        .range([0, width]);
+      var y = d3
+        .scaleLinear()
+        .domain([0, d3.max(this.display.times.delivered.histogram.count)])
+        .range([height, 0]);
+
+      // append the svg object to the body of the page
+      // append a 'group' element to 'svg'
+      // moves the 'group' element to the top left margin
+      var svg = d3
+        .select("#graph_area")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // append the rectangles for the bar chart
+      svg
+        .selectAll(".histbar")
+        .data(this.display.times.delivered.histogram.date_ts)
+        .enter()
+        .append("rect")
+        .attr("class", "histbar")
+        .attr("fill", "steelblue")
+        .attr("x", (d) => x(d))
+        .attr("width", 10)
+        .attr("y", (d, i) => y(this.display.times.delivered.histogram.count[i]))
+        .attr(
+          "height",
+          (d, i) => height - y(this.display.times.delivered.histogram.count[i])
+        );
+
+      // add the x Axis
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      // add the y Axis
+      svg.append("g").call(d3.axisLeft(y));
+    },
     analyze(e) {
       e.preventDefault();
 
@@ -299,6 +366,10 @@ export default {
         delivered: {
           number: 0,
           totaltime_ms: 0,
+          histogram: {
+            date_ts: [],
+            count: [],
+          },
         },
         inshipment: {
           number: 0,
@@ -333,6 +404,20 @@ export default {
             if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
+
+              const date = new Date(d.delivereddate);
+              const d_ts = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+              ).getTime();
+              const index = times.delivered.histogram.date_ts.indexOf(d_ts);
+              if (index == -1) {
+                times.delivered.histogram.date_ts.push(d_ts);
+                times.delivered.histogram.count.push(1);
+              } else {
+                times.delivered.histogram.count[index]++;
+              }
             }
 
             // Status check
@@ -377,7 +462,8 @@ export default {
             d.status.indexOf("in transit to the next facility") >= 0 ||
             d.status.indexOf("arrived at the hub") >= 0 ||
             d.status.indexOf("forwarded to a different") >= 0 ||
-            d.status.indexOf("arrived at the Post Office") >= 0
+            d.status.indexOf("arrived at the Post Office") >= 0 ||
+            d.status == "Shipped"
           ) {
             status.inshipment.in_tansit++;
           } else if (
@@ -395,6 +481,9 @@ export default {
 
       // Process analysis
       this.display = { summary, times, status };
+
+      // Display graphs
+      setTimeout(this.drawgraph, 1000);
     },
     analyzelabel(e) {
       e.preventDefault();
@@ -418,6 +507,10 @@ export default {
         delivered: {
           number: 0,
           totaltime_ms: 0,
+          histogram: {
+            date_ts: [],
+            count: [],
+          },
         },
         inshipment: {
           number: 0,
@@ -430,6 +523,12 @@ export default {
           post_locker: 0,
           reception_person: 0,
           unknown: 0,
+        },
+        inshipment: {
+          prepare_shipping: 0,
+          in_tansit: 0,
+          delivery_attempt_await_pickup: 0,
+          other: 0,
         },
       };
 
@@ -446,18 +545,38 @@ export default {
             if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
+
+              const date = new Date(d.delivereddate);
+              const d_ts = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+              ).getTime();
+              const index = times.delivered.histogram.date_ts.indexOf(d_ts);
+              if (index == -1) {
+                times.delivered.histogram.date_ts.push(d_ts);
+                times.delivered.histogram.count.push(1);
+              } else {
+                times.delivered.histogram.count[index]++;
+              }
             }
 
             // Status check
-            if (d.status.indexOf("door") >= 0) {
+            if (
+              d.status.indexOf("door") >= 0 ||
+              d.status.indexOf("garage") >= 0
+            ) {
               status.delivered.door++;
             } else if (
               d.status.indexOf("locker") >= 0 ||
-              d.status.indexOf("mailbox") >= 0
+              d.status.indexOf("mailbox") >= 0 ||
+              d.status.indexOf("PO Box") >= 0
             ) {
               status.delivered.post_locker++;
             } else if (
               d.status.indexOf("reception") >= 0 ||
+              d.status.indexOf("neighbor") >= 0 ||
+              d.status.indexOf("picked up at") >= 0 ||
               d.status.indexOf("individual") >= 0
             ) {
               status.delivered.reception_person++;
@@ -470,11 +589,42 @@ export default {
 
           times.inshipment.number++;
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
+
+          // Status check
+          if (
+            d.status.indexOf("label has been prepared") >= 0 ||
+            d.status.indexOf("shipping partner facility") >= 0
+          ) {
+            status.inshipment.prepare_shipping++;
+          } else if (
+            d.status.indexOf("has not been updated") >= 0 ||
+            d.status.indexOf("on its way to the destination") >= 0 ||
+            d.status.indexOf("in transit to the destination") >= 0 ||
+            d.status.indexOf("in transit to the next facility") >= 0 ||
+            d.status.indexOf("arrived at the hub") >= 0 ||
+            d.status.indexOf("forwarded to a different") >= 0 ||
+            d.status.indexOf("arrived at the Post Office") >= 0 ||
+            d.status == "Shipped"
+          ) {
+            status.inshipment.in_tansit++;
+          } else if (
+            d.status.indexOf("attempted to deliver") >= 0 ||
+            d.status.indexOf("delivery attempt") >= 0 ||
+            d.status.indexOf("is being held at") >= 0 ||
+            d.status.indexOf("ready for pickup") >= 0
+          ) {
+            status.inshipment.delivery_attempt_await_pickup++;
+          } else {
+            status.inshipment.other++;
+          }
         }
       });
 
       // Process analysis
       this.display = { summary, times, status };
+
+      // Display graphs
+      setTimeout(this.drawgraph, 1000);
     },
   },
 };
