@@ -62,7 +62,7 @@ typings/
 
 # do_not_push folder
 do_not_push/
-public/
+#public/
 
 # vue ignore
 .DS_Store
