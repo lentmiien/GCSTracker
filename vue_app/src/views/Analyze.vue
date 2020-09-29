@@ -211,6 +211,7 @@
               data-parent="#accordion"
             >
               <div class="card-body">
+                <h2>Delivered statuses</h2>
                 <table class="table table-dark table-striped">
                   <thead>
                     <tr>
@@ -226,6 +227,30 @@
                       <td>{{ display.status.delivered.post_locker }}</td>
                       <td>{{ display.status.delivered.reception_person }}</td>
                       <td>{{ display.status.delivered.unknown }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h2>In shipment statuses</h2>
+                <table class="table table-dark table-striped">
+                  <thead>
+                    <tr>
+                      <th>Prepare shipment</th>
+                      <th>In transit</th>
+                      <th>At post office</th>
+                      <th>Other</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ display.status.inshipment.prepare_shipping }}</td>
+                      <td>{{ display.status.inshipment.in_tansit }}</td>
+                      <td>
+                        {{
+                          display.status.inshipment
+                            .delivery_attempt_await_pickup
+                        }}
+                      </td>
+                      <td>{{ display.status.inshipment.other }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -287,6 +312,12 @@ export default {
           reception_person: 0,
           unknown: 0,
         },
+        inshipment: {
+          prepare_shipping: 0,
+          in_tansit: 0,
+          delivery_attempt_await_pickup: 0,
+          other: 0,
+        },
       };
 
       analyze_data.forEach((d) => {
@@ -305,15 +336,21 @@ export default {
             }
 
             // Status check
-            if (d.status.indexOf("door") >= 0) {
+            if (
+              d.status.indexOf("door") >= 0 ||
+              d.status.indexOf("garage") >= 0
+            ) {
               status.delivered.door++;
             } else if (
               d.status.indexOf("locker") >= 0 ||
-              d.status.indexOf("mailbox") >= 0
+              d.status.indexOf("mailbox") >= 0 ||
+              d.status.indexOf("PO Box") >= 0
             ) {
               status.delivered.post_locker++;
             } else if (
               d.status.indexOf("reception") >= 0 ||
+              d.status.indexOf("neighbor") >= 0 ||
+              d.status.indexOf("picked up at") >= 0 ||
               d.status.indexOf("individual") >= 0
             ) {
               status.delivered.reception_person++;
@@ -326,6 +363,33 @@ export default {
 
           times.inshipment.number++;
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
+
+          // Status check
+          if (
+            d.status.indexOf("label has been prepared") >= 0 ||
+            d.status.indexOf("shipping partner facility") >= 0
+          ) {
+            status.inshipment.prepare_shipping++;
+          } else if (
+            d.status.indexOf("has not been updated") >= 0 ||
+            d.status.indexOf("on its way to the destination") >= 0 ||
+            d.status.indexOf("in transit to the destination") >= 0 ||
+            d.status.indexOf("in transit to the next facility") >= 0 ||
+            d.status.indexOf("arrived at the hub") >= 0 ||
+            d.status.indexOf("forwarded to a different") >= 0 ||
+            d.status.indexOf("arrived at the Post Office") >= 0
+          ) {
+            status.inshipment.in_tansit++;
+          } else if (
+            d.status.indexOf("attempted to deliver") >= 0 ||
+            d.status.indexOf("delivery attempt") >= 0 ||
+            d.status.indexOf("is being held at") >= 0 ||
+            d.status.indexOf("ready for pickup") >= 0
+          ) {
+            status.inshipment.delivery_attempt_await_pickup++;
+          } else {
+            status.inshipment.other++;
+          }
         }
       });
 
