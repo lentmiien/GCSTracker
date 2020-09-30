@@ -216,10 +216,10 @@
                 <table class="table table-dark table-striped">
                   <thead>
                     <tr>
-                      <th>Front door delivery</th>
-                      <th>Post box delivery</th>
-                      <th>In person delivery</th>
-                      <th>Unknown delivery</th>
+                      <th>Left at place</th>
+                      <th>Post box</th>
+                      <th>In person</th>
+                      <th>Unknown</th>
                     </tr>
                   </thead>
                   <tbody>
