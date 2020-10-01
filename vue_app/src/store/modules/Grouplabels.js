@@ -13,7 +13,7 @@ const actions = {
     const response = await axios.get('/api/getallGrouplabels');
     commit('setGrouplabels', response.data);
   },
-  async addRecord({ commit }, records_to_add) {
+  async addLabel({ commit }, records_to_add) {
     const response = await axios.post('/api/addgrouplabel', records_to_add);
     commit('addGrouplabel', response.data);
   },

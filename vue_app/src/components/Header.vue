@@ -25,11 +25,18 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Undelivered</a>
+              >Undelivered</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
-              <router-link to="/undelivered" class="dropdown-item">All</router-link>
-              <router-link to="/undeliveredcountries" class="dropdown-item">Country</router-link>
-              <router-link to="/undeliveredstatus" class="dropdown-item">Status</router-link>
+              <router-link to="/undelivered" class="dropdown-item"
+                >All</router-link
+              >
+              <router-link to="/undeliveredcountries" class="dropdown-item"
+                >Country</router-link
+              >
+              <router-link to="/undeliveredstatus" class="dropdown-item"
+                >Status</router-link
+              >
             </div>
           </li>
           <li class="nav-item dropdown">
@@ -41,10 +48,15 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Delivered</a>
+              >Delivered</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
-              <router-link to="/delivered30" class="dropdown-item">Last 30 days</router-link>
-              <router-link to="/deliveredcountries90" class="dropdown-item">Country (90 days)</router-link>
+              <router-link to="/delivered30" class="dropdown-item"
+                >Last 30 days</router-link
+              >
+              <router-link to="/deliveredcountries90" class="dropdown-item"
+                >Country (90 days)</router-link
+              >
             </div>
           </li>
           <li class="nav-item dropdown">
@@ -56,11 +68,21 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Manage</a>
+              >Manage</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown4">
-              <router-link to="/countrylist" class="dropdown-item">Country list</router-link>
-              <router-link to="/shippinglist" class="dropdown-item">Shipping method list</router-link>
-              <router-link to="/shippingratinglist" class="dropdown-item">Shipping rating list</router-link>
+              <router-link to="/countrylist" class="dropdown-item"
+                >Country list</router-link
+              >
+              <router-link to="/shippinglist" class="dropdown-item"
+                >Shipping method list</router-link
+              >
+              <router-link to="/shippingratinglist" class="dropdown-item"
+                >Shipping rating list</router-link
+              >
+              <router-link to="/labels" class="dropdown-item"
+                >Group labels</router-link
+              >
             </div>
           </li>
           <li class="nav-item dropdown">
@@ -72,12 +94,21 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-            >Tools</a>
+              >Tools</a
+            >
             <div class="dropdown-menu" aria-labelledby="navbarDropdown3">
-              <router-link to="/addrecords" class="dropdown-item">Add records</router-link>
-              <router-link to="/runtimelog" class="dropdown-item">Runtime log</router-link>
-              <router-link to="/maintenance" class="dropdown-item">Maintenance</router-link>
-              <router-link to="/analyze" class="dropdown-item">Analyze</router-link>
+              <router-link to="/addrecords" class="dropdown-item"
+                >Add records</router-link
+              >
+              <router-link to="/runtimelog" class="dropdown-item"
+                >Runtime log</router-link
+              >
+              <router-link to="/maintenance" class="dropdown-item"
+                >Maintenance</router-link
+              >
+              <router-link to="/analyze" class="dropdown-item"
+                >Analyze</router-link
+              >
             </div>
           </li>
         </ul>
