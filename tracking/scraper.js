@@ -2,7 +2,7 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 
 // Runtime logger
-const { Log } = require('./runlog');
+const { Log } = require('../runlog');
 
 let HTML_status;
 let HTML_statusText;

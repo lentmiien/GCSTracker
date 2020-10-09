@@ -8,9 +8,10 @@ var session = require('express-session');
 const pp = require('./passport_init');
 
 var indexRouter = require('./routes/index');
-var mypageRouter = require('./routes/mypage');
 var apiRouter = require('./routes/api');
-//var countryRouter = require('./routes/country');
+
+// Tracker
+require('./tracking/trackerController');
 
 var app = express();
 

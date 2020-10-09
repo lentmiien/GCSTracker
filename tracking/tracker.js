@@ -2,7 +2,7 @@ const axios = require('axios');
 var parseString = require('xml2js').parseString;
 
 // Runtime logger
-const { Log } = require('./runlog');
+const { Log } = require('../runlog');
 
 const fetchData = async (siteUrl) => {
   let data = {};
