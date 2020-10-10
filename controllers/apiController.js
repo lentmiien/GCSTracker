@@ -532,6 +532,11 @@ exports.acquire_tracking_data = (req, res) => {
     .then((result) => res.json(result[0].data))
     .catch((err) => console.log(err));
 };
+exports.acquire_tracking_data_batch = (req, res) => {
+  Tracking.findAll({ where: { delivered: 0, grouplabel: req.query.grouplabel } })
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+};
 
 // Runtime log
 exports.get_log = (req, res) => {

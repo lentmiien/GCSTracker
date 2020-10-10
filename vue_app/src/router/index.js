@@ -16,6 +16,7 @@ import ShippingList from '../views/ShippingList.vue';
 import ShippingRatingList from '../views/ShippingRatingList.vue';
 import Analyze from '../views/Analyze.vue';
 import Labels from '../views/Labels.vue';
+import Alert from '../views/Alert.vue';
 
 Vue.use(VueRouter);
 
@@ -94,6 +95,11 @@ const routes = [
     path: '/analyze',
     name: 'Analyze',
     component: Analyze,
+  },
+  {
+    path: '/alert',
+    name: 'Alert',
+    component: Alert,
   },
   {
     path: '/labels',
