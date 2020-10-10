@@ -69,11 +69,13 @@ export default {
             result.data.forEach((d) => {
               const history = d.data.length > 0 ? JSON.parse(d.data) : undefined;
               let latest = 0;
-              history.shipments[0].events.forEach(event => {
-                if (event.timestamp > latest) {
-                  latest = event.timestamp;
-                }
-              });
+              if (history) {
+                history.shipments[0].events.forEach(event => {
+                  if (event.timestamp > latest) {
+                    latest = event.timestamp;
+                  }
+                });
+              }
               if (
                 d.data.indexOf("deliv") >= 0 &&
                 (d.data.indexOf("attempt") >= 0 ||
