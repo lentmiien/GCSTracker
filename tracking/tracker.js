@@ -126,7 +126,7 @@ const getResultsAPI = async (siteUrl, carrier) => {
       }
       // Try to acquire delivered date
       output['delivered'] = 0;
-      if (output['status'].indexOf('Your item was delivered') == 0 || output['status'].indexOf('Your item has been delivered') == 0) {
+      if (output['status'].indexOf('Your item was delivered') == 0 || output['status'].indexOf('Your item has been delivered') == 0 || output['status'].indexOf('Your item was picked up') == 0) {
         const _on_split = output['status'].split(' on ');
         const data_parts = _on_split[1].split(', ');
         const first_parts = data_parts[0].split(' ');
