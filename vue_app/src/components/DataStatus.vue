@@ -20,6 +20,13 @@
     <div v-else class="card-body">
       <h2>Loading...</h2>
     </div>
+    <div class="input-group mb-3">
+      <input class="form-control" type="text" v-model="tracking" placeholder="tracking number">
+      <div class="input-group-append">
+        <router-link class="btn btn-primary" :to="'/trackingdetails?tracking='+tracking">Check</router-link>
+      </div>
+    </div>
+    <a href="/" class="btn btn-link mb-3">Refresh data</a>
   </div>
 </template>
 
@@ -85,6 +92,11 @@ export default {
       return Math.round((100 * total_time) / count) / 100;
     },
   },
+  data() {
+    return {
+      tracking: ''
+    };
+  }
 };
 </script>
 

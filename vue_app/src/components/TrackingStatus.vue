@@ -21,7 +21,7 @@
           <i>(Last: {{ status.usps.last }})</i>
         </p>
       </div>
-      <a @click="updateStatus()" class="btn btn-link">Refresh</a>
+      <a @click="updateStatus()" class="btn btn-link">Refresh tracking</a>
     </div>
   </div>
 </template>
