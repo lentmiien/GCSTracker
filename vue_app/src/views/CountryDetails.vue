@@ -648,11 +648,11 @@ export default {
             });
           }
 
-          if (d.status == 'Returned') {
+          if (d.status == 'returned') {
             if (d.shippeddate >= week_start && d.shippeddate < week_end) {
               this.graph_data[counter].returned++;
             }
-          } else if (d.status == 'Lost') {
+          } else if (d.status == 'lost') {
             if (d.shippeddate >= week_start && d.shippeddate < week_end) {
               this.graph_data[counter].lost++;
             }
