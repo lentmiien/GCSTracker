@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="row mt-3">
-      <div class="col">
+      <div class="col" v-if="thisdata != null">
         <h2>Tracking details for {{ thisdata.tracking }}</h2>
         <table class="table table-dark table-striped">
           <tbody>
@@ -64,6 +64,9 @@
         </table>
         <pre v-else>No data...</pre>
       </div>
+      <div class="col" v-else>
+        <h2>No tracking number...</h2>
+      </div>
     </div>
   </div>
 </template>
@@ -84,17 +87,20 @@ export default {
   methods: {
     ...mapActions(["updateRecord", "deleteRecord"]),
     updatedata: function () {
-      this.thisdata = this.allTrackingData.filter(
+      const sresult = this.allTrackingData.filter(
         (d) => d.tracking == this.$route.query.tracking
-      )[0];
-      axios
-        .get(`/api/gettrackingdata?tracking=${this.$route.query.tracking}`)
-        .then((result) => {
-          if (result.data.length > 0) {
-            this.trackdata = JSON.parse(result.data);
-          }
-        })
-        .catch((err) => console.log(err));
+      );
+      if (sresult.length > 0) {
+        this.thisdata = sresult[0];
+        axios
+          .get(`/api/gettrackingdata?tracking=${this.$route.query.tracking}`)
+          .then((result) => {
+            if (result.data.length > 0) {
+              this.trackdata = JSON.parse(result.data);
+            }
+          })
+          .catch((err) => console.log(err));
+      }
     },
     delivered: function () {
       const delivered_date = document.getElementById('delivereddate').value;
@@ -174,7 +180,9 @@ export default {
     },
   },
   created() {
-    this.updatedata();
+    if (this.$route.query.tracking.length > 0) {
+      this.updatedata();
+    }
   },
 };
 </script>

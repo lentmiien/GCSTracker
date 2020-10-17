@@ -595,7 +595,7 @@ exports.addgrouplabel = (req, res) => {
 // Acquire saved tracking history
 exports.acquire_tracking_data = (req, res) => {
   Tracking.findAll({ where: { tracking: req.query.tracking } })
-    .then((result) => res.json(result[0].data))
+    .then((result) => result.length >= 1 ? res.json(result[0].data) : res.json({error: 'No data...'}))
     .catch((err) => console.log(err));
 };
 exports.acquire_tracking_data_batch = (req, res) => {
