@@ -461,6 +461,72 @@ exports.get_all = (req, res) => {
     .catch((err) => console.log(err));
 };
 
+// Update singel record
+exports.update_tracking = (req, res) => {
+  if(req.body.action) {
+    const update_data = {};
+    if (req.body.action.country.length > 0) {
+      update_data['country'] = req.body.action.country;
+    }
+    if (req.body.action.carrier.length > 0) {
+      update_data['carrier'] = req.body.action.carrier;
+    }
+    if (req.body.action.shippeddate.length > 0) {
+      if (req.body.action.shippeddate == '0') {
+        update_data['shippeddate'] = 0;
+      } else if (req.body.action.shippeddate == '1') {
+        update_data['shippeddate'] = 1;
+      } else {
+        const date_parts = req.body.action.shippeddate.split('-');
+        const date = new Date(parseInt(date_parts[0]), parseInt(date_parts[1]) - 1, parseInt(date_parts[2]));
+        update_data['shippeddate'] = date.getTime();
+      }
+    }
+    if (req.body.action.delivereddate.length > 0) {
+      if (req.body.action.delivereddate == '0') {
+        update_data['delivereddate'] = 0;
+      } else if (req.body.action.delivereddate == '1') {
+        update_data['delivereddate'] = 1;
+      } else {
+        const date_parts = req.body.action.delivereddate.split('-');
+        const date = new Date(parseInt(date_parts[0]), parseInt(date_parts[1]) - 1, parseInt(date_parts[2]));
+        update_data['delivereddate'] = date.getTime();
+      }
+    }
+    if (req.body.action.status.length > 0) {
+      update_data['status'] = req.body.action.status;
+    }
+    update_data['delivered'] = req.body.action.delivered;
+
+    Tracking.update(update_data, {where: {tracking: req.body.tracking}})
+      .then(() => {
+        Tracking.findAll({
+          attributes: [
+            'tracking',
+            'carrier',
+            'country',
+            'addeddate',
+            'lastchecked',
+            'status',
+            'shippeddate',
+            'delivereddate',
+            'delivered',
+            'grouplabel',
+          ],
+          where: {tracking: req.body.tracking}
+        })
+          .then((result) => res.json(result))
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
+  } else {
+    // Delete
+    Tracking.destroy({where: {tracking: req.body.tracking}})
+      .then((result) => res.json(result))
+      .catch((err) => console.log(err));
+  }
+};
+
 // Acquire all country names
 exports.get_all_countries = (req, res) => {
   Countrylist.findAll({

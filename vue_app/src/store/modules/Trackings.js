@@ -18,11 +18,11 @@ const actions = {
     commit('addTrackings', response.data);
   },
   async updateRecord({ commit }, { action, tracking }) {
-    const response = await axios.post('/api/update', { action, tracking });
+    const response = await axios.post('/api/update_tracking', { action, tracking });
     commit('updateTrackings', { trackings: response.data, tracking });
   },
-  async deleteRecord({ commit }, { action, tracking }) {
-    await axios.post('/api/update', { action, tracking });
+  async deleteRecord({ commit }, { tracking }) {
+    await axios.post('/api/update_tracking', { tracking });
     commit('deleteTrackings', tracking);
   },
 };

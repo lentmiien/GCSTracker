@@ -17,9 +17,9 @@
     <div class="row" v-if="display">
       <div class="col">
         <h1>Alert</h1>
-        <p>Total: {{ display.number }}</p>
+        <p>Total undelivered: {{ display.number }}</p>
         <div class="section">
-          <h2>Delivery attempt</h2>
+          <h2>Delivery attempt, but not delivered within 3+ days</h2>
           <div
             :key="key"
             v-for="(tracking, key) in display.alerts.delivery_attempt"
@@ -75,16 +75,19 @@ export default {
                     latest = event.timestamp;
                   }
                 });
-              }
-              if (
-                d.data.indexOf("deliv") >= 0 &&
-                (d.data.indexOf("attempt") >= 0 ||
-                  d.data.indexOf("out for") >= 0)
-              ) {
-                alerts.delivery_attempt.push(d.tracking);
-              }
-              if (history === undefined || Date.now() - latest > 1000 * 60 * 60 * 24 * 7) {
-                alerts.no_updates.push(d.tracking);
+                if (
+                  d.data.indexOf("deliv") >= 0 &&
+                  (d.data.indexOf("attempt") >= 0 ||
+                    d.data.indexOf("out for") >= 0) &&
+                    Date.now() - latest > 1000 * 60 * 60 * 24 * 3
+                ) {
+                  // Has been a delivery attempt but still not delivered within 3 days
+                  alerts.delivery_attempt.push(d.tracking);
+                }
+                if (Date.now() - latest > 1000 * 60 * 60 * 24 * 7) {
+                  // No updates within last 7 days
+                  alerts.no_updates.push(d.tracking);
+                }
               }
             });
 

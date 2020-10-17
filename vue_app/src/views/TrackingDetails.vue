@@ -13,15 +13,19 @@
             </tr>
             <tr>
               <th>Country</th>
-              <td>{{ thisdata.country }}</td>
+              <td>{{ thisdata.country }}<br>
+                <input class="form-control" type="text" name="country" id="country" :value="thisdata.country"></td>
               <th>Carrier</th>
-              <td>{{ thisdata.carrier }}</td>
+              <td>{{ thisdata.carrier }}<br>
+                <input class="form-control" type="text" name="carrier" id="carrier" :value="thisdata.carrier"></td>
             </tr>
             <tr>
               <th>Shipped</th>
-              <td>{{ (new Date(thisdata.shippeddate)).toDateString() }}</td>
+              <td>{{ (new Date(thisdata.shippeddate)).toDateString() }}<br>
+                <input class="form-control" type="date" name="shippeddate" id="shippeddate"></td>
               <th>Delivered</th>
-              <td>{{ thisdata.delivereddate > 1 ? (new Date(thisdata.delivereddate)).toDateString() : thisdata.delivereddate == 1 ? "Delivered" : "Not delivered..." }}</td>
+              <td>{{ thisdata.delivereddate > 1 ? (new Date(thisdata.delivereddate)).toDateString() : thisdata.delivereddate == 1 ? "Delivered" : "Not delivered..." }}<br>
+                <input class="form-control" type="date" name="delivereddate" id="delivereddate"></td>
             </tr>
             <tr>
               <th>Status</th>
@@ -93,29 +97,68 @@ export default {
         .catch((err) => console.log(err));
     },
     delivered: function () {
+      const delivered_date = document.getElementById('delivereddate').value;
       this.updateRecord({
-        action: "delivered",
+        action: {
+          country: document.getElementById('country').value,
+          carrier: document.getElementById('carrier').value,
+          shippeddate: document.getElementById('shippeddate').value,
+          delivereddate: delivered_date.length > 0 ? delivered_date : '1',
+          status: 'delivered',
+          delivered: 1
+        },
         tracking: this.thisdata.tracking,
       });
       setTimeout(this.updatedata, 1500);
     },
     returned: function () {
       this.updateRecord({
-        action: "returned",
+        action: {
+          country: document.getElementById('country').value,
+          carrier: document.getElementById('carrier').value,
+          shippeddate: document.getElementById('shippeddate').value,
+          delivereddate: '0',
+          status: 'returned',
+          delivered: 1
+        },
         tracking: this.thisdata.tracking,
       });
       setTimeout(this.updatedata, 1500);
     },
     lost: function () {
-      this.updateRecord({ action: "lost", tracking: this.thisdata.tracking });
+      this.updateRecord({
+        action: {
+          country: document.getElementById('country').value,
+          carrier: document.getElementById('carrier').value,
+          shippeddate: document.getElementById('shippeddate').value,
+          delivereddate: '0',
+          status: 'lost',
+          delivered: 1
+        },
+        tracking: this.thisdata.tracking,
+      });
       setTimeout(this.updatedata, 1500);
     },
     reset: function () {
-      this.updateRecord({ action: "reset", tracking: this.thisdata.tracking });
+      const country_up = document.getElementById('country').value;
+      const carrier_up = document.getElementById('carrier').value;
+      const shippeddate_up = document.getElementById('shippeddate').value;
+      const delivereddate_up = document.getElementById('delivereddate').value;
+      this.updateRecord({
+        action: {
+          country: country_up.length > 0 ? country_up : 'JAPAN',
+          carrier: carrier_up.length > 0 ? carrier_up : 'JP',
+          shippeddate: shippeddate_up.length > 0 ? shippeddate_up : '0',
+          delivereddate: delivereddate_up.length > 0 ? delivereddate_up : '0',
+          status: 'updating...',
+          delivered: 0
+        },
+        tracking: this.thisdata.tracking,
+      });
       setTimeout(this.updatedata, 1500);
     },
     remove: function () {
-      this.deleteRecord({ action: "delete", tracking: this.thisdata.tracking });
+      this.deleteRecord({ tracking: this.thisdata.tracking });
       this.thisdata = {
         tracking: "DELETED",
         addeddate: 0,
