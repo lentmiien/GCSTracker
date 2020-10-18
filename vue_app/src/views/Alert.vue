@@ -20,18 +20,11 @@
         <p>Total undelivered: {{ display.number }}</p>
         <div class="section">
           <h2>Delivery attempt, but not delivered within 3+ days</h2>
-          <div
-            :key="key"
-            v-for="(tracking, key) in display.alerts.delivery_attempt"
-          >
-            {{ tracking }}
-          </div>
+          <textarea cols="30" rows="10" class="form-control" :value="display.alerts.delivery_attempt.join('\n')" readonly></textarea>
         </div>
         <div class="section">
           <h2>No updates (more than a week)</h2>
-          <div :key="key" v-for="(tracking, key) in display.alerts.no_updates">
-            {{ tracking }}
-          </div>
+          <textarea cols="30" rows="10" class="form-control" :value="display.alerts.no_updates.join('\n')" readonly></textarea>
         </div>
       </div>
     </div>
