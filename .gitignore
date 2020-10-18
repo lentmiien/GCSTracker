@@ -1,3 +1,6 @@
+# comment for public release
+#public/
+
 # Logs
 logs
 *.log
@@ -62,7 +65,6 @@ typings/
 
 # do_not_push folder
 do_not_push/
-public/
 
 # vue ignore
 .DS_Store
