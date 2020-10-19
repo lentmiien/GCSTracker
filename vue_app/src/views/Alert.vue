@@ -19,7 +19,7 @@
         <h1>Alert</h1>
         <p>Total undelivered: {{ display.number }}</p>
         <div class="section">
-          <h2>Delivery attempt, but not delivered within 3+ days</h2>
+          <h2>Delivery attempt, ★ = updated within last 3 days</h2>
           <textarea cols="30" rows="10" class="form-control" :value="display.alerts.delivery_attempt.join('\n')" readonly></textarea>
         </div>
         <div class="section">
@@ -74,13 +74,16 @@ export default {
                   }
                 });
                 if (
-                  d.data.indexOf("deliv") >= 0 &&
-                  (d.data.indexOf("attempt") >= 0 ||
-                    d.data.indexOf("out for") >= 0) &&
-                    Date.now() - latest > 1000 * 60 * 60 * 24 * 3
+                  d.data.toLowerCase().indexOf("deliv") >= 0 &&
+                  (d.data.toLowerCase().indexOf("attempt") >= 0 ||
+                    d.data.toLowerCase().indexOf("out for") >= 0)
                 ) {
+                  let star = '★';
+                  if (Date.now() - latest > 1000 * 60 * 60 * 24 * 3) {
+                    star = '';
+                  }
                   // Has been a delivery attempt but still not delivered within 3 days
-                  alerts.delivery_attempt.push(d.tracking);
+                  alerts.delivery_attempt.push(d.tracking + star);
                 }
                 if (Date.now() - latest > 1000 * 60 * 60 * 24 * 7) {
                   // No updates within last 7 days
