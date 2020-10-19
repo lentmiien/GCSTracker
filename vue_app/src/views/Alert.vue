@@ -26,6 +26,10 @@
           <h2>No updates (more than a week)</h2>
           <textarea cols="30" rows="10" class="form-control" :value="display.alerts.no_updates.join('\n')" readonly></textarea>
         </div>
+        <div class="section">
+          <h2>All undelivered</h2>
+          <textarea cols="30" rows="10" class="form-control" :value="display.alerts.all.join('\n')" readonly></textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -54,6 +58,7 @@ export default {
       const alerts = {
         delivery_attempt: [],
         no_updates: [],
+        all: [],
       };
       axios
         .get(`/api/gettrackingdatabatch?grouplabel=${input_data}`)
@@ -82,6 +87,7 @@ export default {
                   alerts.no_updates.push(d.tracking);
                 }
               }
+              alerts.all.push(d.tracking);
             });
 
             // Save output
