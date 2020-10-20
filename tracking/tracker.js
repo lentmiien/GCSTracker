@@ -281,7 +281,7 @@ function AquireTimestamp(event, last_ts) {
   if (short_date_index > 0) {
     // 06/10/2020 // month/date/year
     year = parseInt(event.substring(short_date_index + 4, short_date_index + 8));
-    month = parseInt(event.substring(short_date_index - 2, short_date_index));
+    month = parseInt(event.substring(short_date_index - 2, short_date_index)) - 1;
     date = parseInt(event.substring(short_date_index + 1, short_date_index + 3));
   } else {
     months.forEach((m, i) => {
