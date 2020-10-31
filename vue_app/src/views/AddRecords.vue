@@ -28,6 +28,14 @@
               {{ a.label }}
             </option>
           </select>
+          <label for="country">Country (default: UNKNOWN)</label>
+          <input
+            type="text"
+            name="country"
+            id="country"
+            class="form-control"
+            v-model="country"
+          />
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
       </div>
@@ -45,6 +53,7 @@ export default {
       records: "",
       timestamp: "",
       label: "",
+      country: "",
     };
   },
   computed: mapGetters(["grouplabels"]),
@@ -52,6 +61,13 @@ export default {
     ...mapActions(["addRecords"]),
     processForm(e) {
       e.preventDefault();
+
+      // Acquire default country
+      let default_country = 'UNKNOWN';
+      if (this.country.length > 0) {
+        default_country = this.country;
+        this.country = '';
+      }
 
       // Format data to send (from "records")
       const input_data = this.records.split(/[\r\n]+/); // Split on new line characters
@@ -76,7 +92,7 @@ export default {
         } else {
           send_data.records.push({
             id: d,
-            country: "UNKNOWN",
+            country: default_country,
           });
         }
       });
@@ -93,10 +109,10 @@ export default {
       }
 
       // Send to server, and update local data
-      this.addRecords(send_data);
+      this.addRecords(send_data).then(() => this.records = "");
 
       // Reset input
-      this.records = "";
+      // this.records = "";
     },
   },
 };

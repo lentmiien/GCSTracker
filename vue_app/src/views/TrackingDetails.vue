@@ -43,6 +43,7 @@
           <button @click="delivered()" class="btn btn-primary">Set delivered</button>
           <button @click="returned()" class="btn btn-primary">Set returned</button>
           <button @click="lost()" class="btn btn-primary">Set lost</button>
+          <button @click="unknown()" class="btn btn-primary">Set unknown</button>
           <button @click="reset()" class="btn btn-secondary">Reset</button>
           <button @click="remove()" class="btn btn-danger">Delete</button>
         </div>
@@ -123,8 +124,8 @@ export default {
           delivered: 1
         },
         tracking: this.thisdata.tracking,
-      });
-      setTimeout(this.updatedata, 1500);
+      }).then(() => this.updatedata());
+      // setTimeout(this.updatedata, 1500);
     },
     returned: function () {
       this.updateRecord({
@@ -137,8 +138,8 @@ export default {
           delivered: 1
         },
         tracking: this.thisdata.tracking,
-      });
-      setTimeout(this.updatedata, 1500);
+      }).then(() => this.updatedata());
+      // setTimeout(this.updatedata, 1500);
     },
     lost: function () {
       this.updateRecord({
@@ -151,8 +152,22 @@ export default {
           delivered: 1
         },
         tracking: this.thisdata.tracking,
-      });
-      setTimeout(this.updatedata, 1500);
+      }).then(() => this.updatedata());
+      // setTimeout(this.updatedata, 1500);
+    },
+    unknown: function () {
+      this.updateRecord({
+        action: {
+          country: document.getElementById('country').value,
+          carrier: document.getElementById('carrier').value,
+          shippeddate: document.getElementById('shippeddate').value,
+          delivereddate: '0',
+          status: 'unknown',
+          delivered: 1
+        },
+        tracking: this.thisdata.tracking,
+      }).then(() => this.updatedata());
+      // setTimeout(this.updatedata, 1500);
     },
     reset: function () {
       const country_up = document.getElementById('country').value;
@@ -169,8 +184,8 @@ export default {
           delivered: 0
         },
         tracking: this.thisdata.tracking,
-      });
-      setTimeout(this.updatedata, 1500);
+      }).then(() => this.updatedata());
+      // setTimeout(this.updatedata, 1500);
     },
     remove: function () {
       this.deleteRecord({ tracking: this.thisdata.tracking });
