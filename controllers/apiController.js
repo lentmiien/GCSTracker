@@ -441,6 +441,184 @@ exports.api_add = async (req, res) => {
   );
 };
 
+// POST add new records
+exports.api_update = async (req, res) => {
+  const update_data = {};
+  if(req.body.country != 'UNKNOWN') {
+    update_data['country'] = req.body.country;
+  }
+  if(req.body.label > 0) {
+    update_data['grouplabel'] = req.body.label;
+  }
+  req.body.records.forEach((tracking, i) => {
+    console.log(`Updating ${i}th entry`);
+    Tracking.update(update_data, {where: {tracking: tracking.id}});
+  });
+  Tracking.findAll({
+    where: update_data,
+    attributes: [
+      'tracking',
+      'carrier',
+      'country',
+      'addeddate',
+      'lastchecked',
+      'status',
+      'shippeddate',
+      'delivereddate',
+      'delivered',
+      'grouplabel',
+    ],
+  })
+    .then((result) => res.json(result))
+    .catch((err) => console.log(err));
+  // const response = {};
+
+  // // Get new data
+  // // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp, labelid: #number }
+  // const tracking = req.body.records.sort((a, b) => {
+  //   if (a.id < b.id) {
+  //     return -1;
+  //   } else if (a.id > b.id) {
+  //     return 1;
+  //   } else {
+  //     return 0;
+  //   }
+  // });
+  // const records_to_add = [];
+
+  // // Set label
+  // const grouplabel = req.body.label;
+
+  // let d = new Date();
+  // d = dateToString(d);
+
+  // let dts = req.body.timestamp && req.body.timestamp > 0 ? req.body.timestamp : Date.now();
+
+  // // Prepare OK response
+  // response['status'] = 'OK';
+  // response['num_records'] = tracking.length;
+  // response['date'] = dateToString(new Date(parseInt(dts)));
+  // response['added_records'] = 0;
+  // response['sal_unreg_empty'] = 0;
+  // response['domestic'] = 0;
+  // response['duplicates'] = 0;
+  // response['existing'] = 0;
+  // response['need_check'] = [];
+
+  // async.parallel(
+  //   {
+  //     tracking: function (callback) {
+  //       Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
+  //     },
+  //   },
+  //   function (err, results) {
+  //     if (err) {
+  //       return next(err);
+  //     }
+  //     if (!results.tracking) {
+  //       // No results.
+  //       res.redirect('/mypage');
+  //     }
+
+  //     let lastadded = '';
+  //     for (let i = 0; i < tracking.length; i++) {
+  //       let valid_entry = false;
+  //       let new_entry = true;
+
+  //       // Check valid
+  //       const length = tracking[i].id.length;
+  //       const isnum = /^\d+$/.test(tracking[i].id);
+  //       if (length == 34 && isnum && tracking[i].id.indexOf('420') == 0) {
+  //         valid_entry = true; // AIT
+  //       }
+  //       if (length == 26 && isnum && tracking[i].id.indexOf('9') == 0) {
+  //         valid_entry = true; // AIT
+  //       }
+  //       if (length == 13 && !isnum && tracking[i].id.indexOf('JP') == 11) {
+  //         valid_entry = true; // JP
+  //       }
+  //       if (length == 10 && isnum) {
+  //         valid_entry = true; // DHL
+  //       }
+
+  //       // Check existing (only if valid)
+  //       if (valid_entry) {
+  //         if (tracking[i].id == lastadded) {
+  //           new_entry = false;
+  //           response['duplicates']++;
+  //           response['status'] = 'WARNING';
+  //           response['message'] = 'Duplicate records exist';
+  //           response['need_check'].push(tracking[i].id);
+  //         } else {
+  //           for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
+  //             if (results.tracking[row_i].tracking == tracking[i].id) {
+  //               new_entry = false;
+  //               response['existing']++;
+  //               response['status'] = 'WARNING';
+  //               response['message'] = 'Existing records exist';
+  //               response['need_check'].push(tracking[i].id);
+  //             }
+  //           }
+  //         }
+  //       }
+  //       if (valid_entry && new_entry) {
+  //         lastadded = tracking[i].id;
+
+  //         let carrier = 'DHL';
+  //         if (tracking[i].id.indexOf('JP') == 11) {
+  //           carrier = 'JP';
+  //         } else if (tracking[i].id.length == 34 || tracking[i].id.length == 26) {
+  //           carrier = 'USPS';
+  //         }
+
+  //         records_to_add.push({
+  //           tracking: tracking[i].id,
+  //           carrier,
+  //           country: tracking[i].country,
+  //           addeddate: dts,
+  //           lastchecked: 0,
+  //           status: 'Shipped',
+  //           shippeddate: dts,
+  //           delivereddate: 0,
+  //           delivered: '0',
+  //           data: '',
+  //           grouplabel,
+  //         });
+  //         response['added_records']++;
+  //       }
+  //     }
+
+  //     // Start adding
+  //     if (records_to_add.length > 0) {
+  //       Tracking.bulkCreate(records_to_add).then(() => {
+  //         Tracking.findAll({
+  //           where: { addeddate: dts, lastchecked: 0 },
+  //           attributes: [
+  //             'tracking',
+  //             'carrier',
+  //             'country',
+  //             'addeddate',
+  //             'lastchecked',
+  //             'status',
+  //             'shippeddate',
+  //             'delivereddate',
+  //             'delivered',
+  //             'grouplabel',
+  //           ],
+  //         })
+  //           .then((result) => res.json(result))
+  //           .catch((err) => console.log(err));
+  //       });
+  //     } else {
+  //       res.json(response);
+  //     }
+
+  //     // Done!
+  //     Log('Add API', JSON.stringify(response, null, 2));
+  //   }
+  // );
+};
+
 // Acquire all tracking data (exclude tracking history due to huge amount of data)
 exports.get_all = (req, res) => {
   Tracking.findAll({

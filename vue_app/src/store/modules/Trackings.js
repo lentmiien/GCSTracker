@@ -21,6 +21,10 @@ const actions = {
     const response = await axios.post('/api/update_tracking', { action, tracking });
     commit('updateTrackings', { trackings: response.data, tracking });
   },
+  async updateRecords({ commit }, records_to_update) {
+    const response = await axios.post('/api/update', records_to_update);
+    commit('addTrackings', response.data);//TODO: Fix a batch update function
+  },
   async deleteRecord({ commit }, { tracking }) {
     await axios.post('/api/ ', { tracking });
     commit('deleteTrackings', tracking);

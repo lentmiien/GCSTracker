@@ -15,6 +15,7 @@ router.all('*', controller.login_check);
 // Tracking
 router.get('/getall', controller.get_all);
 router.post('/add', controller.api_add);
+router.post('/update', controller.api_update);
 router.get('/gettrackingdata', controller.acquire_tracking_data);
 router.get('/gettrackingdatabatch', controller.acquire_tracking_data_batch);
 router.post('/update_tracking', controller.update_tracking);
