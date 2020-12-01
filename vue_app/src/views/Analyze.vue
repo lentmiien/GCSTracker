@@ -83,6 +83,7 @@
                               display.summary.total_records
                           ) / 100
                         }}%)
+                        <button class="btn btn-primary" v-on:click="Copy('delivered_list')">Copy</button>
                       </td>
                       <td class="delayed">
                         {{ display.summary.shipped }} ({{
@@ -279,6 +280,17 @@ export default {
   },
   computed: mapGetters(["allTrackingData", "grouplabels"]),
   methods: {
+    Copy: function(type) {
+      let text_str = "";
+      this.display.summary[type].forEach(track => text_str += `${track}\n`);
+      const copyelement = document.createElement("textarea");
+      copyelement.value = text_str;
+      document.body.appendChild(copyelement);
+      copyelement.focus();
+      copyelement.select();
+      document.execCommand("copy");
+      copyelement.parentElement.removeChild(copyelement);
+    },
     drawgraph: function () {
       // Clear previous graph
       if (document.getElementById("graph_area")) {
@@ -357,9 +369,13 @@ export default {
 
       const summary = {
         delivered: 0,
+        delivered_list: [],
         shipped: 0,
+        shipped_list: [],
         returned: 0,
+        returned_list: [],
         lost: 0,
+        lost_list: [],
         total_records: analyze_data.length,
       };
       const times = {
@@ -396,11 +412,14 @@ export default {
           if (d.delivereddate == 0) {
             if (d.status == "returned") {
               summary.returned++;
+              summary.returned_list.push(d.tracking);
             } else {
               summary.lost++;
+              summary.lost_list.push(d.tracking);
             }
           } else {
             summary.delivered++;
+            summary.delivered_list.push(d.tracking);
             if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
@@ -445,6 +464,7 @@ export default {
           }
         } else {
           summary.shipped++;
+          summary.shipped_list.push(d.tracking);
 
           times.inshipment.number++;
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
@@ -498,9 +518,13 @@ export default {
 
       const summary = {
         delivered: 0,
+        delivered_list: [],
         shipped: 0,
+        shipped_list: [],
         returned: 0,
+        returned_list: [],
         lost: 0,
+        lost_list: [],
         total_records: analyze_data.length,
       };
       const times = {
@@ -537,11 +561,14 @@ export default {
           if (d.delivereddate == 0) {
             if (d.status == "returned") {
               summary.returned++;
+              summary.returned_list.push(d.tracking);
             } else {
               summary.lost++;
+              summary.lost_list.push(d.tracking);
             }
           } else {
             summary.delivered++;
+            summary.delivered_list.push(d.tracking);
             if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
@@ -586,6 +613,7 @@ export default {
           }
         } else {
           summary.shipped++;
+          summary.shipped_list.push(d.tracking);
 
           times.inshipment.number++;
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
