@@ -100,10 +100,15 @@ export default {
       // Process timestamp (if provided)
       if (this.timestamp.length > 0) {
         const datedata = this.timestamp.split("-");
+        const unique_time = new Date();// Just to make every batch unique
         const datedate = new Date(
           parseInt(datedata[0]),
           parseInt(datedata[1]) - 1,
-          parseInt(datedata[2])
+          parseInt(datedata[2]),
+          unique_time.getHours(),
+          unique_time.getMinutes(),
+          unique_time.getSeconds(),
+          unique_time.getMilliseconds(),
         );
         send_data.timestamp = datedate.getTime();
       }
