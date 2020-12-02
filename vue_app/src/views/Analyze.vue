@@ -92,6 +92,7 @@
                               display.summary.total_records
                           ) / 100
                         }}%)
+                        <button class="btn btn-primary" v-on:click="Copy('shipped_list')">Copy</button>
                       </td>
                       <td class="returned">
                         {{ display.summary.returned }} ({{
@@ -100,6 +101,7 @@
                               display.summary.total_records
                           ) / 100
                         }}%)
+                        <button class="btn btn-primary" v-on:click="Copy('returned_list')">Copy</button>
                       </td>
                       <td class="lost">
                         {{ display.summary.lost }} ({{
@@ -108,6 +110,7 @@
                               display.summary.total_records
                           ) / 100
                         }}%)
+                        <button class="btn btn-primary" v-on:click="Copy('lost_list')">Copy</button>
                       </td>
                       <td>{{ display.summary.total_records }}</td>
                     </tr>
