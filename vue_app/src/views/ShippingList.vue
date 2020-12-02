@@ -170,13 +170,22 @@ export default {
         colorer++;
       });
       text_str += "</tbody></table>";
-      const copyelement = document.createElement("textarea");
-      copyelement.value = text_str;
-      document.body.appendChild(copyelement);
-      copyelement.focus();
-      copyelement.select();
+      // const copyelement = document.createElement("textarea");
+      // copyelement.value = text_str;
+      // document.body.appendChild(copyelement);
+      // copyelement.focus();
+      // copyelement.select();
+      // document.execCommand("copy");
+      // copyelement.parentElement.removeChild(copyelement);
+
+      function listener(e) {
+        e.clipboardData.setData("text/html", text_str);
+        e.clipboardData.setData("text/plain", text_str);
+        e.preventDefault();
+      }
+      document.addEventListener("copy", listener);
       document.execCommand("copy");
-      copyelement.parentElement.removeChild(copyelement);
+      document.removeEventListener("copy", listener);
     },
   },
 };

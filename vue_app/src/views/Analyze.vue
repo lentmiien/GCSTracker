@@ -36,6 +36,7 @@
           </select>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
+        <button class="btn btn-primary mt-3" v-on:click="AnalyzeAllLabels()">Analyze all labels</button>
       </div>
     </div>
     <div class="row" v-if="display">
@@ -656,6 +657,158 @@ export default {
 
       // Display graphs
       setTimeout(this.drawgraph, 1000);
+    },
+    AnalyzeAllLabels: function() {
+      // Analyze stuff
+      const result = [];
+      const indexer = [];
+      this.grouplabels.forEach(label => {
+        result.push({
+          label: label.label,
+          lableid: label.id,
+          firstdelivereddate: 4765100399000,
+          numberdelivered: 0,
+          numberinshipment: 0,
+          numberreturned: 0,
+          numberlost: 0,
+          total: 0,
+          deliveredonground: 0,
+          deliveredinbox: 0,
+          deliveredtoperson: 0,
+          deliveredunknown: 0,
+        });
+        indexer.push(label.id);
+      });
+      this.allTrackingData.filter(f => f.grouplabel >= 1).forEach(d => {
+        const index = indexer.indexOf(d.grouplabel);
+        if (index >= 0) {
+          if (d.delivered) {
+            if (d.delivereddate == 0) {
+              if (d.status == "returned") {
+                result[index].numberreturned++;
+              } else {
+                result[index].numberlost++;
+              }
+            } else {
+              result[index].numberdelivered++;
+
+              // Find first delivered
+              if (d.delivereddate > 1) {
+                if (result[index].firstdelivereddate > d.delivereddate) {
+                  result[index].firstdelivereddate = d.delivereddate;
+                }
+              }
+
+              // Status check
+              if (
+                d.status.indexOf("door") >= 0 ||
+                d.status.indexOf("garage") >= 0
+              ) {
+                result[index].deliveredonground++;
+              } else if (
+                d.status.indexOf("locker") >= 0 ||
+                d.status.indexOf("mailbox") >= 0 ||
+                d.status.indexOf("PO Box") >= 0
+              ) {
+                result[index].deliveredinbox++;
+              } else if (
+                d.status.indexOf("reception") >= 0 ||
+                d.status.indexOf("neighbor") >= 0 ||
+                d.status.indexOf("picked up at") >= 0 ||
+                d.status.indexOf("individual") >= 0
+              ) {
+                result[index].deliveredtoperson++;
+              } else {
+                result[index].deliveredunknown++;
+              }
+            }
+          } else {
+            result[index].numberinshipment++;
+          }
+        }
+      });
+
+      // Generate output
+      let output = '';
+      const youbi = ['日', '月', '火', '水', '木', '金', '土'];
+      const todayDate = new Date(Date.now() + 9*60*60*1000);// Japanese local time
+      output += `【${todayDate.getMonth()+1}月${todayDate.getDate()}日（${youbi[todayDate.getDay()]}）】の更新は下記になります。<br><br>`;
+      output += '<b>※変更無しのコンテナは背景灰色</b><br><b>※背景黒は追跡が始まっていません（追跡番号待ち）</b><br><br>■配達ステータス<br>';
+      // Table: delivery status
+      output += `
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>発到着日※１</th>
+            <th>配達済</th>
+            <th>配送中</th>
+            <th>返送件数</th>
+            <th>紛失件数※２</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      result.forEach(r => {
+        const total = r.numberdelivered + r.numberinshipment + r.numberreturned + r.numberlost;
+        output += `
+        <tr>
+          <td>${r.label}</td>
+          <td>${(new Date(r.firstdelivereddate)).getMonth()+1}月${(new Date(r.firstdelivereddate)).getDate()}日</td>
+          <td>${r.numberdelivered} (${Math.round(10000 * r.numberdelivered / total) / 100}%)</td>
+          <td>${r.numberinshipment} (${Math.round(10000 * r.numberinshipment / total) / 100}%)</td>
+          <td>${r.numberreturned} (${Math.round(10000 * r.numberreturned / total) / 100}%)</td>
+          <td>${r.numberlost} (${Math.round(10000 * r.numberlost / total) / 100}%)</td>
+        </tr>
+        `;
+      });
+      output += `
+        </tbody>
+      </table>
+      `;
+      output += '※１【発到着日】はそのコンテナで初到着荷物の到着日です。<br>';
+      output += '※２【紛失件数】は顧客から不着クレームがあり、AITから補償が決定したケースです。<br><br>';
+      output += '■配達状況<br>';
+      // Table: delivery method
+      output += `
+      <table>
+        <thead>
+          <tr>
+            <th>コンテナ</th>
+            <th>置き配の配達</th>
+            <th>ポストボックス・荷物ロッカー配達</th>
+            <th>受け付け・人に渡した</th>
+            <th>不明</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      result.forEach(r => {
+        output += `
+        <tr>
+          <td>${r.label}</td>
+          <td>${r.deliveredonground}</td>
+          <td>${r.deliveredinbox}</td>
+          <td>${r.deliveredtoperson}</td>
+          <td>${r.deliveredunknown}</td>
+        </tr>
+        `;
+      });
+      output += `
+        </tbody>
+      </table>
+      `;
+
+      // Copy to clipboard
+      function listener(e) {
+        e.clipboardData.setData("text/html", output);
+        e.clipboardData.setData("text/plain", output);
+        e.preventDefault();
+      }
+      document.addEventListener("copy", listener);
+      document.execCommand("copy");
+      document.removeEventListener("copy", listener);
+
+      // Show done message
+      alert('Copied!');
     },
   },
 };
