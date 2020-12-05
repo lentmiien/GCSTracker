@@ -736,15 +736,15 @@ export default {
       output += '<b>※変更無しのコンテナは背景灰色</b><br><b>※背景黒は追跡が始まっていません（追跡番号待ち）</b><br><br>■配達ステータス<br>';
       // Table: delivery status
       output += `
-      <table>
+      <table style="width:100%;">
         <thead>
           <tr>
-            <th></th>
-            <th>発到着日※１</th>
-            <th>配達済</th>
-            <th>配送中</th>
-            <th>返送件数</th>
-            <th>紛失件数※２</th>
+            <th style="width:16%;border:1px solid black;"></th>
+            <th style="width:16%;border:1px solid black;">発到着日※１</th>
+            <th style="width:16%;border:1px solid black;">配達済</th>
+            <th style="width:16%;border:1px solid black;">配送中</th>
+            <th style="width:16%;border:1px solid black;">返送件数</th>
+            <th style="width:16%;border:1px solid black;">紛失件数※２</th>
           </tr>
         </thead>
         <tbody>`;
@@ -752,12 +752,12 @@ export default {
         const total = r.numberdelivered + r.numberinshipment + r.numberreturned + r.numberlost;
         output += `
         <tr>
-          <td>${r.label}</td>
-          <td>${(new Date(r.firstdelivereddate)).getMonth()+1}月${(new Date(r.firstdelivereddate)).getDate()}日</td>
-          <td>${r.numberdelivered} (${Math.round(10000 * r.numberdelivered / total) / 100}%)</td>
-          <td>${r.numberinshipment} (${Math.round(10000 * r.numberinshipment / total) / 100}%)</td>
-          <td>${r.numberreturned} (${Math.round(10000 * r.numberreturned / total) / 100}%)</td>
-          <td>${r.numberlost} (${Math.round(10000 * r.numberlost / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.label}</td>
+          <td style="border:1px solid black;">${(new Date(r.firstdelivereddate)).getMonth()+1}月${(new Date(r.firstdelivereddate)).getDate()}日</td>
+          <td style="border:1px solid black;">${r.numberdelivered} (${Math.round(10000 * r.numberdelivered / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.numberinshipment} (${Math.round(10000 * r.numberinshipment / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.numberreturned} (${Math.round(10000 * r.numberreturned / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.numberlost} (${Math.round(10000 * r.numberlost / total) / 100}%)</td>
         </tr>
         `;
       });
@@ -770,25 +770,25 @@ export default {
       output += '■配達状況<br>';
       // Table: delivery method
       output += `
-      <table>
+      <table style="width:100%;">
         <thead>
           <tr>
-            <th>コンテナ</th>
-            <th>置き配の配達</th>
-            <th>ポストボックス・荷物ロッカー配達</th>
-            <th>受け付け・人に渡した</th>
-            <th>不明</th>
+            <th style="width:20%;border:1px solid black;">コンテナ</th>
+            <th style="width:20%;border:1px solid black;">置き配の配達</th>
+            <th style="width:20%;border:1px solid black;">ポストボックス・荷物ロッカー配達</th>
+            <th style="width:20%;border:1px solid black;">受け付け・人に渡した</th>
+            <th style="width:20%;border:1px solid black;">不明</th>
           </tr>
         </thead>
         <tbody>`;
       result.forEach(r => {
         output += `
         <tr>
-          <td>${r.label}</td>
-          <td>${r.deliveredonground}</td>
-          <td>${r.deliveredinbox}</td>
-          <td>${r.deliveredtoperson}</td>
-          <td>${r.deliveredunknown}</td>
+          <td style="border:1px solid black;">${r.label}</td>
+          <td style="border:1px solid black;">${r.deliveredonground}</td>
+          <td style="border:1px solid black;">${r.deliveredinbox}</td>
+          <td style="border:1px solid black;">${r.deliveredtoperson}</td>
+          <td style="border:1px solid black;">${r.deliveredunknown}</td>
         </tr>
         `;
       });
