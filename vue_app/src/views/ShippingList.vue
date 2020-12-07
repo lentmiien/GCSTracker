@@ -143,11 +143,24 @@ export default {
         '<table style="border-collapse: collapse; color: black; background-color: white;"><tbody>';
       let colorer = 0;
       this.allShippingMethods.forEach((c) => {
+        // Fill in header every 20th row
         if (colorer % 20 == 0) {
           text_str +=
-            '<tr><th style="border: 1px solid black; width: 12%;">Country</th><th style="border: 1px solid black; width: 12%;">EMS</th><th style="border: 1px solid black; width: 12%;">Air Small Packet</th><th style="border: 1px solid black; width: 12%;">SAL Registered</th><th style="border: 1px solid black; width: 12%;">SAL Unregistered</th><th style="border: 1px solid black; width: 12%;">SAL Parcel</th><th style="border: 1px solid black; width: 12%;">DHL</th><th style="border: 1px solid black; width: 12%;">Air Parcel</th></tr>';
+            '<tr><th style="border: 1px solid black; width: 11%;">Country</th><th style="border: 1px solid black; width: 11%;">EMS</th><th style="border: 1px solid black; width: 11%;">Air Small Packet</th><th style="border: 1px solid black; width: 11%;">SAL Registered</th><th style="border: 1px solid black; width: 11%;">SAL Unregistered</th><th style="border: 1px solid black; width: 11%;">SAL Parcel</th><th style="border: 1px solid black; width: 11%;">DHL</th><th style="border: 1px solid black; width: 11%;">Air Parcel</th><th style="border: 1px solid black; width: 11%;">Other</th></tr>';
           colorer++;
         }
+
+        // Determin if and what other methods that are available
+        let other = '';
+        if (c.country_name == "UNITED STATES") {
+          other = 'Surface Mail (Premium)'
+        } else if (c.country_name == "CANADA" || c.country_name == "AUSTRALIA") {
+          other = 'Surface Parcel<br>Air Small Packet (Unregistered)'
+        } else if (c.country_name == "RUSSIAN FEDERATION" || c.country_name == "BRAZIL") {
+          other = 'Surface Parcel'
+        }
+
+        // Fill in row
         text_str += `<tr style="background-color:${
           colorer % 2 == 0 ? "#FFFFFF" : "#EEEEEE"
         };"><td style="text-align: center; border: 1px solid black;">${
@@ -166,7 +179,7 @@ export default {
           c.dhl_available == 1 ? "〇" : ""
         }</td><td style="text-align: center; border: 1px solid black;">${
           c.airp_available == 1 ? "〇" : ""
-        }</td></tr>`;
+        }</td><td style="text-align: center; border: 1px solid black;">${other}</td></tr>`;
         colorer++;
       });
       text_str += "</tbody></table>";

@@ -773,7 +773,7 @@ export default {
       <table style="width:100%;">
         <thead>
           <tr>
-            <th style="width:20%;border:1px solid black;">コンテナ</th>
+            <th style="width:20%;border:1px solid black;"></th>
             <th style="width:20%;border:1px solid black;">置き配の配達</th>
             <th style="width:20%;border:1px solid black;">ポストボックス・荷物ロッカー配達</th>
             <th style="width:20%;border:1px solid black;">受け付け・人に渡した</th>

@@ -459,3 +459,5 @@ function dateToString(date) {
 function DaysAgo(days) {
   return Date.now() - 86400000 * days;
 }
+
+function GetStatus(history) {}
