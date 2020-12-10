@@ -48,13 +48,18 @@
           <button @click="remove()" class="btn btn-danger">Delete</button>
         </div>
         <div v-if="thisdata.carrier == 'JP'">
-          <a :href="'https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=' + thisdata.tracking + '&searchKind=S002&locale=en'" target="_blank">Tracking page</a>
+          <a class="btn btn-link" :href="'https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=' + thisdata.tracking + '&searchKind=S002&locale=en'" target="_blank">JP Tracking</a>
         </div>
         <div v-else-if="thisdata.carrier == 'DHL'">
-          <a :href="'https://www.dhl.com/cgi-bin/tracking.pl?AWB=' + thisdata.tracking" target="_blank">Tracking page</a>
+          <a class="btn btn-link" :href="'https://www.dhl.com/cgi-bin/tracking.pl?AWB=' + thisdata.tracking" target="_blank">DHL Tracking</a>
+        </div>
+        <div v-else-if="thisdata.carrier == 'USPS'">
+          <a class="btn btn-link" :href="'https://tools.usps.com/go/TrackConfirmAction?tRef=fullpage&tLc=2&text28777=&tLabels=' + thisdata.tracking + '%2C&tABt=false'" target="_blank">USPS Tracking</a>
         </div>
         <div v-else>
-          <a :href="'https://tools.usps.com/go/TrackConfirmAction?tRef=fullpage&tLc=2&text28777=&tLabels=' + thisdata.tracking + '%2C&tABt=false'" target="_blank">Tracking page</a>
+          <a class="btn btn-link" :href="'https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=' + thisdata.tracking + '&searchKind=S002&locale=en'" target="_blank">JP</a>
+          <a class="btn btn-link" :href="'https://www.dhl.com/cgi-bin/tracking.pl?AWB=' + thisdata.tracking" target="_blank">DHL</a>
+          <a class="btn btn-link" :href="'https://tools.usps.com/go/TrackConfirmAction?tRef=fullpage&tLc=2&text28777=&tLabels=' + thisdata.tracking + '%2C&tABt=false'" target="_blank">USPS</a>
         </div>
         <table class="table table-dark table-striped mt-3" v-if="trackdata">
           <thead>

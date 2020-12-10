@@ -359,6 +359,78 @@ export default {
 
       // add the y Axis
       svg.append("g").call(d3.axisLeft(y));
+
+      // Delivery time graph
+      /*
+      deliverytimehistogram: [],               // 90 element array, within 0-89 days
+      deliverytimehistogram_totaldelivered: 0, // All delivered
+      deliverytimehistogram_totalcount: 0,     // All records(including undelivered)
+
+      Data source X: this.display.times.deliverytimehistogram [index] // timestamp in ms
+      Data source Y1: this.display.times.deliverytimehistogram/this.display.times.deliverytimehistogram_totaldelivered   // integer count
+      Data source Y2: this.display.times.deliverytimehistogram/this.display.times.deliverytimehistogram_totalcount   // integer count
+      */
+      // set the ranges
+      x = d3
+        .scaleLinear()
+        .domain([0, 89])
+        .range([0, width]);
+      y = d3
+        .scaleLinear()
+        .domain([0, 1])
+        .range([height, 0]);
+
+      // append the svg object to the body of the page
+      // append a 'group' element to 'svg'
+      // moves the 'group' element to the top left margin
+      svg = d3
+        .select("#graph_area")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // append the rectangles for the bar chart
+      svg
+        .selectAll(".histbar")
+        .data(this.display.times.deliverytimehistogram)
+        .enter()
+        .append("rect")
+        .attr("class", "histbar")
+        .attr("fill", "steelblue")
+        .attr("x", (d, i) => x(i))
+        .attr("width", 9)
+        .attr("y", (d) => y(d / this.display.times.deliverytimehistogram_totaldelivered))
+        .attr(
+          "height",
+          (d) => height - y(d / this.display.times.deliverytimehistogram_totaldelivered)
+        );
+
+      // append the rectangles for the bar chart
+      svg
+        .selectAll(".histbar2")
+        .data(this.display.times.deliverytimehistogram)
+        .enter()
+        .append("rect")
+        .attr("class", "histbar2")
+        .attr("fill", "orange")
+        .attr("x", (d, i) => x(i))
+        .attr("width", 9)
+        .attr("y", (d) => y(d / this.display.times.deliverytimehistogram_totalcount))
+        .attr(
+          "height",
+          (d) => height - y(d / this.display.times.deliverytimehistogram_totalcount)
+        );
+
+      // add the x Axis
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      // add the y Axis
+      svg.append("g").call(d3.axisLeft(y));
     },
     analyze(e) {
       e.preventDefault();
@@ -395,6 +467,9 @@ export default {
           number: 0,
           totaltime_ms: 0,
         },
+        deliverytimehistogram: [],               // 90 element array, within 0-89 days
+        deliverytimehistogram_totaldelivered: 0, // All delivered
+        deliverytimehistogram_totalcount: 0,     // All records(including undelivered)
       };
       const status = {
         delivered: {
@@ -411,7 +486,12 @@ export default {
         },
       };
 
+      for (let fa = 0; fa < 90; fa++) {
+        times.deliverytimehistogram.push(0);
+      }
+
       analyze_data.forEach((d) => {
+        times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
             if (d.status == "returned") {
@@ -427,6 +507,14 @@ export default {
             if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
+
+              const dth = Math.ceil((d.delivereddate - d.shippeddate)/(1000*60*60*24));
+              times.deliverytimehistogram_totaldelivered++;
+              for (let hi = 0; hi < 90; hi++) {
+                if (hi >= dth) {
+                  times.deliverytimehistogram[hi]++;
+                }
+              }
 
               const date = new Date(d.delivereddate);
               const d_ts = new Date(
@@ -544,6 +632,9 @@ export default {
           number: 0,
           totaltime_ms: 0,
         },
+        deliverytimehistogram: [],               // 90 element array, within 0-89 days
+        deliverytimehistogram_totaldelivered: 0, // All delivered
+        deliverytimehistogram_totalcount: 0,     // All records(including undelivered)
       };
       const status = {
         delivered: {
@@ -560,7 +651,12 @@ export default {
         },
       };
 
+      for (let fa = 0; fa < 90; fa++) {
+        times.deliverytimehistogram.push(0);
+      }
+
       analyze_data.forEach((d) => {
+        times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
             if (d.status == "returned") {
@@ -576,6 +672,14 @@ export default {
             if (d.delivereddate > 1) {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
+
+              const dth = Math.ceil((d.delivereddate - d.shippeddate)/(1000*60*60*24));
+              times.deliverytimehistogram_totaldelivered++;
+              for (let hi = 0; hi < 90; hi++) {
+                if (hi >= dth) {
+                  times.deliverytimehistogram[hi]++;
+                }
+              }
 
               const date = new Date(d.delivereddate);
               const d_ts = new Date(
