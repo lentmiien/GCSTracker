@@ -383,6 +383,9 @@ export default {
       // append the svg object to the body of the page
       // append a 'group' element to 'svg'
       // moves the 'group' element to the top left margin
+      let div_explainer = document.createElement('DIV');
+      document.getElementById('graph_area').append(div_explainer);
+
       svg = d3
         .select("#graph_area")
         .append("svg")
@@ -392,13 +395,22 @@ export default {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // append the rectangles for the bar chart
+      let first_over_99 = false;
       svg
         .selectAll(".histbar")
         .data(this.display.times.deliverytimehistogram)
         .enter()
         .append("rect")
         .attr("class", "histbar")
-        .attr("fill", "steelblue")
+        .attr("fill", (d, i) => {
+          if (d/this.display.times.deliverytimehistogram_totaldelivered > 0.99 && first_over_99 == false) {
+            first_over_99 = true;
+            div_explainer.innerText = `A 99% delivery rate of packages known to be delivered, were reached ${i} days from shipment.`;
+            return 'green';
+          } else {
+            return 'steelblue';
+          }
+        })
         .attr("x", (d, i) => x(i))
         .attr("width", 9)
         .attr("y", (d) => y(d / this.display.times.deliverytimehistogram_totaldelivered))
