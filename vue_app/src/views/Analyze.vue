@@ -193,6 +193,7 @@
                   </tbody>
                 </table>
                 <div id="graph_area"></div>
+                <b>*Note: Data will only be accurate after most packages has been delivered.</b>
               </div>
             </div>
           </div>
