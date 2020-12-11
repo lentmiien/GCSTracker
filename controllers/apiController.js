@@ -495,6 +495,11 @@ exports.get_all = (req, res) => {
       'delivered',
       'grouplabel',
     ],
+    where: {
+      addeddate: {
+        [Op.gt]: Date.now() - (183*24*60*60*1000),
+      }
+    }
   })
     .then((result) => res.json(result))
     .catch((err) => console.log(err));
