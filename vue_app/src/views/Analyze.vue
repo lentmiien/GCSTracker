@@ -6,15 +6,7 @@
         <p>*Tracking number search</p>
         <form @submit="analyze">
           <label for="records1">Records to analyze</label>
-          <textarea
-            name="records1"
-            id="records1"
-            class="form-control"
-            cols="30"
-            rows="10"
-            v-model="records"
-            required
-          ></textarea>
+          <textarea name="records1" id="records1" class="form-control" cols="30" rows="10" v-model="records" required></textarea>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
       </div>
@@ -23,13 +15,7 @@
         <p>*Label search</p>
         <form @submit="analyzelabel">
           <label for="records2">Label to analyze</label>
-          <select
-            name="records2"
-            id="records2"
-            class="form-control"
-            v-model="label"
-            required
-          >
+          <select name="records2" id="records2" class="form-control" v-model="label" required>
             <option :key="a.id" :value="a.id" v-for="a in grouplabels">
               {{ a.label }}
             </option>
@@ -58,12 +44,7 @@
               </h5>
             </div>
 
-            <div
-              id="collapseOne"
-              class="collapse show"
-              aria-labelledby="headingOne"
-              data-parent="#accordion"
-            >
+            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
               <div class="card-body">
                 <table class="table table-dark table-striped">
                   <thead>
@@ -79,38 +60,24 @@
                     <tr>
                       <td class="delivered">
                         {{ display.summary.delivered }} ({{
-                          Math.round(
-                            (10000 * display.summary.delivered) /
-                              display.summary.total_records
-                          ) / 100
+                          Math.round((10000 * display.summary.delivered) / display.summary.total_records) / 100
                         }}%)
                         <button class="btn btn-primary" v-on:click="Copy('delivered_list')">Copy</button>
                       </td>
                       <td class="delayed">
                         {{ display.summary.shipped }} ({{
-                          Math.round(
-                            (10000 * display.summary.shipped) /
-                              display.summary.total_records
-                          ) / 100
+                          Math.round((10000 * display.summary.shipped) / display.summary.total_records) / 100
                         }}%)
                         <button class="btn btn-primary" v-on:click="Copy('shipped_list')">Copy</button>
                       </td>
                       <td class="returned">
                         {{ display.summary.returned }} ({{
-                          Math.round(
-                            (10000 * display.summary.returned) /
-                              display.summary.total_records
-                          ) / 100
+                          Math.round((10000 * display.summary.returned) / display.summary.total_records) / 100
                         }}%)
                         <button class="btn btn-primary" v-on:click="Copy('returned_list')">Copy</button>
                       </td>
                       <td class="lost">
-                        {{ display.summary.lost }} ({{
-                          Math.round(
-                            (10000 * display.summary.lost) /
-                              display.summary.total_records
-                          ) / 100
-                        }}%)
+                        {{ display.summary.lost }} ({{ Math.round((10000 * display.summary.lost) / display.summary.total_records) / 100 }}%)
                         <button class="btn btn-primary" v-on:click="Copy('lost_list')">Copy</button>
                       </td>
                       <td>{{ display.summary.total_records }}</td>
@@ -134,12 +101,7 @@
                 </button>
               </h5>
             </div>
-            <div
-              id="collapseTwo"
-              class="collapse"
-              aria-labelledby="headingTwo"
-              data-parent="#accordion"
-            >
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
               <div class="card-body">
                 <table class="table table-dark table-striped">
                   <thead>
@@ -155,10 +117,10 @@
                         {{
                           Math.round(
                             display.times.delivered.totaltime_ms /
-                              display.times.delivered.number /
-                              100 /*ms +10 after rounding */ /
-                              60 /*sec*/ /
-                              60 /*min*/ /
+                            display.times.delivered.number /
+                            100 /*ms +10 after rounding */ /
+                            60 /*sec*/ /
+                            60 /*min*/ /
                               24 /*hr*/
                           ) / 10
                         }}
@@ -166,13 +128,11 @@
                       <td>
                         {{
                           Math.round(
-                            (display.times.delivered.totaltime_ms +
-                              display.times.inshipment.totaltime_ms) /
-                              (display.times.delivered.number +
-                                display.times.inshipment.number) /
-                              100 /*ms +10 after rounding */ /
-                              60 /*sec*/ /
-                              60 /*min*/ /
+                            (display.times.delivered.totaltime_ms + display.times.inshipment.totaltime_ms) /
+                            (display.times.delivered.number + display.times.inshipment.number) /
+                            100 /*ms +10 after rounding */ /
+                            60 /*sec*/ /
+                            60 /*min*/ /
                               24 /*hr*/
                           ) / 10
                         }}
@@ -181,10 +141,10 @@
                         {{
                           Math.round(
                             display.times.inshipment.totaltime_ms /
-                              display.times.inshipment.number /
-                              100 /*ms +10 after rounding */ /
-                              60 /*sec*/ /
-                              60 /*min*/ /
+                            display.times.inshipment.number /
+                            100 /*ms +10 after rounding */ /
+                            60 /*sec*/ /
+                            60 /*min*/ /
                               24 /*hr*/
                           ) / 10
                         }}
@@ -211,12 +171,7 @@
                 </button>
               </h5>
             </div>
-            <div
-              id="collapseThree"
-              class="collapse"
-              aria-labelledby="headingThree"
-              data-parent="#accordion"
-            >
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
               <div class="card-body">
                 <h2>Delivered statuses</h2>
                 <table class="table table-dark table-striped">
@@ -252,10 +207,7 @@
                       <td>{{ display.status.inshipment.prepare_shipping }}</td>
                       <td>{{ display.status.inshipment.in_tansit }}</td>
                       <td>
-                        {{
-                          display.status.inshipment
-                            .delivery_attempt_await_pickup
-                        }}
+                        {{ display.status.inshipment.delivery_attempt_await_pickup }}
                       </td>
                       <td>{{ display.status.inshipment.other }}</td>
                     </tr>
@@ -271,35 +223,35 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import * as d3 from "d3";
+import { mapGetters } from 'vuex';
+import * as d3 from 'd3';
 
 export default {
-  name: "Analyze",
+  name: 'Analyze',
   data() {
     return {
-      records: "",
-      label: "",
+      records: '',
+      label: '',
       display: undefined,
     };
   },
-  computed: mapGetters(["allTrackingData", "grouplabels"]),
+  computed: mapGetters(['allTrackingData', 'grouplabels']),
   methods: {
     Copy: function(type) {
-      let text_str = "";
-      this.display.summary[type].forEach(track => text_str += `${track}\n`);
-      const copyelement = document.createElement("textarea");
+      let text_str = '';
+      this.display.summary[type].forEach((track) => (text_str += `${track}\n`));
+      const copyelement = document.createElement('textarea');
       copyelement.value = text_str;
       document.body.appendChild(copyelement);
       copyelement.focus();
       copyelement.select();
-      document.execCommand("copy");
+      document.execCommand('copy');
       copyelement.parentElement.removeChild(copyelement);
     },
-    drawgraph: function () {
+    drawgraph: function() {
       // Clear previous graph
-      if (document.getElementById("graph_area")) {
-        document.getElementById("graph_area").innerHTML = "";
+      if (document.getElementById('graph_area')) {
+        document.getElementById('graph_area').innerHTML = '';
       }
 
       /*
@@ -329,37 +281,34 @@ export default {
       // append a 'group' element to 'svg'
       // moves the 'group' element to the top left margin
       var svg = d3
-        .select("#graph_area")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .select('#graph_area')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
       // append the rectangles for the bar chart
       svg
-        .selectAll(".histbar")
+        .selectAll('.histbar')
         .data(this.display.times.delivered.histogram.date_ts)
         .enter()
-        .append("rect")
-        .attr("class", "histbar")
-        .attr("fill", "steelblue")
-        .attr("x", (d) => x(d))
-        .attr("width", 10)
-        .attr("y", (d, i) => y(this.display.times.delivered.histogram.count[i]))
-        .attr(
-          "height",
-          (d, i) => height - y(this.display.times.delivered.histogram.count[i])
-        );
+        .append('rect')
+        .attr('class', 'histbar')
+        .attr('fill', 'steelblue')
+        .attr('x', (d) => x(d))
+        .attr('width', 10)
+        .attr('y', (d, i) => y(this.display.times.delivered.histogram.count[i]))
+        .attr('height', (d, i) => height - y(this.display.times.delivered.histogram.count[i]));
 
       // add the x Axis
       svg
-        .append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .append('g')
+        .attr('transform', 'translate(0,' + height + ')')
         .call(d3.axisBottom(x));
 
       // add the y Axis
-      svg.append("g").call(d3.axisLeft(y));
+      svg.append('g').call(d3.axisLeft(y));
 
       // Delivery time graph
       /*
@@ -388,23 +337,23 @@ export default {
       document.getElementById('graph_area').append(div_explainer);
 
       svg = d3
-        .select("#graph_area")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .select('#graph_area')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
       // append the rectangles for the bar chart
       let first_over_99 = false;
       svg
-        .selectAll(".histbar")
+        .selectAll('.histbar')
         .data(this.display.times.deliverytimehistogram)
         .enter()
-        .append("rect")
-        .attr("class", "histbar")
-        .attr("fill", (d, i) => {
-          if (d/this.display.times.deliverytimehistogram_totaldelivered > 0.99 && first_over_99 == false) {
+        .append('rect')
+        .attr('class', 'histbar')
+        .attr('fill', (d, i) => {
+          if (d / this.display.times.deliverytimehistogram_totaldelivered > 0.99 && first_over_99 == false) {
             first_over_99 = true;
             div_explainer.innerText = `A 99% delivery rate of packages known to be delivered, were reached ${i} days from shipment.`;
             return 'green';
@@ -412,38 +361,53 @@ export default {
             return 'steelblue';
           }
         })
-        .attr("x", (d, i) => x(i))
-        .attr("width", 9)
-        .attr("y", (d) => y(d / this.display.times.deliverytimehistogram_totaldelivered))
-        .attr(
-          "height",
-          (d) => height - y(d / this.display.times.deliverytimehistogram_totaldelivered)
-        );
+        .attr('x', (d, i) => x(i))
+        .attr('width', 9)
+        .attr('y', (d) => y(d / this.display.times.deliverytimehistogram_totaldelivered))
+        .attr('height', (d) => height - y(d / this.display.times.deliverytimehistogram_totaldelivered));
 
       // append the rectangles for the bar chart
+      // svg
+      //   .selectAll(".histbar2")
+      //   .data(this.display.times.deliverytimehistogram)
+      //   .enter()
+      //   .append("rect")
+      //   .attr("class", "histbar2")
+      //   .attr("fill", "orange")
+      //   .attr("x", (d, i) => x(i))
+      //   .attr("width", 9)
+      //   .attr("y", (d) => y(d / this.display.times.deliverytimehistogram_totalcount))
+      //   .attr(
+      //     "height",
+      //     (d) => height - y(d / this.display.times.deliverytimehistogram_totalcount)
+      //   );
+      const divider = this.display.times.deliverytimehistogram_totalcount;
       svg
-        .selectAll(".histbar2")
-        .data(this.display.times.deliverytimehistogram)
-        .enter()
-        .append("rect")
-        .attr("class", "histbar2")
-        .attr("fill", "orange")
-        .attr("x", (d, i) => x(i))
-        .attr("width", 9)
-        .attr("y", (d) => y(d / this.display.times.deliverytimehistogram_totalcount))
+        .append('path')
+        .datum(this.display.times.deliverytimehistogram)
+        .attr('fill', 'none')
+        .attr('stroke', 'orange')
+        .attr('stroke-width', 3)
         .attr(
-          "height",
-          (d) => height - y(d / this.display.times.deliverytimehistogram_totalcount)
+          'd',
+          d3
+            .line()
+            .x(function(d, i) {
+              return x(i);
+            })
+            .y(function(d) {
+              return y(d / divider);
+            })
         );
 
       // add the x Axis
       svg
-        .append("g")
-        .attr("transform", "translate(0," + height + ")")
+        .append('g')
+        .attr('transform', 'translate(0,' + height + ')')
         .call(d3.axisBottom(x));
 
       // add the y Axis
-      svg.append("g").call(d3.axisLeft(y));
+      svg.append('g').call(d3.axisLeft(y));
     },
     analyze(e) {
       e.preventDefault();
@@ -452,9 +416,7 @@ export default {
       const input_data = this.records.split(/[\r\n]+/); // Split on new line characters
 
       // Acquire records
-      const analyze_data = this.allTrackingData.filter(
-        (d) => input_data.indexOf(d.tracking) >= 0
-      );
+      const analyze_data = this.allTrackingData.filter((d) => input_data.indexOf(d.tracking) >= 0);
 
       const summary = {
         delivered: 0,
@@ -480,9 +442,9 @@ export default {
           number: 0,
           totaltime_ms: 0,
         },
-        deliverytimehistogram: [],               // 90 element array, within 0-89 days
+        deliverytimehistogram: [], // 90 element array, within 0-89 days
         deliverytimehistogram_totaldelivered: 0, // All delivered
-        deliverytimehistogram_totalcount: 0,     // All records(including undelivered)
+        deliverytimehistogram_totalcount: 0, // All records(including undelivered)
       };
       const status = {
         delivered: {
@@ -507,7 +469,7 @@ export default {
         times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
-            if (d.status == "returned") {
+            if (d.status == 'returned') {
               summary.returned++;
               summary.returned_list.push(d.tracking);
             } else {
@@ -521,7 +483,7 @@ export default {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
 
-              const dth = Math.ceil((d.delivereddate - d.shippeddate)/(1000*60*60*24));
+              const dth = Math.ceil((d.delivereddate - d.shippeddate) / (1000 * 60 * 60 * 24));
               times.deliverytimehistogram_totaldelivered++;
               for (let hi = 0; hi < 90; hi++) {
                 if (hi >= dth) {
@@ -530,11 +492,7 @@ export default {
               }
 
               const date = new Date(d.delivereddate);
-              const d_ts = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-              ).getTime();
+              const d_ts = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
               const index = times.delivered.histogram.date_ts.indexOf(d_ts);
               if (index == -1) {
                 times.delivered.histogram.date_ts.push(d_ts);
@@ -545,22 +503,15 @@ export default {
             }
 
             // Status check
-            if (
-              d.status.indexOf("door") >= 0 ||
-              d.status.indexOf("garage") >= 0
-            ) {
+            if (d.status.indexOf('door') >= 0 || d.status.indexOf('garage') >= 0) {
               status.delivered.door++;
-            } else if (
-              d.status.indexOf("locker") >= 0 ||
-              d.status.indexOf("mailbox") >= 0 ||
-              d.status.indexOf("PO Box") >= 0
-            ) {
+            } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0 || d.status.indexOf('PO Box') >= 0) {
               status.delivered.post_locker++;
             } else if (
-              d.status.indexOf("reception") >= 0 ||
-              d.status.indexOf("neighbor") >= 0 ||
-              d.status.indexOf("picked up at") >= 0 ||
-              d.status.indexOf("individual") >= 0
+              d.status.indexOf('reception') >= 0 ||
+              d.status.indexOf('neighbor') >= 0 ||
+              d.status.indexOf('picked up at') >= 0 ||
+              d.status.indexOf('individual') >= 0
             ) {
               status.delivered.reception_person++;
             } else {
@@ -575,27 +526,24 @@ export default {
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
 
           // Status check
-          if (
-            d.status.indexOf("label has been prepared") >= 0 ||
-            d.status.indexOf("shipping partner facility") >= 0
-          ) {
+          if (d.status.indexOf('label has been prepared') >= 0 || d.status.indexOf('shipping partner facility') >= 0) {
             status.inshipment.prepare_shipping++;
           } else if (
-            d.status.indexOf("has not been updated") >= 0 ||
-            d.status.indexOf("on its way to the destination") >= 0 ||
-            d.status.indexOf("in transit to the destination") >= 0 ||
-            d.status.indexOf("in transit to the next facility") >= 0 ||
-            d.status.indexOf("arrived at the hub") >= 0 ||
-            d.status.indexOf("forwarded to a different") >= 0 ||
-            d.status.indexOf("arrived at the Post Office") >= 0 ||
-            d.status == "Shipped"
+            d.status.indexOf('has not been updated') >= 0 ||
+            d.status.indexOf('on its way to the destination') >= 0 ||
+            d.status.indexOf('in transit to the destination') >= 0 ||
+            d.status.indexOf('in transit to the next facility') >= 0 ||
+            d.status.indexOf('arrived at the hub') >= 0 ||
+            d.status.indexOf('forwarded to a different') >= 0 ||
+            d.status.indexOf('arrived at the Post Office') >= 0 ||
+            d.status == 'Shipped'
           ) {
             status.inshipment.in_tansit++;
           } else if (
-            d.status.indexOf("attempted to deliver") >= 0 ||
-            d.status.indexOf("delivery attempt") >= 0 ||
-            d.status.indexOf("is being held at") >= 0 ||
-            d.status.indexOf("ready for pickup") >= 0
+            d.status.indexOf('attempted to deliver') >= 0 ||
+            d.status.indexOf('delivery attempt') >= 0 ||
+            d.status.indexOf('is being held at') >= 0 ||
+            d.status.indexOf('ready for pickup') >= 0
           ) {
             status.inshipment.delivery_attempt_await_pickup++;
           } else {
@@ -617,9 +565,7 @@ export default {
       const input_data = parseInt(this.label);
 
       // Acquire records
-      const analyze_data = this.allTrackingData.filter(
-        (d) => d.grouplabel === input_data
-      );
+      const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data);
 
       const summary = {
         delivered: 0,
@@ -645,9 +591,9 @@ export default {
           number: 0,
           totaltime_ms: 0,
         },
-        deliverytimehistogram: [],               // 90 element array, within 0-89 days
+        deliverytimehistogram: [], // 90 element array, within 0-89 days
         deliverytimehistogram_totaldelivered: 0, // All delivered
-        deliverytimehistogram_totalcount: 0,     // All records(including undelivered)
+        deliverytimehistogram_totalcount: 0, // All records(including undelivered)
       };
       const status = {
         delivered: {
@@ -672,7 +618,7 @@ export default {
         times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
-            if (d.status == "returned") {
+            if (d.status == 'returned') {
               summary.returned++;
               summary.returned_list.push(d.tracking);
             } else {
@@ -686,7 +632,7 @@ export default {
               times.delivered.number++;
               times.delivered.totaltime_ms += d.delivereddate - d.shippeddate;
 
-              const dth = Math.ceil((d.delivereddate - d.shippeddate)/(1000*60*60*24));
+              const dth = Math.ceil((d.delivereddate - d.shippeddate) / (1000 * 60 * 60 * 24));
               times.deliverytimehistogram_totaldelivered++;
               for (let hi = 0; hi < 90; hi++) {
                 if (hi >= dth) {
@@ -695,11 +641,7 @@ export default {
               }
 
               const date = new Date(d.delivereddate);
-              const d_ts = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-              ).getTime();
+              const d_ts = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
               const index = times.delivered.histogram.date_ts.indexOf(d_ts);
               if (index == -1) {
                 times.delivered.histogram.date_ts.push(d_ts);
@@ -710,22 +652,15 @@ export default {
             }
 
             // Status check
-            if (
-              d.status.indexOf("door") >= 0 ||
-              d.status.indexOf("garage") >= 0
-            ) {
+            if (d.status.indexOf('door') >= 0 || d.status.indexOf('garage') >= 0) {
               status.delivered.door++;
-            } else if (
-              d.status.indexOf("locker") >= 0 ||
-              d.status.indexOf("mailbox") >= 0 ||
-              d.status.indexOf("PO Box") >= 0
-            ) {
+            } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0 || d.status.indexOf('PO Box') >= 0) {
               status.delivered.post_locker++;
             } else if (
-              d.status.indexOf("reception") >= 0 ||
-              d.status.indexOf("neighbor") >= 0 ||
-              d.status.indexOf("picked up at") >= 0 ||
-              d.status.indexOf("individual") >= 0
+              d.status.indexOf('reception') >= 0 ||
+              d.status.indexOf('neighbor') >= 0 ||
+              d.status.indexOf('picked up at') >= 0 ||
+              d.status.indexOf('individual') >= 0
             ) {
               status.delivered.reception_person++;
             } else {
@@ -740,27 +675,24 @@ export default {
           times.inshipment.totaltime_ms += Date.now() - d.shippeddate;
 
           // Status check
-          if (
-            d.status.indexOf("label has been prepared") >= 0 ||
-            d.status.indexOf("shipping partner facility") >= 0
-          ) {
+          if (d.status.indexOf('label has been prepared') >= 0 || d.status.indexOf('shipping partner facility') >= 0) {
             status.inshipment.prepare_shipping++;
           } else if (
-            d.status.indexOf("has not been updated") >= 0 ||
-            d.status.indexOf("on its way to the destination") >= 0 ||
-            d.status.indexOf("in transit to the destination") >= 0 ||
-            d.status.indexOf("in transit to the next facility") >= 0 ||
-            d.status.indexOf("arrived at the hub") >= 0 ||
-            d.status.indexOf("forwarded to a different") >= 0 ||
-            d.status.indexOf("arrived at the Post Office") >= 0 ||
-            d.status == "Shipped"
+            d.status.indexOf('has not been updated') >= 0 ||
+            d.status.indexOf('on its way to the destination') >= 0 ||
+            d.status.indexOf('in transit to the destination') >= 0 ||
+            d.status.indexOf('in transit to the next facility') >= 0 ||
+            d.status.indexOf('arrived at the hub') >= 0 ||
+            d.status.indexOf('forwarded to a different') >= 0 ||
+            d.status.indexOf('arrived at the Post Office') >= 0 ||
+            d.status == 'Shipped'
           ) {
             status.inshipment.in_tansit++;
           } else if (
-            d.status.indexOf("attempted to deliver") >= 0 ||
-            d.status.indexOf("delivery attempt") >= 0 ||
-            d.status.indexOf("is being held at") >= 0 ||
-            d.status.indexOf("ready for pickup") >= 0
+            d.status.indexOf('attempted to deliver') >= 0 ||
+            d.status.indexOf('delivery attempt') >= 0 ||
+            d.status.indexOf('is being held at') >= 0 ||
+            d.status.indexOf('ready for pickup') >= 0
           ) {
             status.inshipment.delivery_attempt_await_pickup++;
           } else {
@@ -779,7 +711,7 @@ export default {
       // Analyze stuff
       const result = [];
       const indexer = [];
-      this.grouplabels.forEach(label => {
+      this.grouplabels.forEach((label) => {
         result.push({
           label: label.label,
           lableid: label.id,
@@ -796,60 +728,55 @@ export default {
         });
         indexer.push(label.id);
       });
-      this.allTrackingData.filter(f => f.grouplabel >= 1).forEach(d => {
-        const index = indexer.indexOf(d.grouplabel);
-        if (index >= 0) {
-          if (d.delivered) {
-            if (d.delivereddate == 0) {
-              if (d.status == "returned") {
-                result[index].numberreturned++;
+      this.allTrackingData
+        .filter((f) => f.grouplabel >= 1)
+        .forEach((d) => {
+          const index = indexer.indexOf(d.grouplabel);
+          if (index >= 0) {
+            if (d.delivered) {
+              if (d.delivereddate == 0) {
+                if (d.status == 'returned') {
+                  result[index].numberreturned++;
+                } else {
+                  result[index].numberlost++;
+                }
               } else {
-                result[index].numberlost++;
-              }
-            } else {
-              result[index].numberdelivered++;
+                result[index].numberdelivered++;
 
-              // Find first delivered
-              if (d.delivereddate > 1) {
-                if (result[index].firstdelivereddate > d.delivereddate) {
-                  result[index].firstdelivereddate = d.delivereddate;
+                // Find first delivered
+                if (d.delivereddate > 1) {
+                  if (result[index].firstdelivereddate > d.delivereddate) {
+                    result[index].firstdelivereddate = d.delivereddate;
+                  }
+                }
+
+                // Status check
+                if (d.status.indexOf('door') >= 0 || d.status.indexOf('garage') >= 0) {
+                  result[index].deliveredonground++;
+                } else if (d.status.indexOf('locker') >= 0 || d.status.indexOf('mailbox') >= 0 || d.status.indexOf('PO Box') >= 0) {
+                  result[index].deliveredinbox++;
+                } else if (
+                  d.status.indexOf('reception') >= 0 ||
+                  d.status.indexOf('neighbor') >= 0 ||
+                  d.status.indexOf('picked up at') >= 0 ||
+                  d.status.indexOf('individual') >= 0
+                ) {
+                  result[index].deliveredtoperson++;
+                } else {
+                  result[index].deliveredunknown++;
                 }
               }
-
-              // Status check
-              if (
-                d.status.indexOf("door") >= 0 ||
-                d.status.indexOf("garage") >= 0
-              ) {
-                result[index].deliveredonground++;
-              } else if (
-                d.status.indexOf("locker") >= 0 ||
-                d.status.indexOf("mailbox") >= 0 ||
-                d.status.indexOf("PO Box") >= 0
-              ) {
-                result[index].deliveredinbox++;
-              } else if (
-                d.status.indexOf("reception") >= 0 ||
-                d.status.indexOf("neighbor") >= 0 ||
-                d.status.indexOf("picked up at") >= 0 ||
-                d.status.indexOf("individual") >= 0
-              ) {
-                result[index].deliveredtoperson++;
-              } else {
-                result[index].deliveredunknown++;
-              }
+            } else {
+              result[index].numberinshipment++;
             }
-          } else {
-            result[index].numberinshipment++;
           }
-        }
-      });
+        });
 
       // Generate output
       let output = '';
       const youbi = ['日', '月', '火', '水', '木', '金', '土'];
-      const todayDate = new Date(Date.now() + 9*60*60*1000);// Japanese local time
-      output += `【${todayDate.getMonth()+1}月${todayDate.getDate()}日（${youbi[todayDate.getDay()]}）】の更新は下記になります。<br><br>`;
+      const todayDate = new Date(Date.now() + 9 * 60 * 60 * 1000); // Japanese local time
+      output += `【${todayDate.getMonth() + 1}月${todayDate.getDate()}日（${youbi[todayDate.getDay()]}）】の更新は下記になります。<br><br>`;
       output += '<b>※変更無しのコンテナは背景灰色</b><br><b>※背景黒は追跡が始まっていません（追跡番号待ち）</b><br><br>■配達ステータス<br>';
       // Table: delivery status
       output += `
@@ -865,16 +792,18 @@ export default {
           </tr>
         </thead>
         <tbody>`;
-      result.forEach(r => {
+      result.forEach((r) => {
         const total = r.numberdelivered + r.numberinshipment + r.numberreturned + r.numberlost;
         output += `
         <tr>
           <td style="border:1px solid black;">${r.label}</td>
-          <td style="border:1px solid black;">${(new Date(r.firstdelivereddate)).getMonth()+1}月${(new Date(r.firstdelivereddate)).getDate()}日</td>
-          <td style="border:1px solid black;">${r.numberdelivered} (${Math.round(10000 * r.numberdelivered / total) / 100}%)</td>
-          <td style="border:1px solid black;">${r.numberinshipment} (${Math.round(10000 * r.numberinshipment / total) / 100}%)</td>
-          <td style="border:1px solid black;">${r.numberreturned} (${Math.round(10000 * r.numberreturned / total) / 100}%)</td>
-          <td style="border:1px solid black;">${r.numberlost} (${Math.round(10000 * r.numberlost / total) / 100}%)</td>
+          <td style="border:1px solid black;">${new Date(r.firstdelivereddate).getMonth() + 1}月${new Date(
+          r.firstdelivereddate
+        ).getDate()}日</td>
+          <td style="border:1px solid black;">${r.numberdelivered} (${Math.round((10000 * r.numberdelivered) / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.numberinshipment} (${Math.round((10000 * r.numberinshipment) / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.numberreturned} (${Math.round((10000 * r.numberreturned) / total) / 100}%)</td>
+          <td style="border:1px solid black;">${r.numberlost} (${Math.round((10000 * r.numberlost) / total) / 100}%)</td>
         </tr>
         `;
       });
@@ -898,7 +827,7 @@ export default {
           </tr>
         </thead>
         <tbody>`;
-      result.forEach(r => {
+      result.forEach((r) => {
         output += `
         <tr>
           <td style="border:1px solid black;">${r.label}</td>
@@ -916,13 +845,13 @@ export default {
 
       // Copy to clipboard
       function listener(e) {
-        e.clipboardData.setData("text/html", output);
-        e.clipboardData.setData("text/plain", output);
+        e.clipboardData.setData('text/html', output);
+        e.clipboardData.setData('text/plain', output);
         e.preventDefault();
       }
-      document.addEventListener("copy", listener);
-      document.execCommand("copy");
-      document.removeEventListener("copy", listener);
+      document.addEventListener('copy', listener);
+      document.execCommand('copy');
+      document.removeEventListener('copy', listener);
 
       // Show done message
       alert('Copied!');
