@@ -112,24 +112,24 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
-  name: "ShippingList",
+  name: 'ShippingList',
   data() {
     return {
       shippings: [],
     };
   },
-  computed: mapGetters(["allShippingMethods"]),
+  computed: mapGetters(['allShippingMethods']),
   methods: {
-    ...mapActions(["updateShippingRecord"]),
-    update: function (this_id) {
+    ...mapActions(['updateShippingRecord']),
+    update: function(this_id) {
       const element = document.getElementById(this_id);
-      element.style.backgroundColor = "white";
+      element.style.backgroundColor = 'white';
       this.updateShippingRecord({ this_id, value: element.value });
     },
-    copytable: function () {
+    copytable: function() {
       this.allShippingMethods.sort((a, b) => {
         if (a.country_name < b.country_name) {
           return -1;
@@ -139,8 +139,7 @@ export default {
           return 0;
         }
       });
-      let text_str =
-        '<table style="border-collapse: collapse; color: black; background-color: white;"><tbody>';
+      let text_str = '<table style="border-collapse: collapse; color: black; background-color: white;"><tbody>';
       let colorer = 0;
       this.allShippingMethods.forEach((c) => {
         // Fill in header every 20th row
@@ -152,37 +151,37 @@ export default {
 
         // Determin if and what other methods that are available
         let other = '';
-        if (c.country_name == "UNITED STATES") {
-          other = 'Surface Mail (Premium)'
-        } else if (c.country_name == "CANADA" || c.country_name == "AUSTRALIA") {
-          other = 'Surface Parcel<br>Air Small Packet (Unregistered)'
-        } else if (c.country_name == "RUSSIAN FEDERATION" || c.country_name == "BRAZIL") {
-          other = 'Surface Parcel'
+        if (c.country_name == 'UNITED STATES') {
+          other = '-Surface Mail (Premium)<br>-Surface Parcel<br>-Air Small Packet (Unregistered)';
+        } else if (c.country_name == 'CANADA' || c.country_name == 'AUSTRALIA') {
+          other = '-Surface Parcel<br>-Air Small Packet (Unregistered)';
+        } else if (c.country_name == 'RUSSIAN FEDERATION' || c.country_name == 'BRAZIL') {
+          other = '-Surface Parcel';
         }
 
         // Fill in row
         text_str += `<tr style="background-color:${
-          colorer % 2 == 0 ? "#FFFFFF" : "#EEEEEE"
+          colorer % 2 == 0 ? '#FFFFFF' : '#EEEEEE'
         };"><td style="text-align: center; border: 1px solid black;">${
           c.country_name
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.ems_available == 1 ? "〇" : ""
+          c.ems_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.airsp_available == 1 ? "〇" : ""
+          c.airsp_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.salspr_available == 1 ? "〇" : ""
+          c.salspr_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.salspu_available == 1 ? "〇" : ""
+          c.salspu_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.salp_available == 1 ? "〇" : ""
+          c.salp_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.dhl_available == 1 ? "〇" : ""
+          c.dhl_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${
-          c.airp_available == 1 ? "〇" : ""
+          c.airp_available == 1 ? '〇' : ''
         }</td><td style="text-align: center; border: 1px solid black;">${other}</td></tr>`;
         colorer++;
       });
-      text_str += "</tbody></table>";
+      text_str += '</tbody></table>';
       // const copyelement = document.createElement("textarea");
       // copyelement.value = text_str;
       // document.body.appendChild(copyelement);
@@ -192,13 +191,13 @@ export default {
       // copyelement.parentElement.removeChild(copyelement);
 
       function listener(e) {
-        e.clipboardData.setData("text/html", text_str);
-        e.clipboardData.setData("text/plain", text_str);
+        e.clipboardData.setData('text/html', text_str);
+        e.clipboardData.setData('text/plain', text_str);
         e.preventDefault();
       }
-      document.addEventListener("copy", listener);
-      document.execCommand("copy");
-      document.removeEventListener("copy", listener);
+      document.addEventListener('copy', listener);
+      document.execCommand('copy');
+      document.removeEventListener('copy', listener);
     },
   },
 };

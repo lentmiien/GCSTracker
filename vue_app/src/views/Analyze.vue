@@ -22,7 +22,7 @@
           </select>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
-        <button class="btn btn-primary mt-3" v-on:click="AnalyzeAllLabels()">Analyze all labels</button>
+        <button class="btn btn-primary mt-3" v-on:click="AnalyzeAllLabels()">Analyze all "AITコンテナ"</button>
       </div>
     </div>
     <div class="row" v-if="display">
@@ -712,21 +712,23 @@ export default {
       const result = [];
       const indexer = [];
       this.grouplabels.forEach((label) => {
-        result.push({
-          label: label.label,
-          lableid: label.id,
-          firstdelivereddate: 4765100399000,
-          numberdelivered: 0,
-          numberinshipment: 0,
-          numberreturned: 0,
-          numberlost: 0,
-          total: 0,
-          deliveredonground: 0,
-          deliveredinbox: 0,
-          deliveredtoperson: 0,
-          deliveredunknown: 0,
-        });
-        indexer.push(label.id);
+        if (label.label.indexOf("AITコンテナ") == 0) {
+          result.push({
+            label: label.label,
+            lableid: label.id,
+            firstdelivereddate: 4765100399000,
+            numberdelivered: 0,
+            numberinshipment: 0,
+            numberreturned: 0,
+            numberlost: 0,
+            total: 0,
+            deliveredonground: 0,
+            deliveredinbox: 0,
+            deliveredtoperson: 0,
+            deliveredunknown: 0,
+          });
+          indexer.push(label.id);
+        }
       });
       this.allTrackingData
         .filter((f) => f.grouplabel >= 1)
