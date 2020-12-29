@@ -20,6 +20,17 @@
               {{ a.label }}
             </option>
           </select>
+          <label for="shippingdate">Shipping date range</label>
+          <select name="shippingdate" id="shippingdate" class="form-control">
+            <option value="all">All</option>
+            <option value="2020">2020</option>
+            <option value="2020-11">November 2020</option>
+            <option value="2020-12">December 2020</option>
+            <option value="2021">2021</option>
+            <option value="2021-1">January 2021</option>
+            <option value="2021-2">February 2021</option>
+            <option value="2021-3">March 2021</option>
+          </select>
           <input class="btn btn-primary" type="submit" value="Submit" />
         </form>
         <button class="btn btn-primary mt-3" v-on:click="AnalyzeAllLabels()">Analyze all "AITコンテナ"</button>
@@ -561,11 +572,27 @@ export default {
     analyzelabel(e) {
       e.preventDefault();
 
+      // Generate date range (shipping date)
+      const option = document.getElementById('shippingdate').value.split('-');
+      let start_ts = 0;
+      let end_ts = Date.now();
+      if (option != 'all') {
+        if (option.length == 1) {
+          // Year
+          start_ts = (new Date(parseInt(option[0]), 0, 1, 0, 0, 0, 0)).getTime();
+          end_ts = (new Date(parseInt(option[0]), 11, 31, 23, 59, 59, 999)).getTime();
+        } else {
+          // Year-Month
+          start_ts = (new Date(parseInt(option[0]), parseInt(option[1])-1, 1, 0, 0, 0, 0)).getTime();
+          end_ts = (new Date(parseInt(option[0]), parseInt(option[1]), 0, 23, 59, 59, 999)).getTime();
+        }
+      }
+
       // Format data to send (from "label")
       const input_data = parseInt(this.label);
 
       // Acquire records
-      const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data);
+      const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.shippeddate >= start_ts && d.shippeddate <= end_ts);
 
       const summary = {
         delivered: 0,
