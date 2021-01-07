@@ -20,8 +20,8 @@
               {{ a.label }}
             </option>
           </select>
-          <label for="shippingdate">Shipping date range</label>
-          <select name="shippingdate" id="shippingdate" class="form-control">
+          <label for="delivereddate">Delivered date range</label>
+          <select name="delivereddate" id="delivereddate" class="form-control">
             <option value="all">All</option>
             <option value="2020">2020</option>
             <option value="2020-11">November 2020</option>
@@ -573,7 +573,7 @@ export default {
       e.preventDefault();
 
       // Generate date range (shipping date)
-      const option = document.getElementById('shippingdate').value.split('-');
+      const option = document.getElementById('delivereddate').value.split('-');
       let start_ts = 0;
       let end_ts = Date.now();
       if (option != 'all') {
@@ -592,7 +592,7 @@ export default {
       const input_data = parseInt(this.label);
 
       // Acquire records
-      const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.shippeddate >= start_ts && d.shippeddate <= end_ts);
+      const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
 
       const summary = {
         delivered: 0,
