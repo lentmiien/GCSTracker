@@ -95,6 +95,7 @@
                     </tr>
                   </tbody>
                 </table>
+                <b :v-if="display.summary.unchecked_records">Unchecked records: {{ display.summary.unchecked_records }} *Be careful if high!!</b>
               </div>
             </div>
           </div>
@@ -593,6 +594,7 @@ export default {
 
       // Acquire records
       const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
+      const unchecked_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivered == false && d.lastchecked > start_ts && d.lastchecked < end_ts && d.carrier != 'INVALID');
 
       const summary = {
         delivered: 0,
@@ -604,6 +606,7 @@ export default {
         lost: 0,
         lost_list: [],
         total_records: analyze_data.length,
+        unchecked_records: unchecked_data.length,
       };
       const times = {
         delivered: {
