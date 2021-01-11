@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 //var logger = require('morgan');
 var session = require('express-session');
+const fileUpload = require('express-fileupload');
 
 const pp = require('./passport_init');
 
@@ -26,6 +27,7 @@ app.use(cookieParser());
 app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false, cookie: { maxAge: 86400000 } }));
 app.use(pp.passport.initialize());
 app.use(pp.passport.session());
+app.use(fileUpload());
 
 app.use('/', indexRouter);
 app.use('/login', requireNotAuthenticated, pp.router);

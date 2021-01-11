@@ -89,3 +89,4 @@ pnpm-debug.log*
 *.sw?
 
 public.zip
+uploads/file.csv

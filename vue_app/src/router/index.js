@@ -18,6 +18,7 @@ import Analyze from '../views/Analyze.vue';
 import Labels from '../views/Labels.vue';
 import Alert from '../views/Alert.vue';
 import UpdateRecords from '../views/UpdateRecords.vue';
+import ErrorCheck from '../views/ErrorCheck.vue';
 
 Vue.use(VueRouter);
 
@@ -111,6 +112,11 @@ const routes = [
     path: '/updaterecords',
     name: 'UpdateRecords',
     component: UpdateRecords,
+  },
+  {
+    path: '/errorcheck',
+    name: 'ErrorCheck',
+    component: ErrorCheck,
   },
   {
     path: '/about',

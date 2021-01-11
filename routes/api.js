@@ -33,6 +33,7 @@ router.post('/report', controller.api_report);
 router.get('/get/:startdate/:enddate', controller.api_get);
 router.get('/getcsv', controller.api_csv);
 router.get('/getlog', controller.get_log);
+router.post('/errorcheck', controller.errorcheck);
 
 // Export router
 module.exports = router;

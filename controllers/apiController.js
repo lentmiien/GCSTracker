@@ -1,5 +1,6 @@
 // Require necessary database models
 const async = require('async');
+const csvtojson = require("csvtojson");
 const { Country, Countrylist, Tracking, Grouplabel, Op } = require('../sequelize');
 
 // Runtime logger
@@ -651,6 +652,220 @@ exports.acquire_tracking_data_batch = (req, res) => {
 // Runtime log
 exports.get_log = (req, res) => {
   res.json(GetLog());
+};
+
+exports.errorcheck = (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  let sampleFile = req.files.file;
+
+  // Use the mv() method to place the file somewhere on your server
+  // sampleFile.mv('./uploads/file.csv', function(err) {
+  //   if (err)
+  //     return res.status(500).send(err);
+  //   csvtojson().fromString(sampleFile.data.toString()).then(data => { 
+  //       console.log(data);
+  //     });
+  //   res.json({ status: 'OK' });
+  // });
+
+const state_hash =  {
+    'AL': 'Alabama',
+    'AK': 'Alaska',
+    'AS': 'American Samoa',
+    'AZ': 'Arizona',
+    'AR': 'Arkansas',
+    'CA': 'California',
+    'CO': 'Colorado',
+    'CT': 'Connecticut',
+    'DE': 'Delaware',
+    'DC': 'District Of Columbia',
+    'FM': 'Federated States Of Micronesia',
+    'FL': 'Florida',
+    'GA': 'Georgia',
+    'GU': 'Guam',
+    'HI': 'Hawaii',
+    'ID': 'Idaho',
+    'IL': 'Illinois',
+    'IN': 'Indiana',
+    'IA': 'Iowa',
+    'KS': 'Kansas',
+    'KY': 'Kentucky',
+    'LA': 'Louisiana',
+    'ME': 'Maine',
+    'MH': 'Marshall Islands',
+    'MD': 'Maryland',
+    'MA': 'Massachusetts',
+    'MI': 'Michigan',
+    'MN': 'Minnesota',
+    'MS': 'Mississippi',
+    'MO': 'Missouri',
+    'MT': 'Montana',
+    'NE': 'Nebraska',
+    'NV': 'Nevada',
+    'NH': 'New Hampshire',
+    'NJ': 'New Jersey',
+    'NM': 'New Mexico',
+    'NY': 'New York',
+    'NC': 'North Carolina',
+    'ND': 'North Dakota',
+    'MP': 'Northern Mariana Islands',
+    'OH': 'Ohio',
+    'OK': 'Oklahoma',
+    'OR': 'Oregon',
+    'PW': 'Palau',
+    'PA': 'Pennsylvania',
+    'PR': 'Puerto Rico',
+    'RI': 'Rhode Island',
+    'SC': 'South Carolina',
+    'SD': 'South Dakota',
+    'TN': 'Tennessee',
+    'TX': 'Texas',
+    'UT': 'Utah',
+    'VT': 'Vermont',
+    'VI': 'Virgin Islands',
+    'VA': 'Virginia',
+    'WA': 'Washington',
+    'WV': 'West Virginia',
+    'WI': 'Wisconsin',
+    'WY': 'Wyoming'
+  };
+  const states_hash =
+  {
+    'ALABAMA': 'AL',
+    'ALASKA': 'AK',
+    'AMERICAN SAMOA': 'AS',
+    'ARIZONA': 'AZ',
+    'ARKANSAS': 'AR',
+    'CALIFORNIA': 'CA',
+    'COLORADO': 'CO',
+    'CONNECTICUT': 'CT',
+    'DELAWARE': 'DE',
+    'DISTRICT OF COLUMBIA': 'DC',
+    'FEDERATED STATES OF MICRONESIA': 'FM',
+    'FLORIDA': 'FL',
+    'GEORGIA': 'GA',
+    'GUAM': 'GU',
+    'HAWAII': 'HI',
+    'IDAHO': 'ID',
+    'ILLINOIS': 'IL',
+    'INDIANA': 'IN',
+    'IOWA': 'IA',
+    'KANSAS': 'KS',
+    'KENTUCKY': 'KY',
+    'LOUISIANA': 'LA',
+    'MAINE': 'ME',
+    'MARSHALL ISLANDS': 'MH',
+    'MARYLAND': 'MD',
+    'MASSACHUSETTS': 'MA',
+    'MICHIGAN': 'MI',
+    'MINNESOTA': 'MN',
+    'MISSISSIPPI': 'MS',
+    'MISSOURI': 'MO',
+    'MONTANA': 'MT',
+    'NEBRASKA': 'NE',
+    'NEVADA': 'NV',
+    'NEW HAMPSHIRE': 'NH',
+    'NEW JERESY': 'NJ',
+    'NEW MEXICO': 'NM',
+    'NEW YORK': 'NY',
+    'NORTH CAROLINA': 'NC',
+    'NORTH DAKOTA': 'ND',
+    'NORTHERN MARIANA ISLANDS': 'MP',
+    'OHIO': 'OH',
+    'OKLAHOMA': 'OK',
+    'OREGANO': 'OR',
+    'PALAU': 'PW',
+    'PENNSYLVANIA': 'PA',
+    'PUERTO RICO': 'PR',
+    'RHODE ISLAND': 'RI',
+    'SOUTH CAROLINA': 'SC',
+    'SOUTH DAKOTA': 'SD',
+    'TENNESSEE': 'TN',
+    'TEXAS': 'TX',
+    'UTAH': 'UT',
+    'VERMONT': 'VT',
+    'VIRGIN ISLANDS': 'VI',
+    'VIRGINIA': 'VA',
+    'WASHINGTON': 'WA',
+    'WEST VIRGINIA': 'WV',
+    'WISCONSIN': 'WI',
+    'WYOMING': 'WY'
+  };
+
+  csvtojson().fromString(sampleFile.data.toString()).then(data => {
+    const trackings = [];
+    data.forEach(d => trackings.push(d['Tracking Number']));
+
+    Tracking.findAll({ attributes: [ 'tracking', 'status', 'delivered' ], where: { tracking: trackings } })
+      .then((result) => {
+        const output = {
+          unavailable: trackings.length - result.length,
+          summary_delivered: {
+            no_match: 0,
+            same_state: 0,
+            same_city: 0,
+            same_zip: 0,
+          },
+          results: []
+        };
+        result.forEach(entry => {
+          const index = trackings.indexOf(entry.tracking);
+          const out = {
+            Tracking: entry.tracking
+          };
+          let no_match = true;
+          if (entry.delivered) {
+            if (entry.status.indexOf(data[index]['Postal_Code']) >= 0) {
+              output.summary_delivered.same_zip++;
+              out['ZIP'] = 'OK';
+              no_match = false;
+            } else {
+              out['ZIP'] = 'NG';
+            }
+            if (entry.status.indexOf(data[index]['City'].toUpperCase()) >= 0) {
+              output.summary_delivered.same_city++;
+              out['City'] = 'OK';
+              no_match = false;
+            } else {
+              out['City'] = 'NG';
+            }
+            let state_name = data[index]['State_Province'].toUpperCase();
+            if (state_name.length != 2) {
+              state_name = states_hash[state_name];
+            }
+            if (entry.status.indexOf(state_name) >= 0) {
+              output.summary_delivered.same_state++;
+              out['State'] = 'OK';
+              no_match = false;
+            } else {
+              out['State'] = 'NG';
+            }
+            if (no_match) {
+              output.summary_delivered.no_match++;
+            }
+            out['Status'] = entry.status;
+            out['Addressed_to'] = {
+              State: data[index]['State_Province'],
+              City: data[index]['City'],
+              ZIP: data[index]['Postal_Code'],
+            };
+          } else {
+            out['Status'] = 'In shipment...';
+          }
+          if (no_match && out['Status'] != 'In shipment...') {
+            output.results.unshift(out);
+          } else {
+            output.results.push(out);
+          }
+        });
+        res.json({ status: 'OK', output });
+      })
+      .catch((err) => console.log(err));
+  });
 };
 
 /********************/
