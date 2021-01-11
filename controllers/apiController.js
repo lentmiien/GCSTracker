@@ -819,7 +819,11 @@ const state_hash =  {
           };
           let no_match = true;
           if (entry.delivered) {
-            if (entry.status.indexOf(data[index]['Postal_Code']) >= 0) {
+            let zip_code = data[index]['Postal_Code'];
+            if (zip_code.length > 5) {
+              zip_code = zip_code.split('-')[0];
+            }
+            if (entry.status.indexOf(zip_code) >= 0) {
               output.summary_delivered.same_zip++;
               out['ZIP'] = 'OK';
               no_match = false;
