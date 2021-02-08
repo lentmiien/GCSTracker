@@ -19,6 +19,7 @@
             <option :key="a.id" :value="a.id" v-for="a in grouplabels">
               {{ a.label }}
             </option>
+            <option value="AIT">All AIT</option>
           </select>
           <label for="delivereddate">Delivered date range</label>
           <select name="delivereddate" id="delivereddate" class="form-control">
@@ -590,11 +591,20 @@ export default {
       }
 
       // Format data to send (from "label")
-      const input_data = parseInt(this.label);
+      const label_ids = [];
+      if (this.label === 'AIT') {
+        this.grouplabels.forEach(label => {
+          if (label.label.indexOf('AIT') >= 0) {
+            label_ids.push(label.id);
+          }
+        });
+      } else {
+        label_ids.push(parseInt(this.label));
+      }
 
       // Acquire records
-      const analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
-      const unchecked_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivered == false && d.lastchecked > start_ts && d.lastchecked < end_ts && d.carrier != 'INVALID');
+      const analyze_data = this.allTrackingData.filter((d) => label_ids.indexOf(d.grouplabel) >= 0 && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
+      const unchecked_data = this.allTrackingData.filter((d) => label_ids.indexOf(d.grouplabel) >= 0 && d.delivered == false && d.lastchecked > start_ts && d.lastchecked < end_ts && d.carrier != 'INVALID');
 
       const summary = {
         delivered: 0,
