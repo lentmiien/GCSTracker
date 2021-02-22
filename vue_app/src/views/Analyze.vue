@@ -226,6 +226,12 @@
                     </tr>
                   </tbody>
                 </table>
+                <h1>Status list</h1>
+                <ul>
+                  <li :key="i" v-for="(a, i) in status_list">
+                    {{ a }}
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -246,6 +252,7 @@ export default {
       records: '',
       label: '',
       display: undefined,
+      status_list: [],
     };
   },
   computed: mapGetters(['allTrackingData', 'grouplabels']),
@@ -478,7 +485,9 @@ export default {
         times.deliverytimehistogram.push(0);
       }
 
+      this.status_list = [];
       analyze_data.forEach((d) => {
+        this.status_list.push(d.status);
         times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
@@ -654,7 +663,9 @@ export default {
         times.deliverytimehistogram.push(0);
       }
 
+      this.status_list = [];
       analyze_data.forEach((d) => {
+        this.status_list.push(d.status);
         times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
