@@ -599,21 +599,24 @@ export default {
         }
       }
 
-      // Format data to send (from "label")
-      const label_ids = [];
-      if (this.label === 'AIT') {
+      // Acquire records
+      let analyze_data = null;
+      let unchecked_data = null;
+
+      if (this.label == 'AIT') {
+        const lbls = [];
         this.grouplabels.forEach(label => {
-          if (label.label.indexOf('AIT') >= 0) {
-            label_ids.push(label.id);
+          if (label.label.indexOf('AIT') == 0) {
+            lbls.push(label.id);
           }
         });
+        analyze_data = this.allTrackingData.filter((d) => lbls.indexOf(d.grouplabel) >= 0 && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
+        unchecked_data = this.allTrackingData.filter((d) => lbls.indexOf(d.grouplabel) >= 0 && d.delivered == false && d.lastchecked > start_ts && d.lastchecked < end_ts && d.carrier != 'INVALID');
       } else {
-        label_ids.push(parseInt(this.label));
+        const input_data = parseInt(this.label);
+        analyze_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
+        unchecked_data = this.allTrackingData.filter((d) => d.grouplabel === input_data && d.delivered == false && d.lastchecked > start_ts && d.lastchecked < end_ts && d.carrier != 'INVALID');
       }
-
-      // Acquire records
-      const analyze_data = this.allTrackingData.filter((d) => label_ids.indexOf(d.grouplabel) >= 0 && d.delivereddate >= start_ts && d.delivereddate <= end_ts);
-      const unchecked_data = this.allTrackingData.filter((d) => label_ids.indexOf(d.grouplabel) >= 0 && d.delivered == false && d.lastchecked > start_ts && d.lastchecked < end_ts && d.carrier != 'INVALID');
 
       const summary = {
         delivered: 0,
