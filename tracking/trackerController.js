@@ -117,6 +117,7 @@ async function TrackAll() {
 
   // Stop all tracking after 90 days
   const cutoff = DaysAgo(90);
+  const cutoffjp = DaysAgo(135);
 
   async.parallel(
     {
@@ -126,7 +127,7 @@ async function TrackAll() {
             carrier: 'JP',
             delivered: false,
             shippeddate: {
-              [Op.gte]: cutoff,
+              [Op.gte]: cutoffjp,
             },
             addeddate: {
               [Op.lte]: postalfc,
