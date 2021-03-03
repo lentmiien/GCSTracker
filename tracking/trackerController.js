@@ -147,7 +147,7 @@ async function TrackAll() {
               [Op.gte]: cutoff,
             },
             lastchecked: {
-              [Op.lte]: postalnc,
+              [Op.lte]: dhlnc,
             },
           },
         }).then((entry) => callback(null, entry));
