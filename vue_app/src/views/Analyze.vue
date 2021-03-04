@@ -229,7 +229,13 @@
                 <h1>Status list</h1>
                 <ul>
                   <li :key="i" v-for="(a, i) in status_list">
-                    {{ a }}
+                    {{ a.status }} ({{ a.count }})
+                  </li>
+                </ul>
+                <h1>Country list</h1>
+                <ul>
+                  <li :key="i" v-for="(a, i) in country_list">
+                    {{ a.country }} ({{ a.count }})
                   </li>
                 </ul>
               </div>
@@ -253,6 +259,7 @@ export default {
       label: '',
       display: undefined,
       status_list: [],
+      country_list: [],
     };
   },
   computed: mapGetters(['allTrackingData', 'grouplabels']),
@@ -486,8 +493,23 @@ export default {
       }
 
       this.status_list = [];
+      const added_statuses = [];
+      const added_countries = [];
       analyze_data.forEach((d) => {
-        this.status_list.push(d.status);
+        const status_index = added_statuses.indexOf(d.status);
+        if (status_index >= 0) {
+          this.status_list[status_index].count++;
+        } else {
+          this.status_list.push({ status: d.status, count: 1 });
+          added_statuses.push(d.status);
+        }
+        const country_index = added_countries.indexOf(d.country);
+        if (country_index >= 0) {
+          this.country_list[country_index].count++;
+        } else {
+          this.country_list.push({ country: d.country, count: 1 });
+          added_countries.push(d.country);
+        }
         times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
@@ -667,8 +689,23 @@ export default {
       }
 
       this.status_list = [];
+      const added_statuses = [];
+      const added_countries = [];
       analyze_data.forEach((d) => {
-        this.status_list.push(d.status);
+        const status_index = added_statuses.indexOf(d.status);
+        if (status_index >= 0) {
+          this.status_list[status_index].count++;
+        } else {
+          this.status_list.push({ status: d.status, count: 1 });
+          added_statuses.push(d.status);
+        }
+        const country_index = added_countries.indexOf(d.country);
+        if (country_index >= 0) {
+          this.country_list[country_index].count++;
+        } else {
+          this.country_list.push({ country: d.country, count: 1 });
+          added_countries.push(d.country);
+        }
         times.deliverytimehistogram_totalcount++;
         if (d.delivered) {
           if (d.delivereddate == 0) {
