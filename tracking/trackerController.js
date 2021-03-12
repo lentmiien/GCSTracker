@@ -108,8 +108,8 @@ async function TrackAll() {
   USPS_API_counter.html.status = HTTP_OK_CODE;
 
   // DHL checks, first check after 4 days, then check every 2nd day (1 day = 86400000 ms)
-  let dhlfc = DaysAgo(4);
-  let dhlnc = DaysAgo(2);
+  let dhlfc = DaysAgo(5);
+  let dhlnc = DaysAgo(3);
 
   // Postal checks, first check after 7 days, then check every 3rd day
   let postalfc = DaysAgo(7);
@@ -118,6 +118,7 @@ async function TrackAll() {
   // Stop all tracking after 90 days
   const cutoff = DaysAgo(90);
   const cutoffjp = DaysAgo(135);
+  const cutoffdhl = DaysAgo(60);
 
   async.parallel(
     {
@@ -158,7 +159,7 @@ async function TrackAll() {
             carrier: 'DHL',
             delivered: false,
             shippeddate: {
-              [Op.gte]: cutoff,
+              [Op.gte]: cutoffdhl,
             },
             addeddate: {
               [Op.lte]: dhlfc,
