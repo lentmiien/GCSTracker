@@ -37,6 +37,8 @@ module.exports = (sequelize, type) => {
     airp_averagetime: type.FLOAT,
     airp_totalaveragetime: type.FLOAT,
     airp_lastsucessfullyshipped: type.BIGINT,
+    airspu_available: type.INTEGER,
+    sp_available: type.INTEGER,
   });
 };
 

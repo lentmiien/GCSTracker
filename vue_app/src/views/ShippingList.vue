@@ -5,7 +5,7 @@
         <button class="btn btn-primary form-control" v-on:click="copytable()">Zendesk table (copy)</button>
         <button class="btn btn-primary form-control" v-on:click="copynomethods()">No available shipping methods (copy)</button>
         <table class="table table-dark table-striped">
-          <thead style="position:sticky;top:0;background-color:#888888;">
+          <thead class="sticky-top" style="background-color:#888888;">
             <tr>
               <th span="col">Name</th>
               <th span="col">EMS</th>
@@ -15,6 +15,8 @@
               <th span="col">SAL Parcel</th>
               <th span="col">DHL</th>
               <th span="col">Air Parcel</th>
+              <th span="col">ASP Ureg.</th>
+              <th span="col">Surface Parcel</th>
             </tr>
           </thead>
           <tbody>
@@ -104,6 +106,30 @@
                   <option value="3" :selected="entry.airp_available == 3">Blocked</option>
                 </select>
               </td>
+              <td>
+                <select
+                  :id="'airspu_' + entry.country_name"
+                  :class="'status' + entry.airspu_available"
+                  v-on:change="update('airspu_' + entry.country_name)"
+                >
+                  <option value="0" :selected="entry.airspu_available == 0">Unavailable</option>
+                  <option value="1" :selected="entry.airspu_available == 1">Available</option>
+                  <option value="2" :selected="entry.airspu_available == 2">Suspended</option>
+                  <option value="3" :selected="entry.airspu_available == 3">Blocked</option>
+                </select>
+              </td>
+              <td>
+                <select
+                  :id="'sp_' + entry.country_name"
+                  :class="'status' + entry.sp_available"
+                  v-on:change="update('sp_' + entry.country_name)"
+                >
+                  <option value="0" :selected="entry.sp_available == 0">Unavailable</option>
+                  <option value="1" :selected="entry.sp_available == 1">Available</option>
+                  <option value="2" :selected="entry.sp_available == 2">Suspended</option>
+                  <option value="3" :selected="entry.sp_available == 3">Blocked</option>
+                </select>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -146,40 +172,18 @@ export default {
         // Fill in header every 20th row
         if (colorer % 20 == 0) {
           text_str +=
-            '<tr><th style="border: 1px solid black; width: 11%;">Country</th><th style="border: 1px solid black; width: 11%;">EMS</th><th style="border: 1px solid black; width: 11%;">Air Small Packet</th><th style="border: 1px solid black; width: 11%;">SAL Registered</th><th style="border: 1px solid black; width: 11%;">SAL Unregistered</th><th style="border: 1px solid black; width: 11%;">SAL Parcel</th><th style="border: 1px solid black; width: 11%;">DHL</th><th style="border: 1px solid black; width: 11%;">Air Parcel</th><th style="border: 1px solid black; width: 11%;">Other</th></tr>';
+            '<tr><th style="border: 1px solid black; width: 10%;">Country</th><th style="border: 1px solid black; width: 9%;">EMS</th><th style="border: 1px solid black; width: 9%;">DHL</th><th style="border: 1px solid black; width: 9%;">Air Small Packet Registered</th><th style="border: 1px solid black; width: 9%;">Air Small Packet Unregistered</th><th style="border: 1px solid black; width: 9%;">Air Parcel</th><th style="border: 1px solid black; width: 9%;">SAL Registered</th><th style="border: 1px solid black; width: 9%;">SAL Unregistered</th><th style="border: 1px solid black; width: 9%;">SAL Parcel</th><th style="border: 1px solid black; width: 9%;">Surface Parcel</th><th style="border: 1px solid black; width: 9%;">Other</th></tr>';
           colorer++;
         }
 
         // Determin if and what other methods that are available
         let other = '';
         if (c.country_name == 'UNITED STATES') {
-          other = '-Surface Mail (Premium)<br>-Surface Parcel<br>-Air Small Packet (Unregistered)';
-        } else if (c.country_name == 'CANADA' || c.country_name == 'AUSTRALIA') {
-          other = '-Surface Parcel<br>-Air Small Packet (Unregistered)';
-        } else if (c.country_name == 'RUSSIAN FEDERATION' || c.country_name == 'BRAZIL') {
-          other = '-Surface Parcel';
+          other = '-Surface Mail (Premium)';
         }
 
         // Fill in row
-        text_str += `<tr style="background-color:${
-          colorer % 2 == 0 ? '#FFFFFF' : '#EEEEEE'
-        };"><td style="text-align: center; border: 1px solid black;">${
-          c.country_name
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.ems_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.airsp_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.salspr_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.salspu_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.salp_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.dhl_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${
-          c.airp_available == 1 ? '〇' : ''
-        }</td><td style="text-align: center; border: 1px solid black;">${other}</td></tr>`;
+        text_str += `<tr style="background-color:${colorer % 2 == 0 ? '#FFFFFF' : '#EEEEEE'};"><td style="text-align: center; border: 1px solid black;">${c.country_name}</td><td style="text-align: center; border: 1px solid black;">${c.ems_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.dhl_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.airsp_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.airspu_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.airp_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.salspr_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.salspu_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.salp_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${c.sp_available == 1 ? '〇' : ''}</td><td style="text-align: center; border: 1px solid black;">${other}</td></tr>`;
         colorer++;
       });
       text_str += '</tbody></table>';
@@ -228,7 +232,7 @@ export default {
         }
 
         // Check our standard methods
-        if (c.ems_available == 1 || c.airsp_available == 1 || c.salspr_available == 1 || c.salspu_available == 1 || c.salp_available == 1 || c.airp_available == 1) {
+        if (c.ems_available == 1 || c.airsp_available == 1 || c.airspu_available == 1 || c.salspr_available == 1 || c.salspu_available == 1 || c.salp_available == 1 || c.airp_available == 1 || c.sp_available == 1) {
           has_shipping_methods = true;
         }
         if (c.dhl_available == 1) {
