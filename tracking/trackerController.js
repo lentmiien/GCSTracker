@@ -286,7 +286,7 @@ async function USPS_tracker(tracking) {
     if (USPS_API_counter.html.status == HTTP_OK_CODE) {
       // API is enabled and good for use
       USPS_API_counter.count++; // About to do an API request so increase counter
-      const url = `http://production.shippingapis.com/ShippingApi.dll?API=TrackV2&XML=<TrackRequest USERID="${process.env.USPS_API_KEY}"><TrackID ID="${item.tracking}"></TrackID></TrackRequest>`;
+      const url = `https://production.shippingapis.com/ShippingApi.dll?API=TrackV2&XML=<TrackRequest USERID="${process.env.USPS_API_KEY}"><TrackID ID="${item.tracking}"></TrackID></TrackRequest>`;
       const result = await getResultsAPI(url, item.carrier);
       USPS_timer = Date.now();
 
