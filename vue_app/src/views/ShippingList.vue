@@ -276,4 +276,9 @@ export default {
 .status3 {
   background-color: red;
 }
+.sticky-top {
+  z-index: 1;
+  position: sticky;
+  top: 0;
+}
 </style>
