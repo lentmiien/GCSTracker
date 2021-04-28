@@ -117,7 +117,7 @@ async function TrackAll() {
 
   // Stop all tracking after 90 days
   const cutoff = DaysAgo(90);
-  const cutoffjp = DaysAgo(135);
+  const cutoffjp = DaysAgo(160);
   const cutoffdhl = DaysAgo(60);
 
   async.parallel(
