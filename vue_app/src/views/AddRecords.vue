@@ -36,7 +36,7 @@
             class="form-control"
             v-model="country"
           />
-          <input class="btn btn-primary" type="submit" value="Submit" />
+          <input id="submit_button" class="btn btn-primary" type="submit" value="Submit" />
         </form>
       </div>
     </div>
@@ -61,6 +61,8 @@ export default {
     ...mapActions(["addRecords"]),
     processForm(e) {
       e.preventDefault();
+
+      document.getElementById("submit_button").disabled = true;
 
       // Acquire default country
       let default_country = 'UNKNOWN';
@@ -113,8 +115,12 @@ export default {
         send_data.timestamp = datedate.getTime();
       }
 
+      console.log(`Sending data to server, length=${send_data.records.length}`);
       // Send to server, and update local data
-      this.addRecords(send_data).then(() => this.records = "");
+      this.addRecords(send_data).then(() => {
+        document.getElementById("submit_button").disabled = false;
+        this.records = "";
+      });
 
       // Reset input
       // this.records = "";

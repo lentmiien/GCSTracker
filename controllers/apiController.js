@@ -295,6 +295,11 @@ exports.api_csv = async (req, res) => {
 // POST add new records
 exports.api_add = async (req, res) => {
   const response = {};
+  const where = {
+    addeddate: {
+      [Op.gte]: Date.now() - 7776000000
+    }
+  };// Only load records from last 3 months (adding records older is unsafe)
 
   // Get new data
   // req.body = { records: [ 'rec1', 'rec2', 'rec3' ], date: date_timestamp, labelid: #number }
@@ -331,7 +336,7 @@ exports.api_add = async (req, res) => {
   async.parallel(
     {
       tracking: function (callback) {
-        Tracking.findAll({ attributes: ['tracking'] }).then((entry) => callback(null, entry));
+        Tracking.findAll({ attributes: ['tracking'], where }).then((entry) => callback(null, entry));
       },
     },
     function (err, results) {
