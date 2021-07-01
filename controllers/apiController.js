@@ -365,7 +365,7 @@ exports.api_add = async (req, res) => {
         if (length == 13 && !isnum && tracking[i].id.indexOf('JP') == 11) {
           valid_entry = true; // JP
         }
-        if (length == 10 && isnum) {
+        if ((length == 10 && isnum) || (length == 20 && !isnum)) {
           valid_entry = true; // DHL
         }
 
