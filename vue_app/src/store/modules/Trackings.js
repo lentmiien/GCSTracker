@@ -14,7 +14,7 @@ const actions = {
     commit('setTrackings', response.data);
   },
   async addRecords({ commit }, records_to_add) {
-    const response = await axios.post('/api/add', records_to_add);
+    const response = await axios.post('/api/addex', records_to_add);
     commit('addTrackings', response.data);
   },
   async updateRecord({ commit }, { action, tracking }) {

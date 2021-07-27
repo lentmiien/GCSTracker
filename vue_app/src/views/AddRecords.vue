@@ -36,8 +36,12 @@
             class="form-control"
             v-model="country"
           />
-          <input id="submit_button" class="btn btn-primary" type="submit" value="Submit" />
+          <input class="btn btn-primary" type="submit" value="Queue items" />
         </form>
+        <div :v-if="data_to_send.length > 0">
+          <p id='queue_label'>{{ data_to_send.length }} queued items...</p>
+          <button id="submit_button" class="btn btn-primary" @click="SendToServer">Send to server</button>
+        </div>
       </div>
     </div>
   </div>
@@ -54,6 +58,7 @@ export default {
       timestamp: "",
       label: "",
       country: "",
+      data_to_send: [],
     };
   },
   computed: mapGetters(["grouplabels"]),
@@ -62,8 +67,6 @@ export default {
     processForm(e) {
       e.preventDefault();
 
-      document.getElementById("submit_button").disabled = true;
-
       // Acquire default country
       let default_country = 'UNKNOWN';
       if (this.country.length > 0) {
@@ -71,35 +74,8 @@ export default {
         this.country = '';
       }
 
-      // Format data to send (from "records")
-      const input_data = this.records.split(/[\r\n]+/); // Split on new line characters
-      const send_data = {
-        records: [],
-        timestamp: Date.now(),
-        label: parseInt(this.label),
-      };
-      input_data.forEach((d) => {
-        if (d.indexOf(",") > 0) {
-          const data = d.split(",");
-          send_data.records.push({
-            id: data[0],
-            country: data[1],
-          });
-        } else if (d.indexOf("\t") > 0) {
-          const data = d.split("\t");
-          send_data.records.push({
-            id: data[2],
-            country: "UNITED STATES",
-          });
-        } else {
-          send_data.records.push({
-            id: d,
-            country: default_country,
-          });
-        }
-      });
-
       // Process timestamp (if provided)
+      let default_ts = Date.now();
       if (this.timestamp.length > 0) {
         const datedata = this.timestamp.split("-");
         const unique_time = new Date();// Just to make every batch unique
@@ -112,18 +88,50 @@ export default {
           unique_time.getSeconds(),
           unique_time.getMilliseconds(),
         );
-        send_data.timestamp = datedate.getTime();
+        default_ts = datedate.getTime();
       }
 
-      console.log(`Sending data to server, length=${send_data.records.length}`);
-      // Send to server, and update local data
-      this.addRecords(send_data).then(() => {
-        document.getElementById("submit_button").disabled = false;
-        this.records = "";
+      // Format data to send (from "records")
+      const input_data = this.records.split(/[\r\n]+/); // Split on new line characters
+      const label_id = parseInt(this.label);
+      input_data.forEach((d) => {
+        if (d.indexOf(",") > 0) {
+          const data = d.split(",");
+          this.data_to_send.push({
+            id: data[0],
+            ship_dts: default_ts,
+            label: label_id,
+            country: data[1],
+          });
+        } else if (d.indexOf("\t") > 0) {
+          const data = d.split("\t");
+          this.data_to_send.push({
+            id: data[2],
+            ship_dts: default_ts,
+            label: label_id,
+            country: "UNITED STATES",
+          });
+        } else {
+          this.data_to_send.push({
+            id: d,
+            ship_dts: default_ts,
+            label: label_id,
+            country: default_country,
+          });
+        }
       });
 
-      // Reset input
-      // this.records = "";
+      // Empty input field
+      this.records = "";
+    },
+    SendToServer() {
+      if(this.data_to_send.length > 0) {
+        document.getElementById("submit_button").disabled = true;
+        this.addRecords({ records: this.data_to_send }).then(() => {
+          document.getElementById("submit_button").disabled = false;
+          this.data_to_send = [];
+        });
+      }
     },
   },
 };

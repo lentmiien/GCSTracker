@@ -447,6 +447,134 @@ exports.api_add = async (req, res) => {
   );
 };
 
+// POST add new records extended
+exports.api_addex = async (req, res) => {
+  const response = {};
+  const where = {
+    addeddate: {
+      [Op.gte]: Date.now() - 7776000000
+    }
+  };// Only load records from last 3 months (adding records older is unsafe)
+
+  // Get new data
+  // req.body = { records: [ { id: 'tracking1', ship_dts: shipped_date_timestamp, label: #number, country: "country name" }, {}, ... ] }
+  const tracking = req.body.records.sort((a, b) => {
+    if (a.id < b.id) {
+      return -1;
+    } else if (a.id > b.id) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
+  const records_to_add = [];
+  let added_dts = Date.now();
+
+  async.parallel(
+    {
+      tracking: function (callback) {
+        Tracking.findAll({ attributes: ['tracking'], where }).then((entry) => callback(null, entry));
+      },
+    },
+    function (err, results) {
+      if (err) {
+        return next(err);
+      }
+      if (!results.tracking) {
+        // No results.
+        res.redirect('/mypage');
+      }
+
+      let lastadded = '';
+      for (let i = 0; i < tracking.length; i++) {
+        let valid_entry = false;
+        let new_entry = true;
+
+        // Check valid
+        const length = tracking[i].id.length;
+        const isnum = /^\d+$/.test(tracking[i].id);
+        if (length == 34 && isnum && tracking[i].id.indexOf('420') == 0) {
+          valid_entry = true; // AIT
+        }
+        if ((length == 26 || length == 22) && isnum && tracking[i].id.indexOf('9') == 0) {
+          valid_entry = true; // AIT
+        }
+        if (length == 13 && !isnum && tracking[i].id.indexOf('JP') == 11) {
+          valid_entry = true; // JP
+        }
+        if ((length == 10 && isnum) || (length == 20 && !isnum)) {
+          valid_entry = true; // DHL
+        }
+
+        // Check existing (only if valid)
+        if (valid_entry) {
+          if (tracking[i].id == lastadded) {
+            new_entry = false;
+          } else {
+            for (let row_i = 0; row_i < results.tracking.length && new_entry; row_i++) {
+              if (results.tracking[row_i].tracking == tracking[i].id) {
+                new_entry = false;
+              }
+            }
+          }
+        }
+        if (valid_entry && new_entry) {
+          lastadded = tracking[i].id;
+
+          let carrier = 'DHL';
+          if (tracking[i].id.indexOf('JP') == 11) {
+            carrier = 'JP';
+          } else if (tracking[i].id.length == 34 || tracking[i].id.length == 26 || tracking[i].id.length == 22) {
+            carrier = 'USPS';
+          }
+
+          records_to_add.push({
+            tracking: tracking[i].id,
+            carrier,
+            country: tracking[i].country,
+            addeddate: added_dts,
+            lastchecked: 0,
+            status: 'Shipped',
+            shippeddate: tracking[i].ship_dts,
+            delivereddate: 0,
+            delivered: '0',
+            data: '',
+            grouplabel: tracking[i].label,
+          });
+        }
+      }
+
+      // Start adding
+      if (records_to_add.length > 0) {
+        Tracking.bulkCreate(records_to_add).then(() => {
+          Tracking.findAll({
+            where: { addeddate: added_dts },
+            attributes: [
+              'tracking',
+              'carrier',
+              'country',
+              'addeddate',
+              'lastchecked',
+              'status',
+              'shippeddate',
+              'delivereddate',
+              'delivered',
+              'grouplabel',
+            ],
+          })
+            .then((result) => res.json(result))
+            .catch((err) => console.log(err));
+        });
+      } else {
+        res.json({ failed: 'No records to add' });
+      }
+
+      // Done!
+      Log('Add API (EX)', `Added ${records_to_add.length} new records`);
+    }
+  );
+};
+
 // POST add new records
 exports.api_update = async (req, res) => {
   const update_data = {
