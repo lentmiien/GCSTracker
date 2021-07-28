@@ -39,7 +39,7 @@
           <input class="btn btn-primary" type="submit" value="Queue items" />
         </form>
         <div :v-if="data_to_send.length > 0">
-          <p id='queue_label'>{{ data_to_send.length }} queued items...</p>
+          <p id='queue_label'>{{ data_to_send.length }} queued items... (Recommended: max ~6000)</p>
           <button id="submit_button" class="btn btn-primary" @click="SendToServer">Send to server</button>
         </div>
       </div>
