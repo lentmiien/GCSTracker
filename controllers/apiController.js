@@ -546,28 +546,24 @@ exports.api_addex = async (req, res) => {
 
       // Start adding
       if (records_to_add.length > 0) {
-        Tracking.bulkCreate(records_to_add).then(() => {
-          Tracking.findAll({
-            where: { addeddate: added_dts },
-            attributes: [
-              'tracking',
-              'carrier',
-              'country',
-              'addeddate',
-              'lastchecked',
-              'status',
-              'shippeddate',
-              'delivereddate',
-              'delivered',
-              'grouplabel',
-            ],
-          })
-            .then((result) => res.json(result))
-            .catch((err) => console.log(err));
-        });
-      } else {
-        res.json({ failed: 'No records to add' });
+        Tracking.bulkCreate(records_to_add);
       }
+
+      // Return data
+      res.json(records_to_add.map(data => {
+        return {
+          tracking: data.tracking,
+          carrier: data.carrier,
+          country: data.country,
+          addeddate: data.addeddate,
+          lastchecked: data.lastchecked,
+          status: data.status,
+          shippeddate: data.shippeddate,
+          delivereddate: data.delivereddate,
+          delivered: data.delivered,
+          grouplabel: data.grouplabel,
+        };
+      }));
 
       // Done!
       Log('Add API (EX)', `Added ${records_to_add.length} new records`);
