@@ -1001,6 +1001,41 @@ const state_hash =  {
   });
 };
 
+const converter = require('../misc/converter.json');
+exports.shipping_country_csv = (req, res) => {
+  Country.findAll()
+    .then((result) => {
+      // re-map data
+      const outdata = result.reduce((retval, d) => {
+        const block_methods = [];
+        if (d.ems_available != 1) { block_methods.push(1); }
+        if (d.salspr_available != 1) { block_methods.push(2); }
+        if (d.salspu_available != 1) { block_methods.push(3); }
+        if (d.country_code != 'JP') { block_methods.push(4); }
+        if (d.salp_available != 1) { block_methods.push(5); }
+        if (d.airp_available != 1) { block_methods.push(6); }
+        if (d.airspu_available != 1) { block_methods.push(11); }
+        if (d.airsp_available != 1) { block_methods.push(17); }
+        if (d.dhl_available != 1) { block_methods.push(19); }
+        if (d.country_code != 'US') { block_methods.push(20); }
+        if (d.sp_available != 1) { block_methods.push(21); }
+
+        if (converter[d.country_code]) {
+          retval += `"${converter[d.country_code].code}","${converter[d.country_code].name}","${block_methods.join(",")}"\n`;
+        } else {
+          console.log(`[${d.country_code}] does not exist...`);
+        }
+        return retval;
+      }, '');
+
+      // return as csv data
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="data.csv"`);
+      res.send(outdata);
+    })
+    .catch((err) => console.log(err));
+};
+
 /********************/
 /* Helper functions */
 /********************/

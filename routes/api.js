@@ -36,5 +36,7 @@ router.get('/getcsv', controller.api_csv);
 router.get('/getlog', controller.get_log);
 router.post('/errorcheck', controller.errorcheck);
 
+router.get('/shipping_country_csv', controller.shipping_country_csv);
+
 // Export router
 module.exports = router;

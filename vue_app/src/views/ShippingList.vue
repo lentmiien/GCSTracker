@@ -4,6 +4,7 @@
       <div class="col">
         <button class="btn btn-primary form-control" v-on:click="copytable()">Zendesk table (copy)</button>
         <button class="btn btn-primary form-control" v-on:click="copynomethods()">No available shipping methods (copy)</button>
+        <a class="btn btn-primary form-control" href="/api/shipping_country_csv">Shipping method csv</a>
         <table class="table table-dark table-striped">
           <thead class="sticky-top" style="background-color:#888888;">
             <tr>
