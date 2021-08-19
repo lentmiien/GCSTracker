@@ -915,6 +915,79 @@ exports.shipping_country_csv = (req, res) => {
     .catch((err) => console.log(err));
 };
 
+// Return an array with { tracking_number, alert_message } objects
+exports.alerts = (req, res) => {
+  // Aquire all records that was shipped the 5-30 days ago, has not been delivered, and has a last checked date
+  const where = {
+    shippeddate: {
+      [Op.gte]: Date.now() - 2592000000, // 30 days ago
+      [Op.lte]: Date.now() - 432000000,  //  5 days ago
+    },
+    delivered: false,
+    lastchecked: {
+      [Op.gt]: 0
+    }
+  };
+  Tracking.findAll({ attributes: [ 'tracking', 'country', 'shippeddate', 'data', 'grouplabel' ], where })
+    .then(data => {
+      const output = [];
+      console.log(`${data.length} matching records`);
+      data.forEach((d, i) => {
+        const tdata = d.data.length > 0 ? JSON.parse(d.data) : {};
+        if(i < 2) { // If statement to stop log from overflowing of data
+          console.log(`${d.tracking}: ${JSON.stringify(tdata)}`);
+        }
+        // Do the magic alert check
+        // Check #1: DHL stuck at label created (only 1 tracking update)
+        if(tdata.shipments[0].events.length == 1) {
+          output.push({ tracking: d.tracking, alert_message: `No updates since shipment, potentially lost? [${tdata.shipments[0].events[0].description}]` })
+        }
+        // Check #2: DHL onhold in Japan (multiple "on hold" updates only)
+        let onhold = true;
+        let x;
+        for(x = 0; x < tdata.shipments[0].events.length && onhold == true; x++) {
+          if(!(tdata.shipments[0].events[x].description == 'Shipment on hold' || tdata.shipments[0].events[x].description == 'Shipment picked up')) {
+            onhold = false;
+          }
+        }
+        if(onhold) {
+          output.push({ tracking: d.tracking, alert_message: `Only on hold statuses, potentially stuck? [${tdata.shipments[0].events[x-1].description}]` })
+        }
+      });
+      res.json(output);
+    });
+};
+/*
+{
+  "shipments":[
+    {
+      "events":[
+        {"timestamp":1580937600000,"description":"引受","location":"東京都"},
+        {"timestamp":1581281940000,"description":"国際交換局に到着","location":"東京都"},
+        {"timestamp":1581282000000,"description":"国際交換局から発送","location":"東京都"}
+      ]
+    }
+  ]
+}
+
+addeddate: {
+      [Op.gte]: Date.now() - 7776000000
+    }
+
+    tracking: type.STRING,
+    carrier: type.STRING,
+    country: type.STRING,
+    //tracking_country: type.STRING,
+    addeddate: type.BIGINT,
+    lastchecked: type.BIGINT,
+    status: type.STRING,
+    shippeddate: type.BIGINT,
+    delivereddate: type.BIGINT,
+    delivered: type.BOOLEAN,
+    data: type.TEXT,
+    grouplabel: type.INTEGER,
+*/
+
 /********************/
 /* Helper functions */
 /********************/
