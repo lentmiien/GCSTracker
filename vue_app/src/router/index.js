@@ -19,6 +19,7 @@ import Labels from '../views/Labels.vue';
 import Alert from '../views/Alert.vue';
 import UpdateRecords from '../views/UpdateRecords.vue';
 import ErrorCheck from '../views/ErrorCheck.vue';
+import Alerts from '../views/Alerts.vue';
 
 Vue.use(VueRouter);
 
@@ -117,6 +118,11 @@ const routes = [
     path: '/errorcheck',
     name: 'ErrorCheck',
     component: ErrorCheck,
+  },
+  {
+    path: '/alerts',
+    name: 'Alerts',
+    component: Alerts,
   },
   {
     path: '/about',

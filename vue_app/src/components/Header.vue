@@ -86,6 +86,7 @@
               <router-link to="/analyze" class="dropdown-item">Analyze</router-link>
               <router-link to="/alert" class="dropdown-item">Alert</router-link>
               <router-link to="/errorcheck" class="dropdown-item">Error check</router-link>
+              <router-link to="/alerts" class="dropdown-item">Alerts</router-link>
             </div>
           </li>
         </ul>

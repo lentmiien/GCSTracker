@@ -928,30 +928,28 @@ exports.alerts = (req, res) => {
       [Op.gt]: 0
     }
   };
-  Tracking.findAll({ attributes: [ 'tracking', 'country', 'shippeddate', 'data', 'grouplabel' ], where })
+  Tracking.findAll({ attributes: [ 'tracking', 'carrier', 'country', 'shippeddate', 'data', 'grouplabel' ], where })
     .then(data => {
       const output = [];
-      console.log(`${data.length} matching records`);
       data.forEach((d, i) => {
         const tdata = d.data.length > 0 ? JSON.parse(d.data) : {};
-        if(i < 2) { // If statement to stop log from overflowing of data
-          console.log(`${d.tracking}: ${JSON.stringify(tdata)}`);
-        }
         // Do the magic alert check
-        // Check #1: DHL stuck at label created (only 1 tracking update)
-        if(tdata.shipments[0].events.length == 1) {
-          output.push({ tracking: d.tracking, alert_message: `No updates since shipment, potentially lost? [${tdata.shipments[0].events[0].description}]` })
-        }
-        // Check #2: DHL onhold in Japan (multiple "on hold" updates only)
-        let onhold = true;
-        let x;
-        for(x = 0; x < tdata.shipments[0].events.length && onhold == true; x++) {
-          if(!(tdata.shipments[0].events[x].description == 'Shipment on hold' || tdata.shipments[0].events[x].description == 'Shipment picked up')) {
-            onhold = false;
+        if(d.carrier == 'DHL') {
+          // Check #1: DHL stuck at label created (only 1 tracking update)
+          if(tdata.shipments[0].events.length == 1) {
+            output.push({ tracking: d.tracking, alert_message: `No updates since shipment, potentially lost? [${tdata.shipments[0].events[0].description}]`, events: tdata.shipments[0].events })
           }
-        }
-        if(onhold) {
-          output.push({ tracking: d.tracking, alert_message: `Only on hold statuses, potentially stuck? [${tdata.shipments[0].events[x-1].description}]` })
+          // Check #2: DHL onhold in Japan (multiple "on hold" updates only)
+          let onhold = true;
+          let x;
+          for(x = 0; x < tdata.shipments[0].events.length && onhold == true; x++) {
+            if(!(tdata.shipments[0].events[x].description == 'Shipment on hold' || tdata.shipments[0].events[x].description == 'Shipment picked up')) {
+              onhold = false;
+            }
+          }
+          if(onhold) {
+            output.push({ tracking: d.tracking, alert_message: `Only on hold statuses, potentially stuck? [${tdata.shipments[0].events[0].description}]`, events: tdata.shipments[0].events })
+          }
         }
       });
       res.json(output);
