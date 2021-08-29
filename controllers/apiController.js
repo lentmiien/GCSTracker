@@ -922,7 +922,7 @@ const custom_alerts = [
     carrier: 'DHL',
     query: [
       {
-        mustonlyhavestatus: 'Label created'
+        mustonlyhavestatus: 'Shipper has generated a shipment label, but the shipment has not yet been handed over to DHL'
       }
     ],
     alert: 'No updates since shipment, potentially lost. [<LASTSTATUS>]',
@@ -934,7 +934,10 @@ const custom_alerts = [
     carrier: 'DHL',
     query: [
       {
-        mustonlyhavestatuses: ['Picked up', 'On hold']
+        musthavestatus: 'Shipment on hold'
+      },
+      {
+        mustonlyhavestatuses: ['Shipment picked up', 'Shipment on hold', 'Shipper has generated a shipment label, but the shipment has not yet been handed over to DHL']
       }
     ],
     alert: 'Only on hold statuses, potentially stuck. [<LASTSTATUS>]',
@@ -1000,6 +1003,18 @@ function dateToString(date) {
 function QueryStatus(query, events) {
   let queryResult = true;
   query.forEach(q => {
+    // musthavestatus
+    if('musthavestatus' in q) {
+      let result = false;
+      events.forEach(e => {
+        if(e.description == q.musthavestatus) {
+          result = true;
+        }
+      });
+      if(!result) {
+        queryResult = false;
+      }
+    }
     // mustonlyhavestatus
     if('mustonlyhavestatus' in q) {
       let result = true;
