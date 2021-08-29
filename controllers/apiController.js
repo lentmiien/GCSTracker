@@ -915,13 +915,39 @@ exports.shipping_country_csv = (req, res) => {
     .catch((err) => console.log(err));
 };
 
+const custom_alerts = [
+  {
+    alert_title: 'DHL shipped but not received by DHL',
+    delivered: false,
+    carrier: 'DHL',
+    query: [
+      {
+        mustonlyhavestatus: 'Label created'
+      }
+    ],
+    alert: 'No updates since shipment, potentially lost. [<LASTSTATUS>]',
+    alert_level: 'Error'
+  },
+  {
+    alert_title: 'DHL shipped and on hold in Japan',
+    delivered: false,
+    carrier: 'DHL',
+    query: [
+      {
+        mustonlyhavestatuses: ['Picked up', 'On hold']
+      }
+    ],
+    alert: 'Only on hold statuses, potentially stuck. [<LASTSTATUS>]',
+    alert_level: 'Warning'
+  },
+];
+
 // Return an array with { tracking_number, alert_message } objects
 exports.alerts = (req, res) => {
   // Aquire all records that was shipped the 5-30 days ago, has not been delivered, and has a last checked date
   const where = {
     shippeddate: {
-      [Op.gte]: Date.now() - 2592000000, // 30 days ago
-      [Op.lte]: Date.now() - 432000000,  //  5 days ago
+      [Op.gte]: Date.now() - 2592000000, // Shipped within last 30 days
     },
     delivered: false,
     lastchecked: {
@@ -934,25 +960,18 @@ exports.alerts = (req, res) => {
       data.forEach((d, i) => {
         const tdata = d.data.length > 0 ? JSON.parse(d.data) : {};
         // Do the magic alert check
-        if(d.carrier == 'DHL') {
-          // Check #1: DHL stuck at label created (only 1 tracking update)
-          if(tdata.shipments[0].events.length == 1) {
-            output.push({ tracking: d.tracking, alert_message: `No updates since shipment, potentially lost? [${tdata.shipments[0].events[0].description}]`, events: tdata.shipments[0].events })
-          }
-          // Check #2: DHL onhold in Japan (multiple "on hold" updates only)
-          let onhold = true;
-          let x;
-          for(x = 0; x < tdata.shipments[0].events.length && onhold == true; x++) {
-            if(!(tdata.shipments[0].events[x].description == 'Shipment on hold' || tdata.shipments[0].events[x].description == 'Shipment picked up')) {
-              onhold = false;
+        custom_alerts.forEach((ca, index) => {
+          if(!('carrier' in ca) || d.carrier === ca.carrier) {
+            if(QueryStatus(ca.query, tdata.shipments[0].events)) {
+              const alert_message = ca.alert.replace('<LASTSTATUS>', LastUpdate(tdata.shipments[0].events));
+              output.push({ alert_type: index, tracking: d.tracking, alert_message, events: tdata.shipments[0].events })
             }
           }
-          if(onhold) {
-            output.push({ tracking: d.tracking, alert_message: `Only on hold statuses, potentially stuck? [${tdata.shipments[0].events[0].description}]`, events: tdata.shipments[0].events })
-          }
-        }
+        });
       });
-      res.json(output);
+      res.json(output.sort((a, b) => {
+        return a.alert_type < b.alert_type ? -1 : (a.alert_type === b.alert_type ? 0 : 1);
+      }));
     });
 };
 /*
@@ -967,23 +986,6 @@ exports.alerts = (req, res) => {
     }
   ]
 }
-
-addeddate: {
-      [Op.gte]: Date.now() - 7776000000
-    }
-
-    tracking: type.STRING,
-    carrier: type.STRING,
-    country: type.STRING,
-    //tracking_country: type.STRING,
-    addeddate: type.BIGINT,
-    lastchecked: type.BIGINT,
-    status: type.STRING,
-    shippeddate: type.BIGINT,
-    delivereddate: type.BIGINT,
-    delivered: type.BOOLEAN,
-    data: type.TEXT,
-    grouplabel: type.INTEGER,
 */
 
 /********************/
@@ -994,3 +996,77 @@ function dateToString(date) {
     date.getDate() > 9 ? date.getDate() : '0' + date.getDate()
   }`;
 }
+
+function QueryStatus(query, events) {
+  let queryResult = true;
+  query.forEach(q => {
+    // mustonlyhavestatus
+    if('mustonlyhavestatus' in q) {
+      let result = true;
+      events.forEach(e => {
+        if(e.description != q.mustonlyhavestatus) {
+          result = false;
+        }
+      });
+      if(!result) {
+        queryResult = false;
+      }
+    }
+    // mustonlyhavestatuses
+    if('mustonlyhavestatuses' in q) {
+      let result = true;
+      events.forEach(e => {
+        let subResult = false;
+        q.mustonlyhavestatuses.forEach(s => {
+          if(e.description === s) {
+            subResult = true;
+          }
+        })
+        if(!subResult) {
+          result = false;
+        }
+      });
+      if(!result) {
+        queryResult = false;
+      }
+    }
+  });
+  return queryResult;
+}
+/*
+query: [
+  {
+    mustonlyhavestatus: 'Label created'
+  }
+],
+query: [
+  {
+    mustonlyhavestatuses: ['Picked up', 'On hold']
+  }
+],
+
+"events":[
+  {"timestamp":1580937600000,"description":"引受","location":"東京都"},
+  {"timestamp":1581281940000,"description":"国際交換局に到着","location":"東京都"},
+  {"timestamp":1581282000000,"description":"国際交換局から発送","location":"東京都"}
+]
+*/
+
+function LastUpdate(events) {
+  let last_ts = 0;
+  let last_status = 'No updates';
+  events.forEach(e => {
+    if(e.timestamp > last_ts) {
+      last_ts = e.timestamp;
+      last_status = e.description
+    }
+  });
+  return last_status;
+}
+/*
+"events":[
+  {"timestamp":1580937600000,"description":"引受","location":"東京都"},
+  {"timestamp":1581281940000,"description":"国際交換局に到着","location":"東京都"},
+  {"timestamp":1581282000000,"description":"国際交換局から発送","location":"東京都"}
+]
+*/
