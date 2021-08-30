@@ -961,11 +961,11 @@ exports.alerts = (req, res) => {
     .then(data => {
       const output = [];
       data.forEach((d, i) => {
-        const tdata = d.data.length > 0 ? JSON.parse(d.data) : {};
+        const tdata = d.data.length > 0 ? JSON.parse(d.data) : {shipments:[{events:[]}]};
         // Do the magic alert check
         custom_alerts.forEach((ca, index) => {
           if(!('carrier' in ca) || d.carrier === ca.carrier) {
-            if(QueryStatus(ca.query, tdata.shipments[0].events)) {
+            if(QueryStatus(d.tracking, ca.query, tdata.shipments[0].events)) {
               const alert_message = ca.alert.replace('<LASTSTATUS>', LastUpdate(tdata.shipments[0].events));
               output.push({ alert_type: index, tracking: d.tracking, alert_message, events: tdata.shipments[0].events })
             }
@@ -991,6 +991,18 @@ exports.alerts = (req, res) => {
 }
 */
 
+const noProblemVerifiedTracking = [];
+exports.verifytracking = (req, res) => {
+  console.log(req.body);
+  const keys = Object.keys(req.body);
+  keys.forEach(tracking => {
+    if(noProblemVerifiedTracking.indexOf(tracking) == -1) {
+      noProblemVerifiedTracking.push(tracking);
+    }
+  });
+  res.redirect('/')
+}
+
 /********************/
 /* Helper functions */
 /********************/
@@ -1000,7 +1012,9 @@ function dateToString(date) {
   }`;
 }
 
-function QueryStatus(query, events) {
+function QueryStatus(tracking, query, events) {
+  if (noProblemVerifiedTracking.indexOf(tracking) >= 0) return false;
+
   let queryResult = true;
   query.forEach(q => {
     // musthavestatus

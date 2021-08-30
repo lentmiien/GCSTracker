@@ -5,20 +5,27 @@
         <h2>Alerts</h2>
         <div v-if="data == null">Loading...</div>
         <div v-else>
-          <table class="table table-dark table-striped">
-            <thead>
-              <tr>
-                <th>Tracking</th>
-                <th>Alert</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr :key="key" v-for="(entry, key) of data">
-                <td>{{ entry.tracking }}</td>
-                <td>{{ entry.alert_message }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <form action="/api/verifytracking" method="post">
+            <table class="table table-dark table-striped">
+              <thead>
+                <tr>
+                  <th>Tracking</th>
+                  <th>Alert</th>
+                  <th>OK?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :key="key" v-for="(entry, key) of data">
+                  <td>{{ entry.tracking }}</td>
+                  <td>{{ entry.alert_message }}</td>
+                  <td>
+                    <input type="checkbox" :name="entry.tracking" :id="entry.tracking">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <input class="btn btn-primary" type="submit" value="Submit">
+          </form>
         </div>
       </div>
     </div>
