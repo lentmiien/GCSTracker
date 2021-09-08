@@ -1023,12 +1023,16 @@ exports.batch_status_update = (req, res) => {
         const split_date = d['d_date'].split(gap);
         d_date = (new Date(parseInt(split_date[0]), parseInt(split_date[1])-1, parseInt(split_date[2]))).getTime();
       }
+      let delivered_status = false;
+      if(d_date > 0 || d['status'].toUpperCase() == 'LOST') {
+        delivered_status = true;
+      }
       Tracking.update(
         {
           country: d['country'],
           status: d['status'],
           delivereddate: d_date,
-          delivered: d_date > 0 ? true : false,
+          delivered: delivered_status,
         },
         {
           where: { tracking: d['tracking'] },
