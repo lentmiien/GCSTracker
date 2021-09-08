@@ -1015,8 +1015,9 @@ exports.batch_status_update = (req, res) => {
   // The name of the input field (i.e. "updatefile") is used to retrieve the uploaded file
   let updatefile = req.files.updatefile;
 
-  csvtojson().fromString(updatefile.data.toString()).then(data => {
-    data.forEach(d => {
+  csvtojson().fromString(updatefile.data.toString()).then(async data => {
+    for(let i = 0; i < data.length; i++) {
+      const d = data[i];
       let d_date = 0;
       if(d['d_date'].length == 10) {
         const gap = d['d_date'].indexOf('/') >= 0 ? '/' : '-';
@@ -1038,7 +1039,8 @@ exports.batch_status_update = (req, res) => {
           where: { tracking: d['tracking'] },
         }
       );
-    });
+      await sleep(500);
+    }
     res.redirect('/');
   });
 };
@@ -1139,3 +1141,11 @@ function LastUpdate(events) {
   {"timestamp":1581282000000,"description":"国際交換局から発送","location":"東京都"}
 ]
 */
+
+function sleep(time) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, time);
+  });
+}
