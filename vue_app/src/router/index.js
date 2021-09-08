@@ -20,6 +20,7 @@ import Alert from '../views/Alert.vue';
 import UpdateRecords from '../views/UpdateRecords.vue';
 import ErrorCheck from '../views/ErrorCheck.vue';
 import Alerts from '../views/Alerts.vue';
+import BatchUpdate from '../views/BatchUpdate.vue'
 
 Vue.use(VueRouter);
 
@@ -113,6 +114,11 @@ const routes = [
     path: '/updaterecords',
     name: 'UpdateRecords',
     component: UpdateRecords,
+  },
+  {
+    path: '/batchupdate',
+    name: 'BatchUpdate',
+    component: BatchUpdate,
   },
   {
     path: '/errorcheck',

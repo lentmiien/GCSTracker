@@ -41,6 +41,7 @@ router.get('/shipping_country_csv', controller.shipping_country_csv);
 router.get('/alerts', controller.alerts);
 
 router.post('/verifytracking', controller.verifytracking);
+router.post('/batchupdate', controller.batch_status_update);
 
 // Export router
 module.exports = router;

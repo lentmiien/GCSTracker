@@ -87,6 +87,7 @@
               <router-link to="/alert" class="dropdown-item">Alert</router-link>
               <router-link to="/errorcheck" class="dropdown-item">Error check</router-link>
               <router-link to="/alerts" class="dropdown-item">Alerts</router-link>
+              <router-link to="/batchupdate" class="dropdown-item">Batch update</router-link>
             </div>
           </li>
         </ul>

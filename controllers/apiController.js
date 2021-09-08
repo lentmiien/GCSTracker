@@ -967,6 +967,7 @@ exports.alerts = (req, res) => {
           if(!('carrier' in ca) || d.carrier === ca.carrier) {
             if(QueryStatus(d.tracking, ca.query, tdata.shipments[0].events)) {
               const alert_message = ca.alert.replace('<LASTSTATUS>', LastUpdate(tdata.shipments[0].events));
+              console.log(tdata.shipments[0].events, LastUpdate(tdata.shipments[0].events))
               output.push({ alert_type: index, tracking: d.tracking, alert_message, events: tdata.shipments[0].events })
             }
           }
@@ -993,7 +994,6 @@ exports.alerts = (req, res) => {
 
 const noProblemVerifiedTracking = [];
 exports.verifytracking = (req, res) => {
-  console.log(req.body);
   const keys = Object.keys(req.body);
   keys.forEach(tracking => {
     if(noProblemVerifiedTracking.indexOf(tracking) == -1) {
@@ -1002,6 +1002,42 @@ exports.verifytracking = (req, res) => {
   });
   res.redirect('/')
 }
+
+// csv file upload
+// Column#1     #2         #3         #4
+// tracking     status     country    d_date
+// TODO: change so that the file can have any number of columns, and update columns that matches DB fields
+exports.batch_status_update = (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  // The name of the input field (i.e. "updatefile") is used to retrieve the uploaded file
+  let updatefile = req.files.updatefile;
+
+  csvtojson().fromString(updatefile.data.toString()).then(data => {
+    data.forEach(d => {
+      let d_date = 0;
+      if(d['d_date'].length == 10) {
+        const gap = d['d_date'].indexOf('/') >= 0 ? '/' : '-';
+        const split_date = d['d_date'].split(gap);
+        d_date = (new Date(parseInt(split_date[0]), parseInt(split_date[1])-1, parseInt(split_date[2]))).getTime();
+      }
+      Tracking.update(
+        {
+          country: d['country'],
+          status: d['status'],
+          delivereddate: d_date,
+          delivered: d_date > 0 ? true : false,
+        },
+        {
+          where: { tracking: d['tracking'] },
+        }
+      );
+    });
+    res.redirect('/');
+  });
+};
 
 /********************/
 /* Helper functions */
