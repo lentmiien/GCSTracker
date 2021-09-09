@@ -1016,8 +1016,10 @@ exports.batch_status_update = (req, res) => {
   let updatefile = req.files.updatefile;
 
   csvtojson().fromString(updatefile.data.toString()).then(async data => {
+    res.redirect('/');
     for(let i = 0; i < data.length; i++) {
       const d = data[i];
+      console.log(`Updating ${d['tracking']}`);
       let d_date = 0;
       if(d['d_date'].length == 10) {
         const gap = d['d_date'].indexOf('/') >= 0 ? '/' : '-';
@@ -1039,9 +1041,8 @@ exports.batch_status_update = (req, res) => {
           where: { tracking: d['tracking'] },
         }
       );
-      await sleep(500);
+      await sleep(5000);
     }
-    res.redirect('/');
   });
 };
 
