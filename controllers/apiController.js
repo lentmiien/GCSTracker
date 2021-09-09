@@ -1016,33 +1016,22 @@ exports.batch_status_update = (req, res) => {
   let updatefile = req.files.updatefile;
 
   csvtojson().fromString(updatefile.data.toString()).then(async data => {
-    res.redirect('/');
+    const tracking = [];
     for(let i = 0; i < data.length; i++) {
       const d = data[i];
-      console.log(`Updating ${d['tracking']}`);
-      let d_date = 0;
-      if(d['d_date'].length == 10) {
-        const gap = d['d_date'].indexOf('/') >= 0 ? '/' : '-';
-        const split_date = d['d_date'].split(gap);
-        d_date = (new Date(parseInt(split_date[0]), parseInt(split_date[1])-1, parseInt(split_date[2]))).getTime();
-      }
-      let delivered_status = false;
-      if(d_date > 0 || d['status'].toUpperCase() == 'LOST') {
-        delivered_status = true;
-      }
-      Tracking.update(
-        {
-          country: d['country'],
-          status: d['status'],
-          delivereddate: d_date,
-          delivered: delivered_status,
-        },
-        {
-          where: { tracking: d['tracking'] },
-        }
-      );
-      await sleep(5000);
+      tracking.push(d['tracking']);
     }
+    Tracking.update(
+      {
+        status: 'Delivered',
+        delivereddate: 1,
+        delivered: true,
+      },
+      {
+        where: { tracking },
+      }
+    );
+    res.redirect('/');
   });
 };
 
