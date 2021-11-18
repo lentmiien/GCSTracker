@@ -355,7 +355,7 @@ export default {
       // set the ranges
       x = d3
         .scaleLinear()
-        .domain([0, 89])
+        .domain([0, 179])
         .range([0, width]);
       y = d3
         .scaleLinear()
@@ -493,7 +493,7 @@ export default {
         },
       };
 
-      for (let fa = 0; fa < 90; fa++) {
+      for (let fa = 0; fa < 180; fa++) {
         times.deliverytimehistogram.push(0);
       }
 
@@ -534,7 +534,7 @@ export default {
 
               const dth = Math.ceil((d.delivereddate - d.shippeddate) / (1000 * 60 * 60 * 24));
               times.deliverytimehistogram_totaldelivered++;
-              for (let hi = 0; hi < 90; hi++) {
+              for (let hi = 0; hi < 180; hi++) {
                 if (hi >= dth) {
                   times.deliverytimehistogram[hi]++;
                 }
@@ -689,7 +689,7 @@ export default {
         },
       };
 
-      for (let fa = 0; fa < 90; fa++) {
+      for (let fa = 0; fa < 180; fa++) {
         times.deliverytimehistogram.push(0);
       }
 
@@ -730,7 +730,7 @@ export default {
 
               const dth = Math.ceil((d.delivereddate - d.shippeddate) / (1000 * 60 * 60 * 24));
               times.deliverytimehistogram_totaldelivered++;
-              for (let hi = 0; hi < 90; hi++) {
+              for (let hi = 0; hi < 180; hi++) {
                 if (hi >= dth) {
                   times.deliverytimehistogram[hi]++;
                 }
