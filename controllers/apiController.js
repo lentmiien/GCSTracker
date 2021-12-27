@@ -627,7 +627,7 @@ exports.get_all = (req, res) => {
     ],
     where: {
       addeddate: {
-        [Op.gt]: Date.now() - (183*24*60*60*1000),
+        [Op.gt]: Date.now() - (170*24*60*60*1000),
       }
     }
   })

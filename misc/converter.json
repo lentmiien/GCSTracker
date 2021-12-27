@@ -8,64 +8,107 @@
     "name": "アイルランド"
   },
   "AZ": {
+    "twoletter": "AZ",
+    "threeletter": "AZE",
     "code": "031",
-    "name": "アゼルバイジャン"
+    "name": "アゼルバイジャン共和国",
+    "eng": "AZERBAIJAN",
+    "eng_full": "Azerbaijani Republic"
   },
   "AF": {
+    "twoletter": "AF",
+    "threeletter": "AFG",
     "code": "004",
-    "name": "アフガニスタン"
+    "name": "アフガニスタン・イスラム国",
+    "eng": "AFGHANISTAN",
+    "eng_full": "Islamic State of Afghanistan"
   },
   "US": {
     "code": "840",
     "name": "アメリカ合衆国"
   },
   "AS": {
+    "twoletter": "AS",
+    "threeletter": "ASM",
     "code": "016",
-    "name": "アアメリカ領サモア"
+    "name": "米領サモア",
+    "eng": "AMERICAN SAMOA"
   },
   "VI": {
     "code": "850",
     "name": "アメリカ領バージン諸島"
   },
   "AE": {
+    "twoletter": "AE",
+    "threeletter": "ARE",
     "code": "784",
-    "name": "アラブ首長国連邦"
+    "name": "アラブ首長国連邦",
+    "eng": "UNITED ARAB EMIRATES"
   },
   "DZ": {
     "code": "012",
     "name": "アルジェリア"
   },
   "AR": {
+    "twoletter": "AR",
+    "threeletter": "ARG",
     "code": "032",
-    "name": "アルゼンチン"
+    "name": "アルゼンチン共和国",
+    "eng": "ARGENTINA",
+    "eng_full": "Argentine Republic"
   },
   "AW": {
+    "twoletter": "AW",
+    "threeletter": "ABW",
     "code": "533",
-    "name": "アルバ"
+    "name": "アルバ",
+    "eng": "ARUBA"
   },
   "AL": {
+    "twoletter": "AL",
+    "threeletter": "ALB",
     "code": "008",
-    "name": "アルバニア"
+    "name": "アルバニア共和国",
+    "eng": "ALBANIA",
+    "eng_full": "Republic of Albania"
   },
   "AM": {
+    "twoletter": "AM",
+    "threeletter": "ARM",
     "code": "051",
-    "name": "アルメニア"
+    "name": "アルメニア共和国",
+    "eng": "ARMENIA",
+    "eng_full": "Republic of Armenia"
   },
   "AI": {
+    "twoletter": "AI",
+    "threeletter": "AIA",
     "code": "660",
-    "name": "アンギラ"
+    "name": "アンギラ",
+    "eng": "ANGUILLA"
   },
   "AO": {
+    "twoletter": "AO",
+    "threeletter": "AGO",
     "code": "024",
-    "name": "アンゴラ"
+    "name": "アンゴラ共和国",
+    "eng": "ANGOLA",
+    "eng_full": "Republic of Angola"
   },
   "AG": {
+    "twoletter": "AG",
+    "threeletter": "ATG",
     "code": "028",
-    "name": "アンティグア・バーブーダ"
+    "name": "アンチグア・バーブーダ",
+    "eng": "ANTIGUA AND BARBUDA"
   },
   "AD": {
+    "twoletter": "AD",
+    "threeletter": "AND",
     "code": "020",
-    "name": "アンドラ"
+    "name": "アンドラ公国",
+    "eng": "ANDORRA",
+    "eng_full": "Principality of Andorra"
   },
   "YE": {
     "code": "887",
@@ -152,12 +195,19 @@
     "name": "エルサルバドル"
   },
   "AU": {
+    "twoletter": "AU",
+    "threeletter": "AUS",
     "code": "036",
-    "name": "オーストラリア"
+    "name": "オーストラリア",
+    "eng": "AUSTRALIA"
   },
   "AT": {
+    "twoletter": "AT",
+    "threeletter": "AUT",
     "code": "040",
-    "name": "オーストリア"
+    "name": "オーストリア共和国",
+    "eng": "AUSTRIA",
+    "eng_full": "Republic of Austria"
   },
   "AX": {
     "code": "248",
@@ -592,8 +642,11 @@
     "name": "ナミビア"
   },
   "AQ": {
+    "twoletter": "AQ",
+    "threeletter": "ATA",
     "code": "010",
-    "name": "南極"
+    "name": "南極",
+    "eng": "ANTARCTICA"
   },
   "NU": {
     "code": "570",
@@ -640,8 +693,12 @@
     "name": "ハード島・マクドナルド諸島"
   },
   "BH": {
+    "twoletter": "BH",
+    "threeletter": "BHR",
     "code": "048",
-    "name": "バーレーン"
+    "name": "バーレーン国",
+    "eng": "BAHRAIN",
+    "eng_full": "State of Bahrain"
   },
   "HT": {
     "code": "332",
@@ -664,16 +721,23 @@
     "name": "バヌアツ"
   },
   "BS": {
+    "twoletter": "BS",
+    "threeletter": "BHS",
     "code": "044",
-    "name": "バハマ"
+    "name": "バハマ国",
+    "eng": "BAHAMAS",
+    "eng_full": "Commonwealth of the Bahamas"
   },
   "PG": {
     "code": "598",
     "name": "パプアニューギニア"
   },
   "BM": {
+    "twoletter": "BM",
+    "threeletter": "BMU",
     "code": "060",
-    "name": "バミューダ諸島"
+    "name": "バーミューダ諸島",
+    "eng": "BERMUDA"
   },
   "PW": {
     "code": "585",
@@ -684,8 +748,11 @@
     "name": "パラグアイ"
   },
   "BB": {
+    "twoletter": "BB",
+    "threeletter": "BRB",
     "code": "052",
-    "name": "バルバドス"
+    "name": "バルバドス",
+    "eng": "BARBADOS"
   },
   "PS": {
     "code": "275",
@@ -696,8 +763,12 @@
     "name": "ハンガリー"
   },
   "BD": {
+    "twoletter": "BD",
+    "threeletter": "BGD",
     "code": "050",
-    "name": "バングラデシュ"
+    "name": "バングラデシュ人民共和国",
+    "eng": "BANGLADESH",
+    "eng_full": "People's Republic of Bangladesh"
   },
   "TL": {
     "code": "626",
@@ -720,12 +791,19 @@
     "name": "フィンランド"
   },
   "BT": {
+    "twoletter": "BT",
+    "threeletter": "BTN",
     "code": "064",
-    "name": "ブータン"
+    "name": "ブータン王国",
+    "eng": "BHUTAN",
+    "eng_full": "Kingdom of Bhutan"
   },
   "BV": {
+    "twoletter": "BV",
+    "threeletter": "BVT",
     "code": "074",
-    "name": "ブーベ島"
+    "name": "ブーベ島",
+    "eng": "BOUVET ISLAND"
   },
   "PR": {
     "code": "630",
@@ -740,8 +818,12 @@
     "name": "フォークランド諸島"
   },
   "BR": {
+    "twoletter": "BR",
+    "threeletter": "BRA",
     "code": "076",
-    "name": "ブラジル"
+    "name": "ブラジル連邦共和国",
+    "eng": "BRAZIL",
+    "eng_full": "Federative Republic of Brazil"
   },
   "FR": {
     "code": "250",
@@ -760,68 +842,109 @@
     "name": "フランス領南方・南極地域"
   },
   "BG": {
+    "twoletter": "BG",
+    "threeletter": "BGR",
     "code": "100",
-    "name": "ブルガリア"
+    "name": "ブルガリア共和国",
+    "eng": "BULGARIA",
+    "eng_full": "Republic of Bulgaria"
   },
   "BF": {
+    "twoletter": "BF",
+    "threeletter": "BFA",
     "code": "854",
-    "name": "ブルキナファソ"
+    "name": "ブルキナファソ",
+    "eng": "BURKINA FASO"
   },
   "BN": {
+    "twoletter": "BN",
+    "threeletter": "BRN",
     "code": "096",
-    "name": "ブルネイ・ダルサラーム"
+    "name": "ブルネイ・ダルサラーム国",
+    "eng": "BRUNEI DARUSSALAM"
   },
   "BI": {
+    "twoletter": "BI",
+    "threeletter": "BDI",
     "code": "108",
-    "name": "ブルンジ"
+    "name": "ブルンジ共和国",
+    "eng": "BURUNDI",
+    "eng_full": "Republic of Burundi"
   },
   "VN": {
     "code": "704",
     "name": "ベトナム"
   },
   "BJ": {
+    "twoletter": "BJ",
+    "threeletter": "BEN",
     "code": "204",
-    "name": "ベナン"
+    "name": "ベナン共和国",
+    "eng": "BENIN",
+    "eng_full": "Republic of Benin"
   },
   "VE": {
     "code": "862",
     "name": "ベネズエラ・ボリバル共和国"
   },
   "BY": {
+    "twoletter": "BY",
+    "threeletter": "BLR",
     "code": "112",
-    "name": "ベラルーシ"
+    "name": "ベラルーシ共和国",
+    "eng": "BELARUS",
+    "eng_full": "Republic of Belarus"
   },
   "BZ": {
+    "twoletter": "BZ",
+    "threeletter": "BLZ",
     "code": "084",
-    "name": "ベリーズ"
+    "name": "ベリーズ",
+    "eng": "BELIZE"
   },
   "PE": {
     "code": "604",
     "name": "ペルー"
   },
   "BE": {
+    "twoletter": "BE",
+    "threeletter": "BEL",
     "code": "056",
-    "name": "ベルギー"
+    "name": "ベルギー王国",
+    "eng": "Belgium",
+    "eng_full": "Kingdom of Belgium"
   },
   "PL": {
     "code": "616",
     "name": "ポーランド"
   },
   "BA": {
+    "twoletter": "BA",
+    "threeletter": "BIH",
     "code": "070",
-    "name": "ボスニア・ヘルツェゴビナ"
+    "name": "(ボスニア・ヘルツェゴビナ共和国)",
+    "eng": "BOSNIA AND HERZEGOVINA",
+    "eng_full": "Republic of Bosnia and Herzegovina"
   },
   "BW": {
+    "twoletter": "BW",
+    "threeletter": "BWA",
     "code": "072",
-    "name": "ボツワナ"
+    "name": "ボツワナ共和国",
+    "eng": "BOTSWANA",
+    "eng_full": "Republic of Botswana"
   },
   "BQ": {
     "code": "535",
     "name": "ボネール、シント・ユースタティウスおよびサバ"
   },
   "BO": {
+    "twoletter": "BO",
+    "threeletter": "BOL",
     "code": "068",
-    "name": "ボリビア多民族国"
+    "name": "ボリビア共和国",
+    "eng": "BOLIVIA",
+    "eng_full": "Republic of Bolivia"
   },
   "PT": {
     "code": "620",
@@ -994,5 +1117,12 @@
   "WF": {
     "code": "876",
     "name": "ワリスフュチュナ"
+  },
+  "AN": {
+    "twoletter": "AN",
+    "threeletter": "ANT",
+    "code": "530",
+    "name": "オランダ領アンチル",
+    "eng": "NETHERLANDS ANTILLES"
   }
 }
