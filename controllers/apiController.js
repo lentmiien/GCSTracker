@@ -709,7 +709,10 @@ exports.get_all_countries = (req, res) => {
   Countrylist.findAll({
     attributes: ['country_name', 'country_code', 'baseentry'],
   })
-    .then((result) => res.json(result))
+    .then((result) => {
+      res.set('Cache-Control', 'public, max-age=3600');
+      res.json(result);
+    })
     .catch((err) => console.log(err));
 };
 // Add a new country name to DB
