@@ -631,7 +631,10 @@ exports.get_all = (req, res) => {
       }
     }
   })
-    .then((result) => res.json(result))
+    .then((result) => {
+      res.set('Cache-Control', 'public, max-age=3600');
+      res.json(result);
+    })
     .catch((err) => console.log(err));
 };
 
