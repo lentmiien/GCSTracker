@@ -436,12 +436,14 @@ async function Automation() {
     setTimeout(Automation, AUTO_RETRY);
   }
 }
-if (process.env.LOCAL == undefined) {
-  Log('Automation', 'Starting atumatic tracking...');
-  Automation();
-} else {
+
+// IMPORTANT For transfer to new system, disable tracking in this tool
+// if (process.env.LOCAL == undefined) {
+//   Log('Automation', 'Starting atumatic tracking...');
+//   Automation();
+// } else {
   Log('Automation', 'No tracking in local mode!');
-}
+// }
 
 // Helper function
 function sleep(time) {
